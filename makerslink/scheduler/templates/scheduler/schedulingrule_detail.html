@@ -1,0 +1,27 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Name: {{ schedulingrule.name }}</h1>
+  <strong class="text-success"><a href="{% url 'rule-update' pk=schedulingrule.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'rule-delete' pk=schedulingrule.pk %}">Delete</a></strong>
+
+  <p><strong>Name:</strong> {{ schedulingrule.name }}</p>
+  <p><strong>Description:</strong> {{ schedulingrule.description }}</p>
+  <p><strong>Frequency:</strong> {{ schedulingrule.frequency }}</p>
+  <p><strong>Params:</strong> {{ schedulingrule.params }}</p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Connected to the following Bookings</h4>
+      {% for booking in bookingtemplate.booking_set.all %}
+        <hr>
+        <p>{{ booking.name }}</p>
+      {% endfor %}
+  </div>
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Next 5 instances if today was the startdate:</h4>
+      {% for event in eventlist %}
+        <hr>
+        <p>{{ event }}</p>
+      {% endfor %}
+  </div>
+{% endblock %}
+

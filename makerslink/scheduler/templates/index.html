@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>MakersLink Scheduler Home</h1>
+
+<h2>Dynamic content</h2>
+
+  <p>The scheduler has the following record counts:</p>
+  <ul>
+    <li><strong>BookingInstances in need of hosts:</strong> {{ num_host_needed }}</li>
+  </ul>
+
+{% endblock %}

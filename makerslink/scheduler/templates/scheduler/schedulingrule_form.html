@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{{ form.errors }}
+{{ form.non_field_errors }}
+
+<h2>Help with params</h2>
+<p>Format for params are: "rruleparam:value;"</p>
+<p>more help at <a href="https://dateutil.readthedocs.io/en/stable/rrule.html#module-dateutil.rrule">the documentation</a></p>
+
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit" />
+    <a href="{% url 'rules' %}"><button type="button">Cancel</button></a>
+</form>
+{% endblock %}

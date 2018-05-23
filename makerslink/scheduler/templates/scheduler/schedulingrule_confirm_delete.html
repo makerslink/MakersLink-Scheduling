@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Delete Rule</h1>
+
+<p>Are you sure you want to delete the rule: {{ schedulingrule }}?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Yes, delete." />
+  <a href="{% url 'rule-detail' pk=schedulingrule.pk %}"><button type="button">Cancel</button></a>
+</form>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Delete Calendar</h1>
+
+<p>Are you sure you want to delete the calendar: {{ bookingcalendar }}?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <input type="submit" action="" value="Yes, delete." />
+  <a href="{% url 'calendar-detail' pk=bookingcalendar.pk %}"><button type="button">Cancel</button></a>
+</form>
+
+{% endblock %}

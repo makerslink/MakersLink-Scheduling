@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Rule List</h1>
+    <a href="{% url 'rule-create' %}">Create new</a>
+
+    {% if schedulingrule_list %}
+    <ul>
+
+      {% for rule in schedulingrule_list %}
+      <li>
+        <a href="{{ rule.get_absolute_url }}">{{ rule.name }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+    {% else %}
+      <p>No rules have been created.</p>
+    {% endif %}       
+{% endblock %}
+
+template-detail

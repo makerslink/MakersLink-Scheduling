@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Template List</h1>
+    <a href="{% url 'template-create' %}">Create new</a>
+
+    {% if bookingtemplate_list %}
+    <ul>
+
+      {% for template in bookingtemplate_list %}
+      <li>
+        <a href="{{ template.get_absolute_url }}">{{ template.name }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+    {% else %}
+      <p>No templates have been created.</p>
+    {% endif %}       
+{% endblock %}
+
+template-detail
