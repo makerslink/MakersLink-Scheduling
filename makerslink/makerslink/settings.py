@@ -39,8 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'scheduler.apps.SchedulerConfig',
-    'schedule',
-    'djangobower',
+    #'djangobower',
 ]
 
 MIDDLEWARE = [
@@ -127,12 +126,12 @@ STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../static/"))
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'djangobower.finders.BowerFinder',
+    #'djangobower.finders.BowerFinder',
 ]
 
-BOWER_COMPONENTS_ROOT = '//home/bobo/django-apps/makerslink/makerslink/components/'
-BOWER_INSTALLED_APPS = (
-    'jquery',
-    'jquery-ui',
-    'bootstrap'
-)
+#BOWER_COMPONENTS_ROOT = '//home/bobo/django-apps/makerslink/makerslink/components/'
+#BOWER_INSTALLED_APPS = (
+#    'jquery',
+#    'jquery-ui',
+#    'bootstrap'
+#)

@@ -1,0 +1,3 @@
+makerslink/components/*
+*.pyc
+static/*
