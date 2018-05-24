@@ -1,5 +1,5 @@
 from django import forms
-from .models import BookingTemplate, BookingCalendar, Booking, BookingInstance
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 import datetime #for checking renewal date range.
@@ -7,7 +7,7 @@ import datetime #for checking renewal date range.
 """
 1. Calendar - koppling mot google calendar - crud
 2. Template - hur skall saker formateras - crud
-3. Booking - Koppla ihop calendars och templates - crud
+3. Event - Koppla ihop calendars och templates - crud
 4. Instance - Skapa en instance i kalendern
 5. Visa instances
 6. Boka instance genom att klicka

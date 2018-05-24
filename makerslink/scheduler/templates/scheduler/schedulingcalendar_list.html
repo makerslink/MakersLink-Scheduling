@@ -4,10 +4,10 @@
     <h1>Calendar List</h1>
     <a href="{% url 'calendar-create' %}">Create new</a>
 
-    {% if bookingcalendar_list %}
+    {% if schedulingcalendar_list %}
     <ul>
 
-      {% for calendar in bookingcalendar_list %}
+      {% for calendar in schedulingcalendar_list %}
       <li>
         <a href="{{ calendar.get_absolute_url }}">{{ calendar.name }}</a>
       </li>

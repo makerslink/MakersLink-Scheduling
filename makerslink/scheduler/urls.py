@@ -7,19 +7,19 @@ urlpatterns = [
 ]
 
 urlpatterns += [
-    path('calendars', views.BookingCalendarListView.as_view(), name='calendars'),
-    path('calendar/<uuid:pk>', views.BookingCalendarDetailView.as_view(), name='calendar-detail'),
-    path('calendar/create/', views.BookingCalendarCreateView.as_view(), name='calendar-create'),
-    path('calendar/<uuid:pk>/update', views.BookingCalendarUpdateView.as_view(), name='calendar-update'),
-    path('calendar/<uuid:pk>/delete', views.BookingCalendarDeleteView.as_view(), name='calendar-delete'),
+    path('calendars', views.SchedulingCalendarListView.as_view(), name='calendars'),
+    path('calendar/<uuid:pk>', views.SchedulingCalendarDetailView.as_view(), name='calendar-detail'),
+    path('calendar/create/', views.SchedulingCalendarCreateView.as_view(), name='calendar-create'),
+    path('calendar/<uuid:pk>/update', views.SchedulingCalendarUpdateView.as_view(), name='calendar-update'),
+    path('calendar/<uuid:pk>/delete', views.SchedulingCalendarDeleteView.as_view(), name='calendar-delete'),
 ]
 
 urlpatterns += [
-    path('templates', views.BookingTemplateListView.as_view(), name='templates'),
-    path('template/<int:pk>', views.BookingTemplateDetailView.as_view(), name='template-detail'),
-    path('template/create/', views.BookingTemplateCreateView.as_view(), name='template-create'),
-    path('template/<int:pk>/update', views.BookingTemplateUpdateView.as_view(), name='template-update'),
-    path('template/<int:pk>/delete', views.BookingTemplateDeleteView.as_view(), name='template-delete'),
+    path('templates', views.EventTemplateListView.as_view(), name='templates'),
+    path('template/<int:pk>', views.EventTemplateDetailView.as_view(), name='template-detail'),
+    path('template/create/', views.EventTemplateCreateView.as_view(), name='template-create'),
+    path('template/<int:pk>/update', views.EventTemplateUpdateView.as_view(), name='template-update'),
+    path('template/<int:pk>/delete', views.EventTemplateDeleteView.as_view(), name='template-delete'),
 ]
 
 urlpatterns += [

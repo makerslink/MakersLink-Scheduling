@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import BookingTemplate, BookingCalendar, Booking, BookingInstance, SchedulingRule
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
 import datetime
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 # Create your views here.
 def index(request):
     now = datetime.datetime.now().isoformat()
-    num_host_needed = BookingInstance.objects.filter(status__lte=0, start__gte=now).count()
+    num_host_needed = EventInstance.objects.filter(status__lte=0, start__gte=now).count()
 
     return render(
         request,
@@ -18,40 +18,40 @@ def index(request):
         },
     )
 
-class BookingCalendarListView(generic.ListView):
-    model = BookingCalendar
+class SchedulingCalendarListView(generic.ListView):
+    model = SchedulingCalendar
 
-class BookingCalendarDetailView(generic.DetailView):
-    model = BookingCalendar
+class SchedulingCalendarDetailView(generic.DetailView):
+    model = SchedulingCalendar
 
-class BookingCalendarCreateView(CreateView):
-    model = BookingCalendar
+class SchedulingCalendarCreateView(CreateView):
+    model = SchedulingCalendar
     fields = '__all__'
 
-class BookingCalendarUpdateView(UpdateView):
-    model = BookingCalendar
+class SchedulingCalendarUpdateView(UpdateView):
+    model = SchedulingCalendar
     fields = '__all__'
 
-class BookingCalendarDeleteView(DeleteView):
-    model = BookingCalendar
+class SchedulingCalendarDeleteView(DeleteView):
+    model = SchedulingCalendar
     success_url = reverse_lazy('calendars')
 
-class BookingTemplateListView(generic.ListView):
-    model = BookingTemplate
+class EventTemplateListView(generic.ListView):
+    model = EventTemplate
 
-class BookingTemplateDetailView(generic.DetailView):
-    model = BookingTemplate
+class EventTemplateDetailView(generic.DetailView):
+    model = EventTemplate
 
-class BookingTemplateCreateView(CreateView):
-    model = BookingTemplate
+class EventTemplateCreateView(CreateView):
+    model = EventTemplate
     fields = '__all__'
 
-class BookingTemplateUpdateView(UpdateView):
-    model = BookingTemplate
+class EventTemplateUpdateView(UpdateView):
+    model = EventTemplate
     fields = '__all__'
 
-class BookingTemplateDeleteView(DeleteView):
-    model = BookingTemplate
+class EventTemplateDeleteView(DeleteView):
+    model = EventTemplate
     success_url = reverse_lazy('templates')
 
 class SchedulingRuleListView(generic.ListView):

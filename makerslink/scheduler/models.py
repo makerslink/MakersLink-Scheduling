@@ -11,18 +11,18 @@ from dateutil.rrule import *
 client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
 
 # Create your models here.
-class BookingTemplate(models.Model):
+class EventTemplate(models.Model):
     """
     Defines how something will look in the google calendar
     """
 
     # Fields
-    name = models.CharField(max_length=50, help_text="Enter a name for this template")
-    title = models.CharField(max_length=100, help_text="Enter title for booking")
-    header = models.CharField(max_length=200, help_text="Enter a, optional, header for the booking to be inserted after the hosts name", null=True, blank=True)
-    body = models.TextField(max_length=1000, help_text="Enter a body for the booking to be inserted after the hosts name", null=True, blank=True)
-    calendar = models.ForeignKey('BookingCalendar', on_delete=models.SET_NULL, null=True)
-    synchronize = models.BooleanField(default=True, help_text="If active, events will be synced to Google calendar")
+    name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this template")
+    title = models.CharField(max_length=100, help_text="Enter title to be used for booking")
+    header = models.CharField(max_length=200, help_text="Enter a, optional, header for the event to be inserted after the hosts name into the descriptionfield in the calendar event.", null=True, blank=True)
+    body = models.TextField(max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
+    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.SET_NULL, null=True, help_text="Select the calendar to sync events to.")
+    synchronize = models.BooleanField(default=True, help_text="If active, scheduled events will be synced to Google calendar upon creation.")
 
     # Metadata
     class Meta:
@@ -31,17 +31,17 @@ class BookingTemplate(models.Model):
     # Methods
     def get_absolute_url(self):
         """
-         Returns the url to access a particular instance of BookingTemplate.
+         Returns the url to access a particular instance of EventTemplate.
          """
         return reverse('template-detail', args=[str(self.id)])
 
     def __str__(self):
         """
-        String for representing the BookingTemplate object (in Admin site etc.)
+        String for representing the EventTemplate object (in Admin site etc.)
         """
         return self.name
 
-class BookingCalendar(models.Model):
+class SchedulingCalendar(models.Model):
     """
     Defines a Google calendar to insert bookings into
     https://stackoverflow.com/questions/37754999/google-calendar-integration-with-django
@@ -54,12 +54,12 @@ class BookingCalendar(models.Model):
 
     # Fields
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this calendar")
-    name = models.CharField(max_length=50, help_text="Enter a name for this booking schedule")
+    name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this Google Calendar")
     google_calendar_id = models.CharField(max_length=250, help_text="Enter a calendar id")
     service_account_username = models.CharField(max_length=250, help_text="Enter the username for the service account used")
     timezone = models.CharField(max_length=50, choices=TIMEZONES, help_text='Calendar timezone')
     service_account = models.FileField(storage=client_secret_fs, help_text='Upload client_secret json-file')
-    scope = models.TextField(default="https://www.googleapis.com/auth/calendar", help_text='enter scope of api calls, change at your own risk')
+    scope = models.TextField(default="https://www.googleapis.com/auth/calendar", help_text='Enter scope of api calls, change at your own risk')
 
     # Metadata
     class Meta:
@@ -68,13 +68,13 @@ class BookingCalendar(models.Model):
     # Methods
     def get_absolute_url(self):
         """
-         Returns the url to access a particular instance of BookingCalendar.
+         Returns the url to access a particular instance of SchedulingCalendar.
          """
         return reverse('calendar-detail', args=[str(self.id)])
 
     def __str__(self):
         """
-        String for representing the BookingCalendar object (in Admin site etc.)
+        String for representing the SchedulingCalendar object (in Admin site etc.)
         """
         return self.name
 
@@ -83,21 +83,21 @@ class BookingCalendar(models.Model):
         return credentials
 
 
-class Booking(models.Model):
+class Event(models.Model):
     """
     Defines a booking that users can create themselves.
-    User only gets to chose day and time to create a BookingInstance
+    User only gets to chose day and time to create a EventInstance
     """
     # Data
     #objects = BookingManager()
 
     # Fields
-    name = models.CharField(max_length=50, help_text="Enter a name for this booking")
-    description = models.CharField(max_length=300, help_text="Enter a description for this booking", null=True, blank=True)
-    booking_template = models.ForeignKey('BookingTemplate', on_delete=models.SET_NULL, null=True)
-    start = models.DateTimeField(help_text="Start of event", db_index=True)
-    end = models.DateTimeField(help_text="End of event, must be after start", db_index=True)
-    repeat_end = models.DateTimeField(help_text="Day to end repetition")
+    name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this type of Event")
+    description = models.CharField(max_length=300, help_text="Enter a description for this type of Event", null=True, blank=True)
+    booking_template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True, help_text="Select a template for how scheduled Events will look in the calendar.")
+    start = models.DateTimeField(help_text="Start of event repetition and start time of events", db_index=True)
+    end = models.DateTimeField(help_text="End time of events, must be after start", db_index=True)
+    repeat_end = models.DateTimeField(help_text="Date to end repetition")
     rule = models.ForeignKey('SchedulingRule', null=True, blank=True, help_text="Select '----' for a one time only event.", on_delete=models.SET_NULL)
 
     # Metadata
@@ -107,26 +107,26 @@ class Booking(models.Model):
     # Methods
     def get_absolute_url(self):
         """
-         Returns the url to access a particular instance of BookingTemplate.
+         Returns the url to access a particular instance of EventTemplate.
          """
-        return reverse('booking-detail', args=[str(self.id)])
+        return reverse('event-detail', args=[str(self.id)])
 
     def __str__(self):
         """
-        String for representing the BookingTemplate object (in Admin site etc.)
+        String for representing the EventTemplate object (in Admin site etc.)
         """
         return self.name
 
-    def create_bookinginstance(self, start, end):
-        return BookingInstance(booking=self, start=start, end=end)
+    def create_eventinstance(self, start, end):
+        return EventInstance(event=self, start=start, end=end)
 
     def get_events(self):
 
 
         """
         skapa funktion för att hämta events denna genererar
-        skapa funktion för att skapa en "fejkad" BookingInstance-objekt
-        ta bort riktiga BookingInstance från listan (jämför med länkade instances)
+        skapa funktion för att skapa en "fejkad" EventInstance-objekt
+        ta bort riktiga EventInstance från listan (jämför med länkade instances)
             Om instansen finns ska den tas bort
                 om den riktiga dessutom är bokningsbar skall den in istället.
         returnera lista
@@ -135,11 +135,11 @@ class Booking(models.Model):
         :return:
         """
 
-class BookingManager(models.Manager):
+class EventManager(models.Manager):
     def get_instances(self, fromTime, untilTime):
-        return self.bookinginstance_set.filter(start__gte=fromTime, start__lte=untilTime)
+        return self.eventinstance_set.filter(start__gte=fromTime, start__lte=untilTime)
 
-class BookingInstance(models.Model):
+class EventInstance(models.Model):
     """
     Each actually scheduled time in the calendar corresponds with this.
     """
@@ -157,7 +157,7 @@ class BookingInstance(models.Model):
     google_calendar_booking_id = models.CharField(max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
     #host = models.ForeignKey('User', on_delete=models.SET_NULL, null=True)
     host = models.CharField(max_length=50, help_text="Enter a name instead of user-key", null=True, blank=True)
-    booking = models.ForeignKey('Booking', on_delete=models.SET_NULL, null=True)
+    event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(default=0, choices=STATUS, help_text="Instance status")
@@ -169,9 +169,9 @@ class BookingInstance(models.Model):
     # Methods
     def get_absolute_url(self):
         """
-         Returns the url to access a particular instance of BookingInstance.
+         Returns the url to access a particular instance of EventInstance.
          """
-        return reverse('bookinginstance-detail', args=[str(self.id)])
+        return reverse('eventinstance-detail', args=[str(self.id)])
 
     def display_host(self):
         return ''.join([self.host])
@@ -205,13 +205,13 @@ class SchedulingRule(models.Model):
     #Functions
     def get_absolute_url(self):
         """
-         Returns the url to access a particular instance of BookingTemplate.
+         Returns the url to access a particular instance of EventTemplate.
          """
         return reverse('rule-detail', args=[str(self.id)])
 
     def __str__(self):
         """
-        String for representing the BookingTemplate object (in Admin site etc.)
+        String for representing the EventTemplate object (in Admin site etc.)
         """
         return self.name
 

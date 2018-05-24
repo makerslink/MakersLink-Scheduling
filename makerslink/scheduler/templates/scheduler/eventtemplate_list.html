@@ -4,10 +4,10 @@
     <h1>Template List</h1>
     <a href="{% url 'template-create' %}">Create new</a>
 
-    {% if bookingtemplate_list %}
+    {% if eventtemplate_list %}
     <ul>
 
-      {% for template in bookingtemplate_list %}
+      {% for template in eventtemplate_list %}
       <li>
         <a href="{{ template.get_absolute_url }}">{{ template.name }}</a>
       </li>

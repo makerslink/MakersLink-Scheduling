@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Name: {{ schedulingcalendar.name }}</h1>
+  <strong class="text-success"><a href="{% url 'calendar-update' pk=schedulingcalendar.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'calendar-delete' pk=schedulingcalendar.pk %}">Delete</a></strong>
+
+  <p><strong>Google Calendar ID:</strong> {{ schedulingcalendar.google_calendar_id }}</p>
+  <p><strong>Service Account Username:</strong> {{ schedulingcalendar.service_account_username }}</p>
+  <p><strong>Scope:</strong> {{ schedulingcalendar.scope }}</p>
+  <p><strong>Service Account Secret:</strong> {% if schedulingcalendar.service_account %}<p class="text-success">Uploaded{% else %}<p class="text-warning">None{% endif %}</p></p>
+  <p><strong>Timezone:</strong> {{ schedulingcalendar.timezone }}</p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Connected to the following Templates</h4>
+      {% for template in schedulingcalendar.eventtemplate_set.all %}
+        <hr>
+        <p><a href="{% url 'template-detail' pk=template.pk %}">{{ template.name }}</a></p>
+      {% endfor %}
+  </div>
+{% endblock %}

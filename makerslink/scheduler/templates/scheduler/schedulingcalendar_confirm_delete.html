@@ -4,12 +4,12 @@
 
 <h1>Delete Calendar</h1>
 
-<p>Are you sure you want to delete the calendar: {{ bookingcalendar }}?</p>
+<p>Are you sure you want to delete the calendar: {{ schedulingcalendar }}?</p>
 
 <form action="" method="POST">
   {% csrf_token %}
   <input type="submit" action="" value="Yes, delete." />
-  <a href="{% url 'calendar-detail' pk=bookingcalendar.pk %}"><button type="button">Cancel</button></a>
+  <a href="{% url 'calendar-detail' pk=schedulingcalendar.pk %}"><button type="button">Cancel</button></a>
 </form>
 
 {% endblock %}
