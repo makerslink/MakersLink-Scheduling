@@ -117,11 +117,64 @@ class Event(models.Model):
         """
         return self.name
 
-    def create_eventinstance(self, start, end):
-        return EventInstance(event=self, start=start, end=end)
+    def create_eventinstance(self, start, end=None):
+        if end is None:
+            end = start + (self.end - self.start)
+        return EventInstance(event=self, start=start, end=end, status=0)
 
-    def get_events(self):
+    def get_event_list(self, from_date, until_date):
+        # Create list of Events
+        event_list = []
+        # Check if this Event is included in the range of dates return if it is not
+        if not (self.start >= from_date and self.start <= until_date):
+            return event_list
+        # If there is a rule for repetition
+        if self.rule is not None:
+            # Calculate the duration of events
+            event_duration = self.end - self.start
 
+            # Check if Event starts later than given date
+            # Set the start to the Events start if later
+            if self.start > from_date:
+                from_date = self.start
+            # Set the date to the given startdate but keep the same time if earlier
+            else:
+                from_date = datetime.datetime.combine(from_date.date(), self.start.time())
+            # Check if there is a date set to stop generating events, use that instead of given date if it is before given date
+            if self.repeat_end and self.repeat_end < until_date:
+                until_date = self.repeat_end
+            start_list = self.rule.get_events(from_date, until_date)
+
+            for startdate in start_list:
+                event_list.append(self.create_eventinstance(startdate, startdate+event_duration))
+        # If this is a single Event
+        else:
+            event_list.append(self.create_eventinstance(self.start))
+
+        return event_list
+
+    def get_events(self, from_date, until_date):
+        # Get all actual EventInstances created from this Event
+        event_instances = self.eventinstance_set.all()
+        # Create an EventReplacer object containing these EventInstances
+        event_replacer = EventReplacer(event_instances)
+        # Generate EventInstances that this Event can create between dates
+        generated_events = self.get_event_list(from_date, until_date)
+        # Create list to hold a combination of generated and actual EventInstance
+        final_eventlist = []
+        # Go through all generated EventInstances
+        for event_instance in generated_events:
+            # Check if a generated EventInstance coincides with an actual EventInstance and add it
+            if event_replacer.has_eventinstance(event_instance):
+                final_eventlist.append(event_replacer.get_eventinstance(event_instance))
+            # If it doesn't, add the generated EventInstance
+            else:
+                final_eventlist.append(event_instance)
+
+        # Finally we add the straggling EventInstances that coincides with these dates
+        final_eventlist += event_replacer.get_straggling_eventinstances(from_date, until_date)
+        # Return list
+        return final_eventlist
 
         """
         skapa funktion för att hämta events denna genererar
@@ -134,6 +187,33 @@ class Event(models.Model):
         kanske ska det finnas någon funktion för att skapa en "ta denna" länk
         :return:
         """
+
+class EventReplacer(object):
+    """
+    Used to replace generated Events with actual EventInstances
+    """
+    # Create a dict to keep track of actual EventInstances when creating an instance of this class
+    def __init__(self, event_instances):
+        lookup = [((event_instance.event.id, event_instance.start, event_instance.end), event_instance) for event_instance in event_instances]
+        self.lookup = dict(lookup)
+
+    # Return an actual EventInstance that matches "event_instance" and remove it since it has been matched
+    def get_eventinstance(self, event_instance):
+        return self.lookup.pop((event_instance.event.id, event_instance.start, event_instance.end), event_instance)
+
+    # Check if an EventInstance exists in the list or raise an error if something goes wrong
+    def has_eventinstance(self, event_instance):
+        try:
+            return (event_instance.event.id, event_instance.start, event_instance.end) in self.lookup
+        except TypeError:
+            if not self.lookup:
+                return False
+            else:
+                raise TypeError('A problem with checking if an actual EventInstace exists occured!')
+
+    # Return stragglers that start between the given dates. This can happen if you schedule events and then change the rule generating events
+    def get_straggling_eventinstances(self, from_date, until_date):
+        return [event_instance for _, event_instance in list(self.lookup.items()) if (event_instance.start < until_date and event_instance.start >= from_date and not event_instance.status == 2)]
 
 class EventManager(models.Manager):
     def get_instances(self, fromTime, untilTime):
