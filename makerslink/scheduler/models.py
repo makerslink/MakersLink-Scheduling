@@ -58,7 +58,7 @@ class SchedulingCalendar(models.Model):
     google_calendar_id = models.CharField(max_length=250, help_text="Enter a calendar id")
     service_account_username = models.CharField(max_length=250, help_text="Enter the username for the service account used")
     timezone = models.CharField(max_length=50, choices=TIMEZONES, help_text='Calendar timezone')
-    service_account = models.FileField(storage=client_secret_fs, help_text='Upload client_secret json-file')
+    service_account = models.FileField(storage=client_secret_fs, help_text='Upload client_secret json-file', null=True, blank=True)
     scope = models.TextField(default="https://www.googleapis.com/auth/calendar", help_text='Enter scope of api calls, change at your own risk')
 
     # Metadata
@@ -97,7 +97,7 @@ class Event(models.Model):
     booking_template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True, help_text="Select a template for how scheduled Events will look in the calendar.")
     start = models.DateTimeField(help_text="Start of event repetition and start time of events", db_index=True)
     end = models.DateTimeField(help_text="End time of events, must be after start", db_index=True)
-    repeat_end = models.DateTimeField(help_text="Date to end repetition")
+    repeat_end = models.DateTimeField(help_text="Date to end repetition", null=True, blank=True)
     rule = models.ForeignKey('SchedulingRule', null=True, blank=True, help_text="Select '----' for a one time only event.", on_delete=models.SET_NULL)
 
     # Metadata
