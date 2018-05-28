@@ -29,3 +29,11 @@ urlpatterns += [
     path('rule/<int:pk>/update', views.SchedulingRuleUpdateView.as_view(), name='rule-update'),
     path('rule/<int:pk>/delete', views.SchedulingRuleDeleteView.as_view(), name='rule-delete'),
 ]
+
+urlpatterns += [
+    path('events', views.EventListView.as_view(), name='events'),
+    path('event/<int:pk>', views.EventDetailView.as_view(), name='event-detail'),
+    path('event/create/', views.EventCreateView.as_view(), name='event-create'),
+    path('event/<int:pk>/update', views.EventUpdateView.as_view(), name='event-update'),
+    path('event/<int:pk>/delete', views.EventDeleteView.as_view(), name='event-delete'),
+]

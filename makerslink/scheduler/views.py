@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
-import datetime
+from datetime import datetime, timezone
+from dateutil.relativedelta import *
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 
 # Create your views here.
 def index(request):
-    now = datetime.datetime.now().isoformat()
+    now = datetime.now().isoformat()
     num_host_needed = EventInstance.objects.filter(status__lte=0, start__gte=now).count()
 
     return render(
@@ -77,3 +78,29 @@ class SchedulingRuleUpdateView(UpdateView):
 class SchedulingRuleDeleteView(DeleteView):
     model = SchedulingRule
     success_url = reverse_lazy('rules')
+
+class EventListView(generic.ListView):
+    model = Event
+
+class EventDetailView(generic.DetailView):
+    model = Event
+
+    def get_context_data(self, **kwargs):
+        start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start+relativedelta(month=+1)
+        context = super(EventDetailView, self).get_context_data(**kwargs)
+        events = self.object.get_events(start, end)#start.isoformat(), end.isoformat())
+        context['eventlist'] = events
+        return context
+
+class EventCreateView(CreateView):
+    model = Event
+    fields = '__all__'
+
+class EventUpdateView(UpdateView):
+    model = Event
+    fields = '__all__'
+
+class EventDeleteView(DeleteView):
+    model = Event
+    success_url = reverse_lazy('events')

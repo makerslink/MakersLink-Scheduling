@@ -1,0 +1,23 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Name: {{ event.name }}</h1>
+  <strong class="text-success"><a href="{% url 'event-update' pk=event.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'event-delete' pk=event.pk %}">Delete</a></strong>
+
+  <p><strong>Name:</strong> {{ event.name }}</p>
+  <p><strong>Description:</strong> {{ event.description }}</p>
+  <p><strong>Start:</strong> {{ event.start }}</p>
+  <p><strong>End:</strong> {{ event.end }}</p>
+  <p><strong>Repeat End:</strong> {{ event.repeat_end }}</p>
+  <p><strong>Rule:</strong><a href="{% url 'rule-detail' pk=event.rule.pk %}">{{ event.rule.name }}</a></p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Events from today and a month forward</h4>
+    <p>{{ eventlist }}</p>
+      {% for event in eventlist %}
+        <hr>
+        <p>{{ event }}</p>
+      {% endfor %}
+  </div>
+{% endblock %}
+

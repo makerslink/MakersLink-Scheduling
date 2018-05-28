@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from django.db import models
 from django.urls import reverse
 import uuid
@@ -154,12 +157,15 @@ class Event(models.Model):
         return event_list
 
     def get_events(self, from_date, until_date):
+        logger.warning("get_events called")
         # Get all actual EventInstances created from this Event
         event_instances = self.eventinstance_set.all()
+        logger.warning("event_instances is: %s", event_instances)
         # Create an EventReplacer object containing these EventInstances
         event_replacer = EventReplacer(event_instances)
         # Generate EventInstances that this Event can create between dates
         generated_events = self.get_event_list(from_date, until_date)
+        logger.warning("generated_events is: %s", generated_events)
         # Create list to hold a combination of generated and actual EventInstance
         final_eventlist = []
         # Go through all generated EventInstances

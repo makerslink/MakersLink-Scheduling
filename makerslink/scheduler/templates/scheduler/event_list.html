@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Event List</h1>
+    <a href="{% url 'event-create' %}">Create new</a>
+
+    {% if event_list %}
+    <ul>
+
+      {% for event in event_list %}
+      <li>
+        <a href="{{ event.get_absolute_url }}">{{ event.name }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+    {% else %}
+      <p>No Events have been created.</p>
+    {% endif %}
+{% endblock %}
+
+template-detail
