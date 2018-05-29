@@ -15,13 +15,23 @@
     <h4>Events from today and a month forward</h4>
     <table>
       <tr>
+        <th>Title</th>
+        <th>Host</th>
+        <th>Header</th>
+        <th>Body</th>
         <th>Start</th>
         <th>End</th>
+        <th>Status</th>
       </tr>
       {% for event in eventlist %}
         <tr>
+          <th>{{ event.event.booking_template.title }}</th>
+          <th>{{ event.host }}</th>
+          <th>{{ event.event.booking_template.header }}</th>
+          <th>{{ event.event.booking_template.body }}</th>
           <th>{{ event.start }}</th>
           <th>{{ event.end }}</th>
+          <th>{{ event.status }}</th>
         </tr>
         <p></p>
       {% endfor %}
