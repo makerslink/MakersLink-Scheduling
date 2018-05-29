@@ -5,9 +5,29 @@
 
 <h2>Dynamic content</h2>
 
-  <p>The scheduler has the following record counts:</p>
-  <ul>
-    <li><strong>EventInstances in need of hosts:</strong> {{ num_host_needed }}</li>
-  </ul>
+  <p>Current list of EventInstances for the next month:</p>
+  <table>
+      <tr>
+        <th>Title</th>
+        <th>Host</th>
+        <th>Header</th>
+        <th>Body</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Status</th>
+      </tr>
+      {% for event in event_list %}
+        <tr>
+          <th>{{ event.event.booking_template.title }}</th>
+          <th>{{ event.host }}</th>
+          <th>{{ event.event.booking_template.header }}</th>
+          <th>{{ event.event.booking_template.body }}</th>
+          <th>{{ event.start }}</th>
+          <th>{{ event.end }}</th>
+          <th>{{ event.status }}</th>
+        </tr>
+        <p></p>
+      {% endfor %}
+    </table>
 
 {% endblock %}

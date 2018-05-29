@@ -8,14 +8,21 @@ from django.urls import reverse_lazy
 
 # Create your views here.
 def index(request):
-    now = datetime.now().isoformat()
-    num_host_needed = EventInstance.objects.filter(status__lte=0, start__gte=now).count()
+    start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + relativedelta(months=+1)
+
+    event_objects= Event.objects.all()
+    event_list = []
+    for event in event_objects:
+        event_list+=event.get_events(start, end)
+
+    event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
 
     return render(
         request,
         'index.html',
         context={
-            'num_host_needed' :num_host_needed
+            'event_list' :event_list
         },
     )
 
