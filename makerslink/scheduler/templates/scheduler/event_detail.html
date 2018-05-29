@@ -13,11 +13,19 @@
 
   <div style="margin-left:20px;margin-top:20px">
     <h4>Events from today and a month forward</h4>
-    <p>{{ eventlist }}</p>
+    <table>
+      <tr>
+        <th>Start</th>
+        <th>End</th>
+      </tr>
       {% for event in eventlist %}
-        <hr>
-        <p>{{ event }}</p>
+        <tr>
+          <th>{{ event.start }}</th>
+          <th>{{ event.end }}</th>
+        </tr>
+        <p></p>
       {% endfor %}
+    </table>
   </div>
 {% endblock %}
 

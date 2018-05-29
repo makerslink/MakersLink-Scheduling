@@ -126,13 +126,21 @@ class Event(models.Model):
         return EventInstance(event=self, start=start, end=end, status=0)
 
     def get_event_list(self, from_date, until_date):
+        logger.warning("get_event_list called")
+        logger.warning("from: %s", from_date)
+        logger.warning("until: %s", until_date)
+        logger.warning("start: %s", self.start)
+        logger.warning("end: %s", self.end)
+
         # Create list of Events
         event_list = []
-        # Check if this Event is included in the range of dates return if it is not
-        if not (self.start >= from_date and self.start <= until_date):
+        # Check if this Event is meant to be started yet
+        if self.start > until_date:
+            logger.warning("Start parameter not within range")
             return event_list
         # If there is a rule for repetition
         if self.rule is not None:
+            logger.warning("Rule for repetition found")
             # Calculate the duration of events
             event_duration = self.end - self.start
 
@@ -152,6 +160,7 @@ class Event(models.Model):
                 event_list.append(self.create_eventinstance(startdate, startdate+event_duration))
         # If this is a single Event
         else:
+            logger.warning("No rule for repetition found, adding single event")
             event_list.append(self.create_eventinstance(self.start))
 
         return event_list

@@ -87,9 +87,9 @@ class EventDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-        end = start+relativedelta(month=+1)
+        end = start+relativedelta(months=+1)
         context = super(EventDetailView, self).get_context_data(**kwargs)
-        events = self.object.get_events(start, end)#start.isoformat(), end.isoformat())
+        events = self.object.get_events(start, end)
         context['eventlist'] = events
         return context
 
