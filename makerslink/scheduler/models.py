@@ -97,7 +97,7 @@ class Event(models.Model):
     # Fields
     name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this type of Event")
     description = models.CharField(max_length=300, help_text="Enter a description for this type of Event", null=True, blank=True)
-    booking_template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True, help_text="Select a template for how scheduled Events will look in the calendar.")
+    template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True, help_text="Select a template for how scheduled Events will look in the calendar.")
     start = models.DateTimeField(help_text="Start of event repetition and start time of events", db_index=True)
     end = models.DateTimeField(help_text="End time of events, must be after start", db_index=True)
     repeat_end = models.DateTimeField(help_text="Date to end repetition", null=True, blank=True)
