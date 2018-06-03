@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'scheduler.apps.SchedulerConfig',
+    'bootstrap4',
+    'bootstrap_datepicker_plus',
     #'djangobower',
 ]
 
@@ -128,6 +130,10 @@ STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     #'djangobower.finders.BowerFinder',
 ]
+
+BOOTSTRAP4 = {
+    'include_jquery': True,
+}
 
 #BOWER_COMPONENTS_ROOT = '//home/bobo/django-apps/makerslink/makerslink/components/'
 #BOWER_INSTALLED_APPS = (

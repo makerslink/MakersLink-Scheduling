@@ -2,6 +2,8 @@ cachetools==2.1.0
 certifi==2018.4.16
 chardet==3.0.4
 Django==2.0.5
+django-bootstrap-datepicker-plus==3.0.4
+django-bootstrap4==0.0.6
 google-api-python-client==1.6.7
 google-auth==1.4.1
 google-auth-httplib2==0.0.3

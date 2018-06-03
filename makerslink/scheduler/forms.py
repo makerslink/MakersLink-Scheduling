@@ -1,4 +1,6 @@
 from django import forms
+from django.forms import ModelForm
+from bootstrap_datepicker_plus import DateTimePickerInput
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
@@ -23,3 +25,13 @@ import datetime #for checking renewal date range.
 
 
 """
+
+class EventForm(ModelForm):
+    class Meta:
+        model = Event
+        fields = '__all__'
+        widgets = {
+            'start' :DateTimePickerInput(format='%Y-%m-%d %H:%M:%S', options={"sideBySide":True, "calendarWeeks":True,}),
+            'end' :DateTimePickerInput(format='%Y-%m-%d %H:%M:%S', options={"sideBySide":True, "calendarWeeks":True,}),
+            'repeat_end' :DateTimePickerInput(format='%Y-%m-%d', options={"calendarWeeks":True}),
+        }
