@@ -261,6 +261,26 @@ class EventInstance(models.Model):
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(default=0, choices=STATUS, help_text="Instance status")
+    
+    @property
+    def statusText(self):
+        return EventInstance.STATUS[self.status][1]
+    
+    @property
+    def title(self):
+        return self.event.template.title
+    
+    @property
+    def header(self):
+        return self.event.template.header
+    
+    @property
+    def body(self):
+        return self.event.template.body
+    
+    @property
+    def template(self):
+        return self.event.template
 
     # Metadata
     class Meta:

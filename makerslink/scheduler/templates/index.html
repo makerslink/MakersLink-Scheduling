@@ -18,13 +18,13 @@
       </tr>
       {% for event in event_list %}
         <tr>
-          <th>{{ event.event.booking_template.title }}</th>
+          <th>{{ event.title }}</th>
           <th>{{ event.host }}</th>
-          <th>{{ event.event.booking_template.header }}</th>
-          <th>{{ event.event.booking_template.body }}</th>
+          <th>{{ event.header }}</th>
+          <th>{{ event.body }}</th>
           <th>{{ event.start }}</th>
           <th>{{ event.end }}</th>
-          <th>{{ event.status }}</th>
+          <th>{{ event.statusText }}</th>
         </tr>
         <p></p>
       {% endfor %}
