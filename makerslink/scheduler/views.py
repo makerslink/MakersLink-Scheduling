@@ -1,6 +1,5 @@
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
-from .forms import EventForm
 from datetime import datetime, timezone
 from dateutil.relativedelta import *
 from django.views import generic
@@ -103,11 +102,11 @@ class EventDetailView(generic.DetailView):
 
 class EventCreateView(CreateView):
     model = Event
-    form_class = EventForm
+    fields = '__all__'
 
 class EventUpdateView(UpdateView):
     model = Event
-    form_class = EventForm
+    fields = '__all__'
 
 class EventDeleteView(DeleteView):
     model = Event
