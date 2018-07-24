@@ -37,3 +37,7 @@ urlpatterns += [
     path('event/<int:pk>/update', views.EventUpdateView.as_view(), name='event-update'),
     path('event/<int:pk>/delete', views.EventDeleteView.as_view(), name='event-delete'),
 ]
+
+urlpatterns += [
+path('test', views.TestView, name='test'),
+]

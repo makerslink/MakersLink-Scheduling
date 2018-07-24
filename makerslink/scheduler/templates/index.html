@@ -15,16 +15,18 @@
         <th>Start</th>
         <th>End</th>
         <th>Status</th>
+        <th>StatusCode</th>
       </tr>
       {% for event in event_list %}
         <tr>
-          <th>{{ event.title }}</th>
-          <th>{{ event.host }}</th>
-          <th>{{ event.header }}</th>
-          <th>{{ event.body }}</th>
-          <th>{{ event.start }}</th>
-          <th>{{ event.end }}</th>
-          <th>{{ event.statusText }}</th>
+          <td>{{ event.title }}</td>
+          <td>{{ event.host }}</td>
+          <td>{{ event.header }}</td>
+          <td>{{ event.body }}</td>
+          <td>{{ event.start }}</td>
+          <td>{{ event.end }}</td>
+          <td>{{ event.statusText }}</td>
+          <td>{{ event.status }}</td>
         </tr>
         <p></p>
       {% endfor %}
