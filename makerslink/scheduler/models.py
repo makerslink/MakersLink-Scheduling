@@ -167,7 +167,12 @@ class Event(models.Model):
 
         return event_list
 
-    def get_events(self, from_date, until_date):
+    """
+    Retrieves events between two dates
+    If replace=True it replaces generated events with actual objects from DB
+    If replace=False it removes generated events where there is an actual object in DB but does not replace it.
+    """
+    def get_events(self, from_date, until_date, replace=True):
         logger.warning("Event:get_events called")
         logger.warning("Event:get_events:from_date: %s", from_date)
         logger.warning("Event:get_events:until_date: %s", until_date)
@@ -186,7 +191,8 @@ class Event(models.Model):
         for event_instance in generated_events:
             # Check if a generated EventInstance coincides with an actual EventInstance and add it
             if event_replacer.has_eventinstance(event_instance):
-                final_eventlist.append(event_replacer.get_eventinstance(event_instance))
+                if replace:
+                    final_eventlist.append(event_replacer.get_eventinstance(event_instance))
             # If it doesn't, add the generated EventInstance
             else:
                 final_eventlist.append(event_instance)

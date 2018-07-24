@@ -1,6 +1,10 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
 from .forms import EventForm
+from django.forms import modelformset_factory
 from datetime import datetime, timezone
 from dateutil.relativedelta import *
 from django.views import generic
@@ -112,3 +116,28 @@ class EventUpdateView(UpdateView):
 class EventDeleteView(DeleteView):
     model = Event
     success_url = reverse_lazy('events')
+
+def TestView(request):
+    start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    end = start + relativedelta(months=+1)
+
+    event_objects = Event.objects.all()
+    event_list = []
+    for event in event_objects:
+        event_list += event.get_events(start, end, False)
+
+    event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
+    initial_values = [(event_instance.__dict__) for event_instance in event_list]
+
+    TestFormSet = modelformset_factory(EventInstance, exclude=(), extra=10)
+
+    if request.method == 'POST':
+        formset = TestFormSet(request.POST, initial=initial_values)
+        if formset.is_valid():
+            logger.warning("Form is valid")
+            # do something.
+    else:
+        formset = TestFormSet(initial=initial_values)
+
+    logger.warning(initial_values)
+    return render(request, 'test_form.html', {'formset': formset})
