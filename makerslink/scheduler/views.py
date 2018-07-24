@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
-from .forms import EventForm
+#from .forms import EventForm
 from django.forms import modelformset_factory
 from datetime import datetime, timezone
 from dateutil.relativedelta import *
@@ -107,11 +107,13 @@ class EventDetailView(generic.DetailView):
 
 class EventCreateView(CreateView):
     model = Event
-    form_class = EventForm
+    fields = '__all__'
+    #form_class = EventForm
 
 class EventUpdateView(UpdateView):
     model = Event
-    form_class = EventForm
+    fields = '__all__'
+    #form_class = EventForm
 
 class EventDeleteView(DeleteView):
     model = Event
