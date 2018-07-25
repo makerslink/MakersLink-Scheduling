@@ -192,13 +192,18 @@ class Event(models.Model):
             # Check if a generated EventInstance coincides with an actual EventInstance and add it
             if event_replacer.has_eventinstance(event_instance):
                 if replace:
+                    logger.warning("Replacing with real event")
                     final_eventlist.append(event_replacer.get_eventinstance(event_instance))
+                else:
+                    logger.warning("Skipping event since replace=False")
             # If it doesn't, add the generated EventInstance
             else:
+                logger.warning("Adding generated event with id:"+str(event_instance.id))
                 final_eventlist.append(event_instance)
 
-        # Finally we add the straggling EventInstances that coincides with these dates
-        final_eventlist += event_replacer.get_straggling_eventinstances(from_date, until_date)
+        # Finally we add the straggling EventInstances that coincides with these dates unless replace is false in which case we only want generated events
+        if replace:
+            final_eventlist += event_replacer.get_straggling_eventinstances(from_date, until_date)
         # Return list
         return final_eventlist
 
@@ -307,7 +312,7 @@ class EventInstance(models.Model):
         if self.id == None:
             return {
             'google_calendar_booking_id': self.google_calendar_booking_id,
-            'host': self.host,
+            'host': str(self.host),
             'event': self.event.id,
             'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
             'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
@@ -317,7 +322,7 @@ class EventInstance(models.Model):
             return {
                 'id': str(self.id),
                 'google_calendar_booking_id': self.google_calendar_booking_id,
-                'host': self.host,
+                'host': str(self.host),
                 'event': self.event.id,
                 'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),

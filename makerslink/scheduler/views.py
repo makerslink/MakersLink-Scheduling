@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
-#from .forms import EventForm
+from .forms import EventInstanceFormSet
 from django.forms import modelformset_factory
 from datetime import datetime, timezone
 from dateutil.relativedelta import *
@@ -130,30 +130,26 @@ def TestView(request):
 
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
-    initial_values2 = [{
-            'id': None,
-            'google_calendar_booking_id': None,
-            'host': "",
-            'event': 1,
-            'start': '2018-07-30 13:00:00',
-            'end': '2018-07-30 17:00:00',
-            'status': 0
-        },
-        {'start': '2018-07-30 13:00:00', 'end': '2018-07-30 17:00:00', 'event': 1, 'status': 0}, {'start': '2018-07-31 13:00:00', 'end': '2018-07-31 17:00:00', 'event': 1, 'status': 0}]
+    for test in event_list:
+        logger.warning(test.id)
 
     TestFormSet = modelformset_factory(EventInstance, exclude=(), extra=len(initial_values))
+    #TestFormSet = modelformset_factory(EventInstance, formset=EventInstanceFormSet, exclude=(), extra=0)
 
     if request.method == 'POST':
         formset = TestFormSet(request.POST, initial=initial_values)
         if formset.is_valid():
             logger.warning("Form is valid")
-            # do something.
+            for form in formset:
+                logger.warning(form.has_changed())
         else:
             logger.warning("Form is invalid")
             for form in formset:
-                logger.warning(form.errors)
+                if any(form.errors):
+                    logger.warning(form.errors)
+                    logger.warning(form.cleaned_data)
     else:
         formset = TestFormSet(initial=initial_values)
 
-    logger.warning(initial_values)
+    #logger.warning(initial_values)
     return render(request, 'test_form.html', {'formset': formset})
