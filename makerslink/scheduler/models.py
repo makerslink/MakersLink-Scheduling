@@ -314,8 +314,8 @@ class EventInstance(models.Model):
             'google_calendar_booking_id': self.google_calendar_booking_id,
             'host': str(self.host),
             'event': self.event.id,
-            'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
-            'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
+            'start': self.start,
+            'end': self.end,
             'status': self.status
         }
         else:

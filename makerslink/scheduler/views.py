@@ -130,79 +130,11 @@ def TestView(request):
 
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
-    initial_values2 = [{'host': "Test"},{'host': "Test"}]
-    initial_values3 = [
-        {
-            'google_calendar_booking_id': None,
-            'host': 'None',
-            'event': 1,
-            'start': '2018-07-30 11:00:00',
-            'end': '2018-07-30 14:00:00',
-            'status': 0
-        }, 
-        {
-            'google_calendar_booking_id': None,
-            'host': 'None',
-            'event': 2,
-            'start': '2018-07-31 07:00:00',
-            'end': '2018-07-31 10:00:00',
-            'status': 0
-        }, 
-        {
-            'google_calendar_booking_id': None,
-             'host': 'None',
-             'event': 1,
-             'start': '2018-08-06 11:00:00',
-             'end': '2018-08-06 14:00:00',
-             'status': 0
-         }, 
-        {
-            'google_calendar_booking_id': None,
-             'host': 'None',
-             'event': 2,
-             'start': '2018-08-07 07:00:00',
-             'end': '2018-08-07 10:00:00',
-             'status': 0
-        },
-        {
-            'google_calendar_booking_id': None,
-             'host': 'None',
-             'event': 1,
-             'start': '2018-08-13 11:00:00',
-             'end': '2018-08-13 14:00:00',
-             'status': 0
-        },
-        {
-            'google_calendar_booking_id': None,
-             'host': 'None',
-             'event': 2,
-             'start': '2018-08-14 07:00:00',
-             'end': '2018-08-14 10:00:00',
-             'status': 0
-        },
-        {
-            'google_calendar_booking_id': None,
-             'host': 'None',
-             'event': 1,
-             'start': '2018-08-20 11:00:00',
-             'end': '2018-08-20 14:00:00',
-             'status': 0
-        },
-        {
-            'google_calendar_booking_id': None,
-             'host': 'None',
-             'event': 2,
-             'start': '2018-08-21 07:00:00',
-             'end': '2018-08-21 10:00:00',
-             'status': 0
-        }
-    ]
 
-
-    TestFormSet = modelformset_factory(EventInstance, formset=EventInstanceFormSet, exclude=(), extra=len(initial_values2))
+    TestFormSet = modelformset_factory(EventInstance, formset=EventInstanceFormSet, exclude=(), extra=len(initial_values))
 
     if request.method == 'POST':
-        formset = TestFormSet(request.POST, initial=initial_values2)
+        formset = TestFormSet(request.POST, initial=initial_values)
         if formset.is_valid():
             logger.warning("Form is valid")
 
@@ -217,7 +149,7 @@ def TestView(request):
                     logger.warning(form.errors)
                     logger.warning(form.cleaned_data)
     else:
-        formset = TestFormSet(initial=initial_values2)
+        formset = TestFormSet(initial=initial_values)
 
-    logger.warning(initial_values)
+    #logger.warning(initial_values)
     return render(request, 'test_form.html', {'formset': formset})
