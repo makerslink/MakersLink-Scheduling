@@ -129,15 +129,29 @@ def TestView(request):
         event_list += event.get_events(start, end, False)
 
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
-    initial_values = [(event_instance.__dict__) for event_instance in event_list]
+    initial_values = [(event_instance.as_dict()) for event_instance in event_list]
+    initial_values2 = [{
+            'id': None,
+            'google_calendar_booking_id': None,
+            'host': "",
+            'event': 1,
+            'start': '2018-07-30 13:00:00',
+            'end': '2018-07-30 17:00:00',
+            'status': 0
+        },
+        {'start': '2018-07-30 13:00:00', 'end': '2018-07-30 17:00:00', 'event': 1, 'status': 0}, {'start': '2018-07-31 13:00:00', 'end': '2018-07-31 17:00:00', 'event': 1, 'status': 0}]
 
-    TestFormSet = modelformset_factory(EventInstance, exclude=(), extra=10)
+    TestFormSet = modelformset_factory(EventInstance, exclude=(), extra=len(initial_values))
 
     if request.method == 'POST':
         formset = TestFormSet(request.POST, initial=initial_values)
         if formset.is_valid():
             logger.warning("Form is valid")
             # do something.
+        else:
+            logger.warning("Form is invalid")
+            for form in formset:
+                logger.warning(form.errors)
     else:
         formset = TestFormSet(initial=initial_values)
 

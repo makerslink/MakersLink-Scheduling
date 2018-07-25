@@ -123,7 +123,7 @@ class Event(models.Model):
     def create_eventinstance(self, start, end=None):
         if end is None:
             end = start + (self.end - self.start)
-        return EventInstance(event=self, start=start, end=end, status=0)
+        return EventInstance(id=None, event=self, start=start, end=end, status=0)
 
     def get_event_list(self, from_date, until_date):
         logger.warning("Event:get_event_list called")
@@ -302,6 +302,27 @@ class EventInstance(models.Model):
     def display_host(self):
         return ''.join([self.host])
     display_host.short_description = "Host"
+
+    def as_dict(self):
+        if self.id == None:
+            return {
+            'google_calendar_booking_id': self.google_calendar_booking_id,
+            'host': self.host,
+            'event': self.event.id,
+            'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
+            'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
+            'status': self.status
+        }
+        else:
+            return {
+                'id': str(self.id),
+                'google_calendar_booking_id': self.google_calendar_booking_id,
+                'host': self.host,
+                'event': self.event.id,
+                'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
+                'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
+                'status': self.status
+            }
 
 class SchedulingRule(models.Model):
     #Data
