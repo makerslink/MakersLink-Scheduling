@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import BaseModelFormSet, BaseFormSet
+from django.forms import BaseModelFormSet, BaseFormSet, ModelForm, Textarea
 from bootstrap_datepicker_plus import DateTimePickerInput
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance
 from django.core.exceptions import ValidationError
@@ -29,3 +29,17 @@ class EventInstanceFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
         form.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
+        #form.fields["show_status"] = forms.Textarea(disabled=True, label="Status", initial=form.fields['status'])
+
+class EventInstanceForm(ModelForm):
+    class Meta:
+        model = EventInstance
+        fields = ('start', 'end', 'status')
+        widgets = {
+            'status': forms.TextInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(EventInstanceForm, self).__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs['readonly'] = True

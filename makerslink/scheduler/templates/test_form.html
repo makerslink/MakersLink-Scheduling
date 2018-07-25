@@ -9,13 +9,16 @@
 <table id="formset" class="form">
 {% for form in formset.forms %}
   {% if forloop.first %}
-  <thead><tr>
+  <thead>
+  <tr>
+    <th>Title</th>
     {% for field in form.visible_fields %}
     <th>{{ field.label|capfirst }}</th>
     {% endfor %}
   </tr></thead>
   {% endif %}
   <tr>
+    <td>{{ form.instance.event.template.title }}</td>
   {% for field in form.visible_fields %}
     <td>
     {# Include the hidden fields in the form #}
