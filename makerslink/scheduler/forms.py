@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelForm, BaseFormSet
+from django.forms import BaseModelFormSet, BaseFormSet
 from bootstrap_datepicker_plus import DateTimePickerInput
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance
 from django.core.exceptions import ValidationError
@@ -25,7 +25,7 @@ import datetime #for checking renewal date range.
 
 
 """
-class EventInstanceFormSet(BaseFormSet):
+class EventInstanceFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
         form.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)

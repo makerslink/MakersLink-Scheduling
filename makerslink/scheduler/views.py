@@ -130,18 +130,19 @@ def TestView(request):
 
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
-    for test in event_list:
-        logger.warning(test.id)
+    initial_values2 = [{'host': "Test"}]
 
-    TestFormSet = modelformset_factory(EventInstance, exclude=(), extra=len(initial_values))
-    #TestFormSet = modelformset_factory(EventInstance, formset=EventInstanceFormSet, exclude=(), extra=0)
+    TestFormSet = modelformset_factory(EventInstance, formset=EventInstanceFormSet, exclude=(), extra=len(initial_values2))
 
     if request.method == 'POST':
-        formset = TestFormSet(request.POST, initial=initial_values)
+        formset = TestFormSet(request.POST, initial=initial_values2)
         if formset.is_valid():
             logger.warning("Form is valid")
+
             for form in formset:
                 logger.warning(form.has_changed())
+                if form.cleaned_data.get('perform_action'):
+                    logger.warning(form.cleaned_data.get('id'))
         else:
             logger.warning("Form is invalid")
             for form in formset:
@@ -149,7 +150,7 @@ def TestView(request):
                     logger.warning(form.errors)
                     logger.warning(form.cleaned_data)
     else:
-        formset = TestFormSet(initial=initial_values)
+        formset = TestFormSet(initial=initial_values2)
 
-    #logger.warning(initial_values)
+    logger.warning(initial_values2)
     return render(request, 'test_form.html', {'formset': formset})
