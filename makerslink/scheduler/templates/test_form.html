@@ -45,9 +45,9 @@
             </tr></thead>
             {% for form in formset.forms %}
                 <tr>
-                    <td>{{ form.instance.event.template.title }}</td>
-                    <td>{{ form.initial.start }}</td>
-                    <td>{{ form.initial.end }}</td>
+                    <td>{{ form.title.value }}</td>
+                    <td>{{ form.initial.start|date:"Y-m-d H:i" }}</td>
+                    <td>{{ form.initial.end|date:"Y-m-d H:i" }}</td>
                     <td class="eventstatus{{ form.initial.status }}"></td>
                     {% for field in form.visible_fields %}
                         <td>
