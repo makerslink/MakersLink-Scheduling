@@ -26,13 +26,26 @@
     .eventstatus2{
         color: red;
     }
+    tr.row-uneven{
+        background: #EDEDED;
+    }
+    tr.row-even{
+        background: #DCDCDC;
+    }
+    td, th{
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    th{
+        background: #4CAF50;
+        color: white
+    }
 </style>
 {% endblock %}
 
 {% block content %}
     <form method="post">
         {% csrf_token %}
-        <input type="submit" value="Submit" />
         {{ formset.management_form }}
         {{ formset.non_form_errors.as_ul }}
         <table id="formset" class="form">
@@ -44,7 +57,7 @@
                 <th>Take/Untake</th>
             </tr></thead>
             {% for form in formset.forms %}
-                <tr>
+                <tr class="{% cycle 'row-uneven' 'row-even' %}">
                     <td>{{ form.title.value }}</td>
                     <td>{{ form.initial.start|date:"Y-m-d H:i" }}</td>
                     <td>{{ form.initial.end|date:"Y-m-d H:i" }}</td>
@@ -64,5 +77,6 @@
                 </tr>
             {% endfor %}
         </table>
+        <input type="submit" value="Submit" />
     </form>
 {% endblock content %}
