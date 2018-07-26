@@ -1,38 +1,68 @@
 {% extends "base_form.html" %}
 
+{% block css %}
+<style>
+    .eventstatus-1:before{
+        content: "Reschedule needed";
+    }
+    .eventstatus-1{
+        color: yellow;
+    }
+    .eventstatus0:before{
+        content: "Unscheduled";
+    }
+    .eventstatus0{
+        color: blue;
+    }
+    .eventstatus1:before{
+        content: "Scheduled";
+    }
+    .eventstatus1{
+        color: green;
+    }
+    .eventstatus2:before{
+        content: "Cancelled";
+    }
+    .eventstatus2{
+        color: red;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
     <form method="post">
         {% csrf_token %}
         <input type="submit" value="Submit" />
-{{ formset.management_form }}
-{{ formset.non_form_errors.as_ul }}
-<table id="formset" class="form">
-{% for form in formset.forms %}
-  {% if forloop.first %}
-  <thead>
-  <tr>
-    <th>Title</th>
-    {% for field in form.visible_fields %}
-    <th>{{ field.label|capfirst }}</th>
-    {% endfor %}
-  </tr></thead>
-  {% endif %}
-  <tr>
-    <td>{{ form.instance.event.template.title }}</td>
-  {% for field in form.visible_fields %}
-    <td>
-    {# Include the hidden fields in the form #}
-    {% if forloop.first %}
-      {% for hidden in form.hidden_fields %}
-      {{ hidden }}
-      {% endfor %}
-    {% endif %}
-      {{ field.errors.as_ul }}
-      {{ field }}
-    </td>
-  {% endfor %}
-  </tr>
-{% endfor %}
-</table>
-</form>
+        {{ formset.management_form }}
+        {{ formset.non_form_errors.as_ul }}
+        <table id="formset" class="form">
+            <thead><tr>
+                <th>Title</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+                <th>Take/Untake</th>
+            </tr></thead>
+            {% for form in formset.forms %}
+                <tr>
+                    <td>{{ form.instance.event.template.title }}</td>
+                    <td>{{ form.initial.start }}</td>
+                    <td>{{ form.initial.end }}</td>
+                    <td class="eventstatus{{ form.initial.status }}"></td>
+                    {% for field in form.visible_fields %}
+                        <td>
+                            {# Include the hidden fields in the form #}
+                            {% if forloop.first %}
+                                {% for hidden in form.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+                            {% endif %}
+                            {{ field.errors.as_ul }}
+                            {{ field }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </form>
 {% endblock content %}

@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from django import forms
 from django.forms import BaseModelFormSet, BaseFormSet, ModelForm, Textarea
 from bootstrap_datepicker_plus import DateTimePickerInput
@@ -28,18 +31,23 @@ import datetime #for checking renewal date range.
 class EventInstanceFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
-        form.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
-        #form.fields["show_status"] = forms.Textarea(disabled=True, label="Status", initial=form.fields['status'])
+        """
+        if form.fields["status"] == 1:
+            form.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=True)
+        else:
+            form.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
+            """
 
 class EventInstanceForm(ModelForm):
     class Meta:
         model = EventInstance
         fields = ('start', 'end', 'status')
-        widgets = {
-            'status': forms.TextInput(),
-        }
 
     def __init__(self, *args, **kwargs):
         super(EventInstanceForm, self).__init__(*args, **kwargs)
         for field in self.fields:
-            self.fields[field].widget.attrs['readonly'] = True
+            self.fields[field].widget = forms.HiddenInput()
+        if self.initial["status"] == 1:
+            self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=True)
+        else:
+            self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
