@@ -120,6 +120,8 @@ USE_TZ = True
 
 AUTH_USER_MODEL = "scheduler.User"
 
+LOGIN_URL = "/scheduler/login/"
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Static files (CSS, JavaScript, Images)

@@ -44,6 +44,8 @@ urlpatterns += [
 # User urls
 
 urlpatterns += [
+    url(r'^login/$', django.contrib.auth.views.login, {'template_name': 'registration/login.html'}, name='login',),
+    url(r'^logout/$', django.contrib.auth.views.logout, {'template_name': 'registration/logged_out.html'}, name='logout',),
     url(r'^register/$', RegistrationView.as_view(), name='register'),
     url(r'^register/done/$', django.contrib.auth.views.password_reset_done, {
         'template_name': 'registration/initial_done.html',
