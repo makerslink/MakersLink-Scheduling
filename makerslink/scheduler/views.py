@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
 from .models import User, EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
-from .forms import EventInstanceFormSet, RegistrationForm
+from .forms import EventInstanceFormSet, EventInstanceForm, RegistrationForm
 from django.forms import modelformset_factory
 from datetime import datetime, timezone
 from dateutil.relativedelta import *
@@ -133,13 +133,13 @@ def TestView(request):
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
 
-    TestFormSet = modelformset_factory(EventInstance, formset=EventInstanceFormSet, exclude=(), extra=len(initial_values))
+    TestFormSet = modelformset_factory(EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
 
     if request.method == 'POST':
         formset = TestFormSet(request.POST, initial=initial_values)
         if formset.is_valid():
             logger.warning("Form is valid")
-
+            #formset.save()
             for form in formset:
                 logger.warning(form.has_changed())
                 if form.cleaned_data.get('perform_action'):
