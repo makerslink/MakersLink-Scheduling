@@ -12,6 +12,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.forms import PasswordResetForm
 from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 
 # Create your views here.
 def index(request):
