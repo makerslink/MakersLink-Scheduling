@@ -22,6 +22,7 @@ urlpatterns = [
 
 urlpatterns += [
     path('scheduler/', include('scheduler.urls')),
+    path('accounts/', include('accounts.urls')),
 ]
 
 #Add URL maps to redirect the base URL to our application

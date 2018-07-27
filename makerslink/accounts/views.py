@@ -4,7 +4,6 @@ logger = logging.getLogger(__name__)
 from django.shortcuts import render
 from .models import User
 from .forms import RegistrationForm
-from .views import RegistrationView
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.forms import PasswordResetForm
