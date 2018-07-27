@@ -49,13 +49,14 @@ class EventInstanceForm(ModelForm):
         for field in self.fields:
             self.fields[field].widget = forms.HiddenInput()
 
-        title = Event.objects.get(pk=self.initial["event"]).template.title
+        if 'event' in self.initial:
+            title = Event.objects.get(pk=self.initial["event"]).template.title
+        else:
+            title = "N/A"
         self.fields["title"] = forms.CharField(required=False, initial=title, widget=forms.HiddenInput())
 
-        if self.initial["status"] == 1:
-            self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=True)
-        else:
-            self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
-
-        logger.warning('start')
-        logger.warning(self.__dict__)
+        if 'status' in self.initial:
+            if self.initial["status"] == 1:
+                self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=True)
+            else:
+                self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
