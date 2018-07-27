@@ -2,3 +2,4 @@ makerslink/components/*
 *.pyc
 static/*
 virtenv/*
+.idea
