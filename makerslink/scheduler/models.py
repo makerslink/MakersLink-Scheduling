@@ -1,6 +1,8 @@
 import logging
 logger = logging.getLogger(__name__)
 
+from .managers import UserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.urls import reverse
 import uuid
@@ -9,6 +11,8 @@ from django.conf import settings
 import datetime
 from google.oauth2 import service_account
 from dateutil.rrule import *
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 # New Filesystem
 client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
@@ -432,3 +436,25 @@ class SchedulingRule(models.Model):
         logger.warning("params: %s", params)
         events = rrule(frequency, dtstart=dtstart, until=until, **params)
         return events
+
+class User(AbstractBaseUser, PermissionsMixin):
+    USERNAME_FIELD = 'email'
+    
+    objects = UserManager()
+
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_registration_complete = models.BooleanField(default=False)
+
+    def get_full_name(self):
+        return self.email
+    def get_short_name(self):
+        return self.email
+    
+@receiver(pre_save, sender=User)
+def finish_registration(sender, **kwargs):
+    if not sender.is_registration_complete:
+        sender.is_active = False
+        sender.is_registration_complete = True
+        
