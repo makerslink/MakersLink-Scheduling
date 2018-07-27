@@ -139,11 +139,29 @@ def TestView(request):
         formset = TestFormSet(request.POST, initial=initial_values)
         if formset.is_valid():
             logger.warning("Form is valid")
-            #formset.save()
             for form in formset:
-                logger.warning(form.has_changed())
-                if form.cleaned_data.get('perform_action'):
-                    logger.warning(form.cleaned_data.get('id'))
+                if form.has_changed():
+                    temp_obj = form.save(commit=False)
+
+                    #Fix status codes
+                    #If someone takes an EventInstance in need of rescheduling
+                    if temp_obj.status == -1:
+                        temp_obj.status = 1
+                    #If someone takes an EventInstance that is unscheduled
+                    elif temp_obj.status == 0:
+                        temp_obj.status = 1
+                    #If someone untakes an EventInstance that is scheduled
+                    elif temp_obj.status == 1:
+                        temp_obj.status = -1
+
+                    #Fix host:
+                    if request.user.is_authenticated:
+                        temp_obj.host = request.user.username
+                    else:
+                        temp_obj.host = "N/A"
+                    logger.warning(temp_obj.__dict__)
+                    temp_obj.save()
+                    return HttpResponseRedirect('')
         else:
             logger.warning("Form is invalid")
             for form in formset:
@@ -153,7 +171,6 @@ def TestView(request):
     else:
         formset = TestFormSet(initial=initial_values)
 
-    #logger.warning(initial_values)
     return render(request, 'test_form.html', {'formset': formset})
 
 class RegistrationView(CreateView):
