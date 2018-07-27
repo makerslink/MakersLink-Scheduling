@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 from django import forms
 from django.forms import BaseModelFormSet, BaseFormSet, ModelForm, Textarea
 from bootstrap_datepicker_plus import DateTimePickerInput
-from .models import User, EventTemplate, SchedulingCalendar, Event, EventInstance
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 import datetime #for checking renewal date range.
@@ -31,12 +31,6 @@ import datetime #for checking renewal date range.
 class EventInstanceFormSet(BaseModelFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
-
-class RegistrationForm(forms.ModelForm):
-
-    class Meta:
-        model = User
-        fields = ['email', ]
 
 class EventInstanceForm(ModelForm):
 

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'scheduler.apps.SchedulerConfig',
+    'accounts.apps.AccountsConfig',
     'bootstrap4',
     'bootstrap_datepicker_plus',
     #'djangobower',
@@ -118,9 +119,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = "scheduler.User"
-
-LOGIN_URL = "/scheduler/login/"
+AUTH_USER_MODEL = "accounts.User"
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
