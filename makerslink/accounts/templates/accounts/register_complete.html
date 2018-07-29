@@ -1,20 +1,12 @@
 {% extends "base_generic.html" %}
-{% load i18n %}
-
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo; {% trans 'Password reset' %}
-</div>
-{% endblock %}
-
-{% block title %}{{ title }}{% endblock %}
-{% block content_title %}<h1>{{ title }}</h1>{% endblock %}
 
 {% block content %}
 
-<p>{% trans "Your password has been set.  You may go ahead and log in now." %}</p>
+<h1>Password set</h1>
 
-<p><a href="{{ login_url }}">{% trans 'Log in' %}</a></p>
+<p>Your password has been set.  You may go ahead and log in now.</p>
+
+
+    <a href="{% url 'login' %}"><button type="button" class="btn  btn-primary">Log in</button></a>
 
 {% endblock %}

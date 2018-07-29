@@ -16,9 +16,9 @@ urlpatterns = [
         {'template_name': 'accounts/register_done.html',}, name='register-done'),
     re_path(r'^register/password/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', 
         django.contrib.auth.views.password_reset_confirm,{
-            'template_name': 'accounts/register_confirm.html',
+            'template_name': 'accounts/register_set_password.html',
             'post_reset_redirect': 'register-complete',
-        }, name='register-confirm'),
+        }, name='password_set_confirm'),
     path('register/complete/', django.contrib.auth.views.password_reset_complete, {
         'template_name': 'accounts/register_complete.html',
     }, name='register-complete'),

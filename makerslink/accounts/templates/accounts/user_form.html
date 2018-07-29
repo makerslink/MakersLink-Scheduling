@@ -1,6 +1,9 @@
 {% extends "base_form.html" %}
 
 {% block content %}
+
+<h1>User registration</h1>
+
 {{ form.errors }}
 {{ form.non_field_errors }}
 
@@ -9,7 +12,9 @@
     <table>
     {{ form.as_table }}
     </table>
-    <input type="submit" value="Submit" />
-    <a href="{% url 'templates' %}"><input type="button" value="Cancel"/></a>
+    
+    <button type="submit" class="btn  btn-primary">Submit</button>
+    <a href="{% url 'templates' %}"><button type="button" class="btn btn-danger">Cancel</button></a>
+
 </form>
 {% endblock %}
