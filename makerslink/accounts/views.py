@@ -27,8 +27,8 @@ class RegistrationView(CreateView):
         # Copied from django/contrib/auth/views.py : password_reset
         opts = {
             'use_https': self.request.is_secure(),
-            'email_template_name': 'registration/password_reset_email.html',
-            'subject_template_name': 'registration/verification_subject.txt',
+            'email_template_name': 'accounts/password_reset_email.html',
+            'subject_template_name': 'accounts/verification_subject.txt',
             'request': self.request,
             # 'html_email_template_name': provide an HTML content template if you desire.
         }
