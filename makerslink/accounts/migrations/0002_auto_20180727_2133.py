@@ -6,6 +6,7 @@ from ..models import User
 def create_testusers(apps, schema_editor):
     superuser = User()
     superuser.is_active = True
+    superuser.is_registration_complete = True
     superuser.is_superuser = True
     superuser.is_staff = True
     superuser.email = "admin"
@@ -14,6 +15,7 @@ def create_testusers(apps, schema_editor):
 
     user1 = User()
     user1.is_active = True
+    user1.is_registration_complete = True
     user1.is_superuser = False
     user1.is_staff = False
     user1.email = "user1"
@@ -22,6 +24,7 @@ def create_testusers(apps, schema_editor):
 
     user2 = User()
     user2.is_active = True
+    user2.is_registration_complete = True
     user2.is_superuser = False
     user2.is_staff = False
     user2.email = "user2"
