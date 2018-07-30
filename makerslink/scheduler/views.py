@@ -15,6 +15,7 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 
 # Create your views here.
 @login_required
@@ -126,9 +127,9 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('events')
 
 @login_required
-def TestView(request):
+def EventSignupView(request):
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    end = start + relativedelta(months=+1)
+    end = start + relativedelta(months=+3)
 
     event_objects = Event.objects.all()
     event_list = []
@@ -138,12 +139,12 @@ def TestView(request):
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
 
-    TestFormSet = modelformset_factory(EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
+    eventinstanceFormSet = modelformset_factory(EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
 
     if request.method == 'POST':
         taken_events = ""
         logger.warning('form is submitted as POST')
-        formset = TestFormSet(request.POST, initial=initial_values)
+        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
         logger.warning('starting looping of forms')
         for form in formset:
             if form.is_valid() and form.has_changed():
@@ -208,7 +209,7 @@ def TestView(request):
         return HttpResponseRedirect('')
     else:
         logger.warning('view is GET')
-        formset = TestFormSet(initial=initial_values)
+        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
     logger.warning('rendering')
-    return render(request, 'test_form.html', {'formset': formset})
+    return render(request, 'eventinstance_host_form.html', {'formset': formset})
 

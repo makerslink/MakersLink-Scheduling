@@ -5,7 +5,8 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    #path('', views.index, name='index'),
+    path('', views.EventSignupView, name='index'),
 ]
 
 urlpatterns += [
@@ -41,5 +42,5 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-path('test', views.TestView, name='test'),
+path('signup', views.EventSignupView, name='host-signup'),
 ]

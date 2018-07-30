@@ -29,6 +29,9 @@ import datetime #for checking renewal date range.
 
 """
 class EventInstanceFormSet(BaseModelFormSet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def add_fields(self, form, index):
         super().add_fields(form, index)
 
