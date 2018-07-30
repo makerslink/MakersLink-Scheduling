@@ -45,6 +45,15 @@
 
 {% block content %}
 
+
+{% for message in messages %}
+    {% if 'safe' in message.tags %}
+        {{ message|safe }}
+    {% else %}
+        { message }}
+    {% endif %}
+{% endfor %}
+
 {% if taken_events %}
 <b>The following events were not taken due to already being owned by someone else:</b></<br>
 <table>

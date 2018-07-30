@@ -126,21 +126,21 @@ class Event(models.Model):
         return EventInstance(id=None, event=self, start=start, end=end, status=0)
 
     def get_event_list(self, from_date, until_date):
-        logger.warning("Event:get_event_list called")
-        logger.warning("Event:get_event_list:from_date: %s", from_date)
-        logger.warning("Event:get_event_list:until_date: %s", until_date)
-        logger.warning("Event:get_event_list:self.start: %s", self.start.tzinfo)
-        logger.warning("Event:get_event_list:self.end: %s", self.end)
+        # logger.warning("Event:get_event_list called")
+        # logger.warning("Event:get_event_list:from_date: %s", from_date)
+        # logger.warning("Event:get_event_list:until_date: %s", until_date)
+        # logger.warning("Event:get_event_list:self.start: %s", self.start.tzinfo)
+        # logger.warning("Event:get_event_list:self.end: %s", self.end)
 
         # Create list of Events
         event_list = []
         # Check if this Event is meant to be started yet
         if self.start > until_date:
-            logger.warning("Event:get_event_list:Start parameter not within range")
+            # logger.warning("Event:get_event_list:Start parameter not within range")
             return event_list
         # If there is a rule for repetition
         if self.rule is not None:
-            logger.warning("Event:get_event_list:Rule for repetition found")
+            # logger.warning("Event:get_event_list:Rule for repetition found")
             # Calculate the duration of events
             event_duration = self.end - self.start
 
@@ -154,15 +154,15 @@ class Event(models.Model):
             # Check if there is a date set to stop generating events, use that instead of given date if it is before given date
             if self.repeat_end and self.repeat_end < until_date:
                 until_date = self.repeat_end
-            logger.warning("Event:get_event_list:from_date: %s", from_date)
-            logger.warning("Event:get_event_list:until_date: %s", until_date)
+            # logger.warning("Event:get_event_list:from_date: %s", from_date)
+            # logger.warning("Event:get_event_list:until_date: %s", until_date)
             start_list = self.rule.get_events(from_date, until_date)
 
             for startdate in start_list:
                 event_list.append(self.create_eventinstance(startdate, startdate+event_duration))
         # If this is a single Event
         else:
-            logger.warning("Event:get_event_list:No rule for repetition found, adding single event")
+            # logger.warning("Event:get_event_list:No rule for repetition found, adding single event")
             event_list.append(self.create_eventinstance(self.start))
 
         return event_list
@@ -173,18 +173,18 @@ class Event(models.Model):
     If replace=False it removes generated events where there is an actual object in DB but does not replace it.
     """
     def get_events(self, from_date, until_date, replace=True):
-        logger.warning("Event:get_events called")
-        logger.warning("Event:get_events:from_date: %s", from_date)
-        logger.warning("Event:get_events:until_date: %s", until_date)
+        # logger.warning("Event:get_events called")
+        # logger.warning("Event:get_events:from_date: %s", from_date)
+        # logger.warning("Event:get_events:until_date: %s", until_date)
 
         # Get all actual EventInstances created from this Event
         event_instances = self.eventinstance_set.all()
-        #logger.warning("event_instances is: %s", event_instances)
+        ## logger.warning("event_instances is: %s", event_instances)
         # Create an EventReplacer object containing these EventInstances
         event_replacer = EventReplacer(event_instances)
         # Generate EventInstances that this Event can create between dates
         generated_events = self.get_event_list(from_date, until_date)
-        #logger.warning("generated_events is: %s", generated_events)
+        ## logger.warning("generated_events is: %s", generated_events)
         # Create list to hold a combination of generated and actual EventInstance
         final_eventlist = []
         # Go through all generated EventInstances
@@ -192,13 +192,13 @@ class Event(models.Model):
             # Check if a generated EventInstance coincides with an actual EventInstance and add it
             if event_replacer.has_eventinstance(event_instance):
                 if replace:
-                    logger.warning("Replacing with real event")
+                    # logger.warning("Replacing with real event")
                     final_eventlist.append(event_replacer.get_eventinstance(event_instance))
-                else:
-                    logger.warning("Skipping event since replace=False")
+                #else:
+                    # logger.warning("Skipping event since replace=False")
             # If it doesn't, add the generated EventInstance
             else:
-                logger.warning("Adding generated event with id:"+str(event_instance.id))
+                # logger.warning("Adding generated event with id:"+str(event_instance.id))
                 final_eventlist.append(event_instance)
 
         # Finally we add the straggling EventInstances that coincides with these dates unless replace is false in which case we only want generated events
@@ -330,6 +330,15 @@ class EventInstance(models.Model):
                 'status': self.status
             }
 
+    def can_take(self, user):
+        logger.warning('request user:'+user)
+        logger.warning('current host:' + self.host)
+        logger.warning('current status:' + str(self.status))
+        if self.status > 0:
+            return self.host == user
+        else:
+            return True
+
 class SchedulingRule(models.Model):
     #Data
     freqs = (
@@ -419,9 +428,9 @@ class SchedulingRule(models.Model):
         return dict(param_dict)
 
     def get_events(self, dtstart=None, until=None, extra_params=""):
-        logger.warning("Rule:get_events called")
-        logger.warning("dtstart: %s", dtstart)
-        logger.warning("until: %s", until)
+        # logger.warning("Rule:get_events called")
+        # logger.warning("dtstart: %s", dtstart)
+        # logger.warning("until: %s", until)
         params = self.get_params(extra_params=extra_params)
         if (('until' in params) and until):
             del params['until']
@@ -430,7 +439,7 @@ class SchedulingRule(models.Model):
         if(dtstart is None):
             dtstart = datetime.datetime.now()
         frequency = self.rrule_frequency()
-        logger.warning("params: %s", params)
+        # logger.warning("params: %s", params)
         events = rrule(frequency, dtstart=dtstart, until=until, **params)
         return events
 

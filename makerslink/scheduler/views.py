@@ -14,6 +14,7 @@ from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 # Create your views here.
 @login_required
@@ -138,15 +139,19 @@ def TestView(request):
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
 
     TestFormSet = modelformset_factory(EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
-    taken_events = []
 
     if request.method == 'POST':
-        formset = TestFormSet(request.POST, initial=initial_values, form_kwargs={'user': request.user})
-        if formset.is_valid():
-            logger.warning("Form is valid")
-            for form in formset:
-                if form.has_changed():
-                    temp_obj = form.save(commit=False)
+        taken_events = ""
+        logger.warning('form is submitted as POST')
+        formset = TestFormSet(request.POST, initial=initial_values)
+        logger.warning('starting looping of forms')
+        for form in formset:
+            if form.is_valid() and form.has_changed():
+                logger.warning('form is valid and changed')
+                temp_obj = form.save(commit=False)
+
+                if temp_obj.can_take(request.user.email):
+                    logger.warning('user can take')
                     #Fix status codes
                     #If someone takes an EventInstance in need of rescheduling
                     if temp_obj.status == -1:
@@ -159,28 +164,51 @@ def TestView(request):
                         temp_obj.status = -1
 
                     #Fix host:
-                    if request.user.is_authenticated:
-                        temp_obj.host = request.user.email
-                    else:
-                        temp_obj.host = "N/A"
-                    logger.warning(temp_obj.__dict__)
+                    temp_obj.host = request.user.email
+
+                    # Save
+                    logger.warning('saving:'+str(temp_obj.start))
                     temp_obj.save()
-                    return HttpResponseRedirect('')
-        else:
-            logger.warning("Formset is invalid")
-            for form in formset:
-                if any(form.errors):
-                    logger.warning(form.errors)
-                    logger.warning(form.cleaned_data)
+                else:
+                    logger.warning('user can not take')
+                    # Add instance as already taken
+                    taken_events += "<tr><td>" + form.cleaned_data.get('title') + "</td>"
+                    taken_events += "<td>" + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M') + "</td>"
+                    taken_events += "<td>" + form.cleaned_data.get('end').strftime('%Y-%m-%d %H:%M') + "</td></tr>"
+                    """
                     taken_event = {
                         'title': form.cleaned_data.get('title'),
                         'start': form.cleaned_data.get('start'),
                         'end': form.cleaned_data.get('end'),
                     }
                     taken_events.append(taken_event)
-                    formset = TestFormSet(initial=initial_values, form_kwargs={'user': request.user})
+                    """
+            else:
+                logger.warning('form is invalid or has not changed')
+                if any(form.errors):
+                    logger.warning('form has errors')
+                    logger.warning(form.errors)
+                    taken_events += "<tr><td>" + form.cleaned_data.get('title') + "</td>"
+                    taken_events += "<td>" + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M') + "</td>"
+                    taken_events += "<td>" + form.cleaned_data.get('end').strftime('%Y-%m-%d %H:%M') + "</td></tr>"
+                    """
+                    taken_event = {
+                        'title': form.cleaned_data.get('title'),
+                        'start': form.cleaned_data.get('start'),
+                        'end': form.cleaned_data.get('end'),
+                    }
+                    taken_events.append(taken_event)
+                    """
+        logger.warning('done with looping')
+        if taken_events != "":
+            taken_events = "<b>The following events were not taken due to already being owned by someone else:</b></<br><table><thead><tr><th>Title</th><th>Start</th><th>End</th></tr></thead>" + taken_events + "</table><br><br>"
+            logger.warning('adding message')
+            messages.info(request, taken_events, extra_tags='safe')
+        logger.warning('redirecting')
+        return HttpResponseRedirect('')
     else:
-        formset = TestFormSet(initial=initial_values, form_kwargs={'user': request.user})
-    logger.warning(taken_events)
-    return render(request, 'test_form.html', {'formset': formset, 'taken_events': taken_events})
+        logger.warning('view is GET')
+        formset = TestFormSet(initial=initial_values)
+    logger.warning('rendering')
+    return render(request, 'test_form.html', {'formset': formset})
 
