@@ -44,6 +44,25 @@
 {% endblock %}
 
 {% block content %}
+
+{% if taken_events %}
+<b>The following events were not taken due to already being owned by someone else:</b></<br>
+<table>
+    <thead><tr>
+        <th>Title</th>
+        <th>Start</th>
+        <th>End</th>
+    </tr></thead>
+    {% for event in taken_events %}
+        <tr>
+            <td>{{ event.title }}</td>
+            <td>{{ event.start|date:"Y-m-d H:i" }}</td>
+            <td>{{ event.end|date:"Y-m-d H:i" }}</td>
+        </tr>
+    {% endfor %}
+</table><br><br>
+{% endif %}
+
     <form method="post">
         {% csrf_token %}
         {{ formset.management_form }}
@@ -70,7 +89,6 @@
                                     {{ hidden }}
                                 {% endfor %}
                             {% endif %}
-                            {{ field.errors.as_ul }}
                             {{ field }}
                         </td>
                     {% endfor %}

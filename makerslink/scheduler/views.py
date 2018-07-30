@@ -138,15 +138,15 @@ def TestView(request):
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
 
     TestFormSet = modelformset_factory(EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
+    taken_events = []
 
     if request.method == 'POST':
-        formset = TestFormSet(request.POST, initial=initial_values)
+        formset = TestFormSet(request.POST, initial=initial_values, form_kwargs={'user': request.user})
         if formset.is_valid():
             logger.warning("Form is valid")
             for form in formset:
                 if form.has_changed():
                     temp_obj = form.save(commit=False)
-
                     #Fix status codes
                     #If someone takes an EventInstance in need of rescheduling
                     if temp_obj.status == -1:
@@ -167,13 +167,20 @@ def TestView(request):
                     temp_obj.save()
                     return HttpResponseRedirect('')
         else:
-            logger.warning("Form is invalid")
+            logger.warning("Formset is invalid")
             for form in formset:
                 if any(form.errors):
                     logger.warning(form.errors)
                     logger.warning(form.cleaned_data)
+                    taken_event = {
+                        'title': form.cleaned_data.get('title'),
+                        'start': form.cleaned_data.get('start'),
+                        'end': form.cleaned_data.get('end'),
+                    }
+                    taken_events.append(taken_event)
+                    formset = TestFormSet(initial=initial_values, form_kwargs={'user': request.user})
     else:
-        formset = TestFormSet(initial=initial_values)
-
-    return render(request, 'test_form.html', {'formset': formset})
+        formset = TestFormSet(initial=initial_values, form_kwargs={'user': request.user})
+    logger.warning(taken_events)
+    return render(request, 'test_form.html', {'formset': formset, 'taken_events': taken_events})
 

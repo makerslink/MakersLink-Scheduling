@@ -296,6 +296,7 @@ class EventInstance(models.Model):
     # Metadata
     class Meta:
         ordering = ["start", "end"]
+        unique_together = ('event', 'start', 'end')
 
     # Methods
     def get_absolute_url(self):

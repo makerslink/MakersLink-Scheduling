@@ -38,7 +38,8 @@ class EventInstanceForm(ModelForm):
         model = EventInstance
         fields = ('start', 'end', 'status', 'event')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
         super(EventInstanceForm, self).__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget = forms.HiddenInput()
@@ -54,3 +55,13 @@ class EventInstanceForm(ModelForm):
                 self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=True)
             else:
                 self.fields["perform_action"] = forms.BooleanField(required=False, label="Take", initial=False)
+
+    def clean(self):
+        logger.warning('clean called')
+        logger.warning(self.cleaned_data.get('status'))
+        logger.warning(self.user.email)
+        logger.warning(self.instance.host)
+        if (self.cleaned_data.get('status') > 1) and (self.user.email != self.instance.host):
+            raise forms.ValidationError('Someone else already owns that EventInstance!')
+
+        return self.cleaned_data
