@@ -124,7 +124,8 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
 
-def TestView(LoginRequiredMixin, request):
+@login_required
+def TestView(request):
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     end = start + relativedelta(months=+1)
 
@@ -159,7 +160,7 @@ def TestView(LoginRequiredMixin, request):
 
                     #Fix host:
                     if request.user.is_authenticated:
-                        temp_obj.host = request.user.username
+                        temp_obj.host = request.user.email
                     else:
                         temp_obj.host = "N/A"
                     logger.warning(temp_obj.__dict__)
