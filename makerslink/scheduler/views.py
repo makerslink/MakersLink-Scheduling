@@ -12,8 +12,11 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
+@login_required
 def index(request):
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     end = start + relativedelta(months=+1)
@@ -33,46 +36,46 @@ def index(request):
         },
     )
 
-class SchedulingCalendarListView(generic.ListView):
+class SchedulingCalendarListView(LoginRequiredMixin, generic.ListView):
     model = SchedulingCalendar
 
-class SchedulingCalendarDetailView(generic.DetailView):
+class SchedulingCalendarDetailView(LoginRequiredMixin, generic.DetailView):
     model = SchedulingCalendar
 
-class SchedulingCalendarCreateView(CreateView):
-    model = SchedulingCalendar
-    fields = '__all__'
-
-class SchedulingCalendarUpdateView(UpdateView):
+class SchedulingCalendarCreateView(LoginRequiredMixin, CreateView):
     model = SchedulingCalendar
     fields = '__all__'
 
-class SchedulingCalendarDeleteView(DeleteView):
+class SchedulingCalendarUpdateView(LoginRequiredMixin, UpdateView):
+    model = SchedulingCalendar
+    fields = '__all__'
+
+class SchedulingCalendarDeleteView(LoginRequiredMixin, DeleteView):
     model = SchedulingCalendar
     success_url = reverse_lazy('calendars')
 
-class EventTemplateListView(generic.ListView):
+class EventTemplateListView(LoginRequiredMixin, generic.ListView):
     model = EventTemplate
 
-class EventTemplateDetailView(generic.DetailView):
+class EventTemplateDetailView(LoginRequiredMixin, generic.DetailView):
     model = EventTemplate
 
-class EventTemplateCreateView(CreateView):
-    model = EventTemplate
-    fields = '__all__'
-
-class EventTemplateUpdateView(UpdateView):
+class EventTemplateCreateView(LoginRequiredMixin, CreateView):
     model = EventTemplate
     fields = '__all__'
 
-class EventTemplateDeleteView(DeleteView):
+class EventTemplateUpdateView(LoginRequiredMixin, UpdateView):
+    model = EventTemplate
+    fields = '__all__'
+
+class EventTemplateDeleteView(LoginRequiredMixin, DeleteView):
     model = EventTemplate
     success_url = reverse_lazy('templates')
 
-class SchedulingRuleListView(generic.ListView):
+class SchedulingRuleListView(LoginRequiredMixin, generic.ListView):
     model = SchedulingRule
 
-class SchedulingRuleDetailView(generic.DetailView):
+class SchedulingRuleDetailView(LoginRequiredMixin, generic.DetailView):
     model = SchedulingRule
 
     def get_context_data(self, **kwargs):
@@ -81,22 +84,22 @@ class SchedulingRuleDetailView(generic.DetailView):
         context['eventlist'] = events
         return context
 
-class SchedulingRuleCreateView(CreateView):
+class SchedulingRuleCreateView(LoginRequiredMixin, CreateView):
     model = SchedulingRule
     fields = '__all__'
 
-class SchedulingRuleUpdateView(UpdateView):
+class SchedulingRuleUpdateView(LoginRequiredMixin, UpdateView):
     model = SchedulingRule
     fields = '__all__'
 
-class SchedulingRuleDeleteView(DeleteView):
+class SchedulingRuleDeleteView(LoginRequiredMixin, DeleteView):
     model = SchedulingRule
     success_url = reverse_lazy('rules')
 
-class EventListView(generic.ListView):
+class EventListView(LoginRequiredMixin, generic.ListView):
     model = Event
 
-class EventDetailView(generic.DetailView):
+class EventDetailView(LoginRequiredMixin, generic.DetailView):
     model = Event
 
     def get_context_data(self, **kwargs):
@@ -107,21 +110,21 @@ class EventDetailView(generic.DetailView):
         context['eventlist'] = events
         return context
 
-class EventCreateView(CreateView):
+class EventCreateView(LoginRequiredMixin, CreateView):
     model = Event
     fields = '__all__'
     #form_class = EventForm
 
-class EventUpdateView(UpdateView):
+class EventUpdateView(LoginRequiredMixin, UpdateView):
     model = Event
     fields = '__all__'
     #form_class = EventForm
 
-class EventDeleteView(DeleteView):
+class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
 
-def TestView(request):
+def TestView(LoginRequiredMixin, request):
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     end = start + relativedelta(months=+1)
 
