@@ -23,8 +23,8 @@
           <td>{{ event.host }}</td>
           <td>{{ event.header }}</td>
           <td>{{ event.body }}</td>
-          <td>{{ event.start }}</td>
-          <td>{{ event.end }}</td>
+          <td>{{ event.start|date:"Y-m-d H:i" }}</td>
+          <td>{{ event.end|date:"Y-m-d H:i" }}</td>
           <td>{{ event.statusText }}</td>
           <td>{{ event.status }}</td>
         </tr>
