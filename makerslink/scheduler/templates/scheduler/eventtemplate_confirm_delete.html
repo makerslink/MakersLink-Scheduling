@@ -8,8 +8,8 @@
 
 <form action="" method="POST">
   {% csrf_token %}
-  <input type="submit" action="" value="Yes, delete." />
-  <a href="{% url 'template-detail' pk=eventtemplate.pk %}"><button type="button">Cancel</button></a>
+  <button type="submit" class="btn  btn-danger">Yes, delete.</button>
+  <a href="{% url 'template-detail' pk=eventtemplate.pk %}"><button type="button" class="btn btn-default">Cancel</button></a>
 </form>
 
 {% endblock %}
