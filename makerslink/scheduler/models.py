@@ -331,9 +331,6 @@ class EventInstance(models.Model):
             }
 
     def can_take(self, user):
-        logger.warning('request user:'+user)
-        logger.warning('current host:' + self.host)
-        logger.warning('current status:' + str(self.status))
         if self.status > 0:
             return self.host == user
         else:

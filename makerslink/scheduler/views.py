@@ -145,61 +145,70 @@ def EventSignupView(request):
         taken_events = ""
         logger.warning('form is submitted as POST')
         formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
+
         logger.warning('starting looping of forms')
         for form in formset:
-            if form.is_valid() and form.has_changed():
-                logger.warning('form is valid and changed')
-                temp_obj = form.save(commit=False)
+            if form.has_changed() and 'perform_action' in form.changed_data:
+                logger.warning('form has changed')
+                if form.is_valid():
+                    #logger.warning(str(form.cleaned_data.get('perform_action')))
+                    logger.warning(form.changed_data)
+                    #logger.warning('Handling form starting at: ' + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M'))
+                    logger.warning('form is valid')
+                    temp_obj = form.save(commit=False)
 
-                if temp_obj.can_take(request.user.email):
-                    logger.warning('user can take')
-                    #Fix status codes
-                    #If someone takes an EventInstance in need of rescheduling
-                    if temp_obj.status == -1:
-                        temp_obj.status = 1
-                    #If someone takes an EventInstance that is unscheduled
-                    elif temp_obj.status == 0:
-                        temp_obj.status = 1
-                    #If someone untakes an EventInstance that is scheduled
-                    elif temp_obj.status == 1:
-                        temp_obj.status = -1
+                    if temp_obj.can_take(request.user.email):
+                        logger.warning('user can take')
+                        #Fix status codes
+                        #If someone takes an EventInstance in need of rescheduling
+                        if temp_obj.status == -1:
+                            temp_obj.status = 1
+                        #If someone takes an EventInstance that is unscheduled
+                        elif temp_obj.status == 0:
+                            temp_obj.status = 1
+                        #If someone untakes an EventInstance that is scheduled
+                        elif temp_obj.status == 1:
+                            temp_obj.status = -1
 
-                    #Fix host:
-                    temp_obj.host = request.user.email
+                        #Fix host:
+                        temp_obj.host = request.user.email
 
-                    # Save
-                    logger.warning('saving:'+str(temp_obj.start))
-                    temp_obj.save()
+                        # Save
+                        logger.warning('saving')
+                        temp_obj.save()
+                    else:
+                        logger.warning('user can not take')
+                        # Add instance as already taken
+                        taken_events += "<tr><td>" + form.cleaned_data.get('title') + "</td>"
+                        taken_events += "<td>" + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M') + "</td>"
+                        taken_events += "<td>" + form.cleaned_data.get('end').strftime('%Y-%m-%d %H:%M') + "</td></tr>"
+                        """
+                        taken_event = {
+                            'title': form.cleaned_data.get('title'),
+                            'start': form.cleaned_data.get('start'),
+                            'end': form.cleaned_data.get('end'),
+                        }
+                        taken_events.append(taken_event)
+                        """
                 else:
-                    logger.warning('user can not take')
-                    # Add instance as already taken
-                    taken_events += "<tr><td>" + form.cleaned_data.get('title') + "</td>"
-                    taken_events += "<td>" + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M') + "</td>"
-                    taken_events += "<td>" + form.cleaned_data.get('end').strftime('%Y-%m-%d %H:%M') + "</td></tr>"
-                    """
-                    taken_event = {
-                        'title': form.cleaned_data.get('title'),
-                        'start': form.cleaned_data.get('start'),
-                        'end': form.cleaned_data.get('end'),
-                    }
-                    taken_events.append(taken_event)
-                    """
+                    #logger.warning('Handling form starting at: ' + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M'))
+                    logger.warning('form is invalid')
+                    if any(form.errors):
+                        logger.warning('form has errors')
+                        logger.warning(form.errors)
+                        taken_events += "<tr><td>" + form.cleaned_data.get('title') + "</td>"
+                        taken_events += "<td>" + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M') + "</td>"
+                        taken_events += "<td>" + form.cleaned_data.get('end').strftime('%Y-%m-%d %H:%M') + "</td></tr>"
+                        """
+                        taken_event = {
+                            'title': form.cleaned_data.get('title'),
+                            'start': form.cleaned_data.get('start'),
+                            'end': form.cleaned_data.get('end'),
+                        }
+                        taken_events.append(taken_event)
+                        """
             else:
-                logger.warning('form is invalid or has not changed')
-                if any(form.errors):
-                    logger.warning('form has errors')
-                    logger.warning(form.errors)
-                    taken_events += "<tr><td>" + form.cleaned_data.get('title') + "</td>"
-                    taken_events += "<td>" + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M') + "</td>"
-                    taken_events += "<td>" + form.cleaned_data.get('end').strftime('%Y-%m-%d %H:%M') + "</td></tr>"
-                    """
-                    taken_event = {
-                        'title': form.cleaned_data.get('title'),
-                        'start': form.cleaned_data.get('start'),
-                        'end': form.cleaned_data.get('end'),
-                    }
-                    taken_events.append(taken_event)
-                    """
+                logger.warning('form has not changed')
         logger.warning('done with looping')
         if taken_events != "":
             taken_events = "<b>The following events were not taken due to already being owned by someone else:</b></<br><table><thead><tr><th>Title</th><th>Start</th><th>End</th></tr></thead>" + taken_events + "</table><br><br>"
@@ -211,5 +220,6 @@ def EventSignupView(request):
         logger.warning('view is GET')
         formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
     logger.warning('rendering')
+    #request.session['signup_initialdata'] =initial_values
     return render(request, 'eventinstance_host_form.html', {'formset': formset})
 
