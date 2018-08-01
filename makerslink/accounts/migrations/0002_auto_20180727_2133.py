@@ -10,6 +10,7 @@ def create_testusers(apps, schema_editor):
     superuser.is_superuser = True
     superuser.is_staff = True
     superuser.email = "admin"
+    superuser.slackId = "admin"
     superuser.set_password('adminadmin')
     superuser.save()
 
@@ -19,6 +20,7 @@ def create_testusers(apps, schema_editor):
     user1.is_superuser = False
     user1.is_staff = False
     user1.email = "user1"
+    user1.slackId = "user1"
     user1.set_password('testtest')
     user1.save()
 
@@ -28,6 +30,7 @@ def create_testusers(apps, schema_editor):
     user2.is_superuser = False
     user2.is_staff = False
     user2.email = "user2"
+    user2.slackId = "user2"
     user2.set_password('testtest')
     user2.save()
 

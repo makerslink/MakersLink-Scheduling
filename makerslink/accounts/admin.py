@@ -7,5 +7,5 @@ make_approved.short_description = "Mark selected users as approved"
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'is_active', 'is_registration_complete')    
+    list_display = ('email', 'slackId', 'is_active', 'is_registration_complete')    
     actions = [make_approved]
