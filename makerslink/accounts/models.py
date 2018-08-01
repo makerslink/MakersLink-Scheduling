@@ -14,11 +14,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     objects = UserManager()
     
-    slackIdValid = RegexValidator(r'^[0-9a-z.\-_]*$', 'Please enter a valid slackId.', 
+    slackIdValid = RegexValidator(r'^((?!@).)*$', 'Please enter a slack name without @.', 
             code='invalid_slackId')
     
     email = models.EmailField(unique=True)
-    slackId = models.CharField(max_length=21, unique=True, blank=False, null=False, validators=[slackIdValid])
+    slackId = models.CharField(max_length=100, verbose_name="Slack namn", unique=True, blank=False, null=False, validators=[slackIdValid])
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_registration_complete = models.BooleanField(default=False)
