@@ -1,6 +1,11 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+{% if object.id %}
+<h1>Edit rule {{ object.name }}</h1>
+{% else %}
+<h1>Create rule</h1>
+{% endif %}
 {{ form.errors }}
 {{ form.non_field_errors }}
 

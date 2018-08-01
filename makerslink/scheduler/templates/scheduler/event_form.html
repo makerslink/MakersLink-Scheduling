@@ -1,6 +1,12 @@
 {% extends "base_form.html" %}
 
 {% block content %}
+{% if object.id %}
+<h1>Edit event {{ object.name }}</h1>
+{% else %}
+<h1>Create event</h1>
+{% endif %}
+
 {{ form.errors }}
 {{ form.non_field_errors }}
 
