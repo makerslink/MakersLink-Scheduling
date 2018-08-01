@@ -20,7 +20,7 @@ RUN pip3 install -r requirements.txt
 EXPOSE 8000
 
 # Define environment variable
-ENV NAME World
+ENV DJANGO_ENV=prod
 
 # Go into djano dir
 WORKDIR /scheduling/makerslink
