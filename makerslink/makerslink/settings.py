@@ -20,14 +20,17 @@ CALENDAR_PK_DIR = os.path.abspath(os.path.join(BASE_DIR, "../pks/"))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+if os.getenv('DJANGO_ENV') == 'prod':
+    DEBUG = False
+    ALLOWED_HOSTS = ['vhost.makerslink','vhost.makerslink.se','scheduling.makerslink.se']
+    SECRET_KEY = os.environ.get("DJANGO_SECRET" )
+    # ...
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = []    
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
 
 # Application definition
 
