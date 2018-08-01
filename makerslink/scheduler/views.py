@@ -144,7 +144,7 @@ def EventSignupView(request):
     if request.method == 'POST':
         taken_events = ""
         logger.warning('form is submitted as POST')
-        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
+        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
 
         logger.warning('starting looping of forms')
         for form in formset:
@@ -157,7 +157,7 @@ def EventSignupView(request):
                     logger.warning('form is valid')
                     temp_obj = form.save(commit=False)
 
-                    if temp_obj.can_take(request.user.email):
+                    if temp_obj.can_take(request.user):
                         logger.warning('user can take')
                         #Fix status codes
                         #If someone takes an EventInstance in need of rescheduling
@@ -171,7 +171,7 @@ def EventSignupView(request):
                             temp_obj.status = -1
 
                         #Fix host:
-                        temp_obj.host = request.user.email
+                        temp_obj.host = request.user
 
                         # Save
                         logger.warning('saving')
@@ -218,7 +218,7 @@ def EventSignupView(request):
         return HttpResponseRedirect('')
     else:
         logger.warning('view is GET')
-        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
+        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
     logger.warning('rendering')
     #request.session['signup_initialdata'] =initial_values
     return render(request, 'eventinstance_host_form.html', {'formset': formset})
