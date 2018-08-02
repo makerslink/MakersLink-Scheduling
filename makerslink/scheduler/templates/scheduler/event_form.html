@@ -16,6 +16,10 @@
     {{ form.as_table }}
     </table>
     <button type="submit" class="btn  btn-primary">Submit</button>
+    {% if object.id %}
+    <a href="{% url 'event-detail' pk=object.id %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    {% else %}
     <a href="{% url 'events' %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    {% endif %}
 </form>
 {% endblock %}
