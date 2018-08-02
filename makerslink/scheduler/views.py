@@ -15,7 +15,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
+import accounts.models
 
 # Create your views here.
 @login_required
@@ -125,6 +126,15 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
+
+class HostListView(LoginRequiredMixin, generic.ListView):
+    model = accounts.models.User
+    
+    def get_queryset(self):
+        queryset = accounts.models.User.objects.all().annotate(
+            events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
+        
+        return queryset
 
 @login_required
 def EventSignupView(request):
