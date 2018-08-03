@@ -9,6 +9,7 @@ from django.conf import settings
 import datetime
 from google.oauth2 import service_account
 from dateutil.rrule import *
+import accounts.models
 
 # New Filesystem
 client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
@@ -266,8 +267,7 @@ class EventInstance(models.Model):
     # Fields
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this bookinginstance")
     google_calendar_booking_id = models.CharField(max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
-    #host = models.ForeignKey('User', on_delete=models.SET_NULL, null=True)
-    host = models.CharField(max_length=50, help_text="Enter a name instead of user-key", null=True, blank=True)
+    host = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
     event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")

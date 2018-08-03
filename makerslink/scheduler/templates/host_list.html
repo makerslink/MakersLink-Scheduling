@@ -1,0 +1,24 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Host List</h1>
+
+{% if object_list %}
+<table>
+  <thead><tr>
+    <th>Slack name</th>
+    <th>Booked events</th>
+  </tr></thead>
+
+  {% for host in object_list %}
+  <tr>
+    <td>{{ host.slackId }}</td>
+    <td>{{ host.events_count  }}</td>
+  </tr>
+  {% endfor %}
+
+</table><br><br>
+{% else %}
+  <p>No hosts in list.</p>
+{% endif %}
+{% endblock %}

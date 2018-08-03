@@ -42,5 +42,7 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-path('signup', views.EventSignupView, name='host-signup'),
+    path('signup', views.EventSignupView, name='host-signup'),
+    path('hosts', views.HostListView.as_view(template_name='host_list.html'), 
+    name='hosts'),
 ]

@@ -12,10 +12,11 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
+import accounts.models
 
 # Create your views here.
 @login_required
@@ -37,47 +38,51 @@ def index(request):
             'event_list' :event_list
         },
     )
+    
+class UserIsStaffMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_staff
 
-class SchedulingCalendarListView(LoginRequiredMixin, generic.ListView):
+class SchedulingCalendarListView(UserIsStaffMixin, generic.ListView):
     model = SchedulingCalendar
 
-class SchedulingCalendarDetailView(LoginRequiredMixin, generic.DetailView):
+class SchedulingCalendarDetailView(UserIsStaffMixin, generic.DetailView):
     model = SchedulingCalendar
 
-class SchedulingCalendarCreateView(LoginRequiredMixin, CreateView):
+class SchedulingCalendarCreateView(UserIsStaffMixin, CreateView):
     model = SchedulingCalendar
     fields = '__all__'
 
-class SchedulingCalendarUpdateView(LoginRequiredMixin, UpdateView):
+class SchedulingCalendarUpdateView(UserIsStaffMixin, UpdateView):
     model = SchedulingCalendar
     fields = '__all__'
 
-class SchedulingCalendarDeleteView(LoginRequiredMixin, DeleteView):
+class SchedulingCalendarDeleteView(UserIsStaffMixin, DeleteView):
     model = SchedulingCalendar
     success_url = reverse_lazy('calendars')
 
-class EventTemplateListView(LoginRequiredMixin, generic.ListView):
+class EventTemplateListView(UserIsStaffMixin, generic.ListView):
     model = EventTemplate
 
-class EventTemplateDetailView(LoginRequiredMixin, generic.DetailView):
+class EventTemplateDetailView(UserIsStaffMixin, generic.DetailView):
     model = EventTemplate
 
-class EventTemplateCreateView(LoginRequiredMixin, CreateView):
-    model = EventTemplate
-    fields = '__all__'
-
-class EventTemplateUpdateView(LoginRequiredMixin, UpdateView):
+class EventTemplateCreateView(UserIsStaffMixin, CreateView):
     model = EventTemplate
     fields = '__all__'
 
-class EventTemplateDeleteView(LoginRequiredMixin, DeleteView):
+class EventTemplateUpdateView(UserIsStaffMixin, UpdateView):
+    model = EventTemplate
+    fields = '__all__'
+
+class EventTemplateDeleteView(UserIsStaffMixin, DeleteView):
     model = EventTemplate
     success_url = reverse_lazy('templates')
 
-class SchedulingRuleListView(LoginRequiredMixin, generic.ListView):
+class SchedulingRuleListView(UserIsStaffMixin, generic.ListView):
     model = SchedulingRule
 
-class SchedulingRuleDetailView(LoginRequiredMixin, generic.DetailView):
+class SchedulingRuleDetailView(UserIsStaffMixin, generic.DetailView):
     model = SchedulingRule
 
     def get_context_data(self, **kwargs):
@@ -86,22 +91,22 @@ class SchedulingRuleDetailView(LoginRequiredMixin, generic.DetailView):
         context['eventlist'] = events
         return context
 
-class SchedulingRuleCreateView(LoginRequiredMixin, CreateView):
+class SchedulingRuleCreateView(UserIsStaffMixin, CreateView):
     model = SchedulingRule
     fields = '__all__'
 
-class SchedulingRuleUpdateView(LoginRequiredMixin, UpdateView):
+class SchedulingRuleUpdateView(UserIsStaffMixin, UpdateView):
     model = SchedulingRule
     fields = '__all__'
 
-class SchedulingRuleDeleteView(LoginRequiredMixin, DeleteView):
+class SchedulingRuleDeleteView(UserIsStaffMixin, DeleteView):
     model = SchedulingRule
     success_url = reverse_lazy('rules')
 
-class EventListView(LoginRequiredMixin, generic.ListView):
+class EventListView(UserIsStaffMixin, generic.ListView):
     model = Event
 
-class EventDetailView(LoginRequiredMixin, generic.DetailView):
+class EventDetailView(UserIsStaffMixin, generic.DetailView):
     model = Event
 
     def get_context_data(self, **kwargs):
@@ -112,19 +117,28 @@ class EventDetailView(LoginRequiredMixin, generic.DetailView):
         context['eventlist'] = events
         return context
 
-class EventCreateView(LoginRequiredMixin, CreateView):
+class EventCreateView(UserIsStaffMixin, CreateView):
     model = Event
     fields = '__all__'
     #form_class = EventForm
 
-class EventUpdateView(LoginRequiredMixin, UpdateView):
+class EventUpdateView(UserIsStaffMixin, UpdateView):
     model = Event
     fields = '__all__'
     #form_class = EventForm
 
-class EventDeleteView(LoginRequiredMixin, DeleteView):
+class EventDeleteView(UserIsStaffMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
+
+class HostListView(UserIsStaffMixin, generic.ListView):
+    model = accounts.models.User
+    
+    def get_queryset(self):
+        queryset = accounts.models.User.objects.all().annotate(
+            events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
+        
+        return queryset
 
 @login_required
 def EventSignupView(request):
@@ -144,7 +158,7 @@ def EventSignupView(request):
     if request.method == 'POST':
         taken_events = ""
         logger.warning('form is submitted as POST')
-        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
+        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
 
         logger.warning('starting looping of forms')
         for form in formset:
@@ -157,7 +171,7 @@ def EventSignupView(request):
                     logger.warning('form is valid')
                     temp_obj = form.save(commit=False)
 
-                    if temp_obj.can_take(request.user.email):
+                    if temp_obj.can_take(request.user):
                         logger.warning('user can take')
                         #Fix status codes
                         #If someone takes an EventInstance in need of rescheduling
@@ -171,7 +185,7 @@ def EventSignupView(request):
                             temp_obj.status = -1
 
                         #Fix host:
-                        temp_obj.host = request.user.email
+                        temp_obj.host = request.user
 
                         # Save
                         logger.warning('saving')
@@ -218,7 +232,7 @@ def EventSignupView(request):
         return HttpResponseRedirect('')
     else:
         logger.warning('view is GET')
-        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user.email)|Q(status__lte=0)))
+        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
     logger.warning('rendering')
     #request.session['signup_initialdata'] =initial_values
     return render(request, 'eventinstance_host_form.html', {'formset': formset})

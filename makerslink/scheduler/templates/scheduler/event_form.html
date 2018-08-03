@@ -1,6 +1,12 @@
 {% extends "base_form.html" %}
 
 {% block content %}
+{% if object.id %}
+<h1>Edit event {{ object.name }}</h1>
+{% else %}
+<h1>Create event</h1>
+{% endif %}
+
 {{ form.errors }}
 {{ form.non_field_errors }}
 
@@ -10,6 +16,10 @@
     {{ form.as_table }}
     </table>
     <button type="submit" class="btn  btn-primary">Submit</button>
+    {% if object.id %}
+    <a href="{% url 'event-detail' pk=object.id %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    {% else %}
     <a href="{% url 'events' %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    {% endif %}
 </form>
 {% endblock %}

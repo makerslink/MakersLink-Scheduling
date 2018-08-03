@@ -45,6 +45,8 @@
 
 {% block content %}
 
+<h1>Available events</h1>
+
 
 {% for message in messages %}
     {% if 'safe' in message.tags %}
@@ -76,6 +78,7 @@
         {% csrf_token %}
         {{ formset.management_form }}
         {{ formset.non_form_errors.as_ul }}
+        <button type="submit" class="btn  btn-primary">Submit</button>
         <table id="formset" class="form">
             <thead><tr>
                 <th>Title</th>

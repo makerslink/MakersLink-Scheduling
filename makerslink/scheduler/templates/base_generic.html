@@ -22,10 +22,13 @@
       {% block sidebar %}
       <ul class="sidebar-nav">
           <li><a href="{% url 'index' %}">Home</a></li>
+          {% if user.is_staff %}
+          <li><a href="{% url 'hosts' %}">Hosts</a></li>
           <li><a href="{% url 'calendars' %}">Calendars</a></li>
           <li><a href="{% url 'templates' %}">Templates</a></li>
           <li><a href="{% url 'rules' %}">Rules</a></li>
           <li><a href="{% url 'events' %}">Events</a></li>
+          {% endif %}
           <li><a href="{% url 'logout' %}">Log out</a></li>
       </ul>
      {% endblock %}
