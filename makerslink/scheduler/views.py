@@ -131,6 +131,13 @@ class EventDeleteView(UserIsStaffMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
 
+class EventInstanceListView(LoginRequiredMixin, generic.ListView):
+    model = EventInstance
+    
+class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
+    model = EventInstance
+    fields = ('participants', )
+
 class HostListView(UserIsStaffMixin, generic.ListView):
     model = accounts.models.User
     

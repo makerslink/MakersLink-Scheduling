@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{% if object.id %}
+<h1>Edit instance {{ object.name }}</h1>
+{% else %}
+<h1>Create template</h1>
+{% endif %}
+
+{{ form.errors }}
+{{ form.non_field_errors }}
+
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+    <button type="submit" class="btn  btn-primary">Submit</button>
+    <a href="{% url 'joinEvent' %}"><button type="button" class="btn btn-default">Cancel</button></a>
+</form>
+{% endblock %}

@@ -6,8 +6,9 @@
 
   <p><strong>Title:</strong> {{ eventtemplate.title }}</p>
   <p><strong>Header:</strong> {{ eventtemplate.header }}</p>
-  <p><strong>Body:</strong> {{ eventtemplate.body }}
-<p><strong>Calendar:</strong> <a href="{{ eventtemplate.calendar.get_absolute_url }}">{{ eventtemplate.calendar }}</a></p>
+  <p><strong>Body:</strong> {{ eventtemplate.body }}</p>
+  <p><strong>Participants #:</strong> {{ eventtemplate.num_participants }}</p>
+  <p><strong>Calendar:</strong> <a href="{{ eventtemplate.calendar.get_absolute_url }}">{{ eventtemplate.calendar }}</a></p>
   <p><strong>Active:</strong> {% if eventtemplate.synchronize %}<p class="text-success">Events will be synchronized to calendar{% else %}<p class="text-warning">Events will NOT be synchronized to calendar{% endif %}</p>
 
   <div style="margin-left:20px;margin-top:20px">

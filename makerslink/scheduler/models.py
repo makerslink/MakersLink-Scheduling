@@ -25,6 +25,7 @@ class EventTemplate(models.Model):
     title = models.CharField(max_length=100, help_text="Enter title to be used for booking")
     header = models.CharField(max_length=200, help_text="Enter a, optional, header for the event to be inserted after the hosts name into the descriptionfield in the calendar event.", null=True, blank=True)
     body = models.TextField(max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
+    num_participants = models.IntegerField(default = 0, help_text="Number of participants, -1 for infinite")
     calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.SET_NULL, null=True, help_text="Select the calendar to sync events to.")
     synchronize = models.BooleanField(default=True, help_text="If active, scheduled events will be synced to Google calendar upon creation.")
 
@@ -109,6 +110,11 @@ class Event(models.Model):
         ordering = ["name"]
 
     # Methods
+    
+    @property
+    def max_num_participants(self):
+        return self.template.num_participants
+    
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of EventTemplate.
@@ -263,11 +269,12 @@ class EventInstance(models.Model):
         (1, 'Scheduled'),
         (2, 'Cancelled'),
     )
-
+    
     # Fields
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this bookinginstance")
     google_calendar_booking_id = models.CharField(max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
     host = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
+    participants = models.ManyToManyField('accounts.User', related_name="participants")
     event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
@@ -288,6 +295,10 @@ class EventInstance(models.Model):
     @property
     def body(self):
         return self.event.template.body
+    
+    @property
+    def max_num_participants(self):
+        return self.event.template.num_participants
     
     @property
     def template(self):

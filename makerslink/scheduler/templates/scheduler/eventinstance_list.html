@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Event instance List</h1>
+
+    {% if eventinstance_list %}
+    <ul>
+
+      {% for eventinstance in eventinstance_list %}
+      <li>
+        <a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }} {{ eventinstance.start|date:"Y-m-d H:i" }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+    {% else %}
+      <p>No Events have been created.</p>
+    {% endif %}
+{% endblock %}
+
+template-detail

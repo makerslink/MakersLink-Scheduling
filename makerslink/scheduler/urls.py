@@ -42,6 +42,12 @@ urlpatterns += [
 ]
 
 urlpatterns += [
+    path('joinEvent', views.EventInstanceListView.as_view(), name='joinEvent'),
+    path('joinEvent/<uuid:pk>', views.EventInstanceUpdateView.as_view(), name='eventinstance-join'),
+    path('joinEvent/<uuid:pk>', views.EventDetailView.as_view(), name='eventinstance-detail'),
+]
+
+urlpatterns += [
     path('signup', views.EventSignupView, name='host-signup'),
     path('hosts', views.HostListView.as_view(template_name='host_list.html'), 
     name='hosts'),
