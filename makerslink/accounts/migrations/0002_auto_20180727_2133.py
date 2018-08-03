@@ -2,37 +2,40 @@
 
 from django.db import migrations
 from ..models import User
+import os
 
 def create_testusers(apps, schema_editor):
-    superuser = User()
-    superuser.is_active = True
-    superuser.is_registration_complete = True
-    superuser.is_superuser = True
-    superuser.is_staff = True
-    superuser.email = "admin"
-    superuser.slackId = "admin"
-    superuser.set_password('adminadmin')
-    superuser.save()
+    # If deployment don't create test users.
+    if os.getenv('DJANGO_ENV'):
+        superuser = User()
+        superuser.is_active = True
+        superuser.is_registration_complete = True
+        superuser.is_superuser = True
+        superuser.is_staff = True
+        superuser.email = "admin"
+        superuser.slackId = "admin"
+        superuser.set_password('adminadmin')
+        superuser.save()
 
-    user1 = User()
-    user1.is_active = True
-    user1.is_registration_complete = True
-    user1.is_superuser = False
-    user1.is_staff = False
-    user1.email = "user1"
-    user1.slackId = "user1"
-    user1.set_password('testtest')
-    user1.save()
+        user1 = User()
+        user1.is_active = True
+        user1.is_registration_complete = True
+        user1.is_superuser = False
+        user1.is_staff = False
+        user1.email = "user1"
+        user1.slackId = "user1"
+        user1.set_password('testtest')
+        user1.save()
 
-    user2 = User()
-    user2.is_active = True
-    user2.is_registration_complete = True
-    user2.is_superuser = False
-    user2.is_staff = False
-    user2.email = "user2"
-    user2.slackId = "user2"
-    user2.set_password('testtest')
-    user2.save()
+        user2 = User()
+        user2.is_active = True
+        user2.is_registration_complete = True
+        user2.is_superuser = False
+        user2.is_staff = False
+        user2.email = "user2"
+        user2.slackId = "user2"
+        user2.set_password('testtest')
+        user2.save()
 
 class Migration(migrations.Migration):
 
