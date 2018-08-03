@@ -6,7 +6,7 @@ import os
 
 def create_testusers(apps, schema_editor):
     # If deployment don't create test users.
-    if os.getenv('DJANGO_ENV'):
+    if not os.getenv('DJANGO_ENV'):
         superuser = User()
         superuser.is_active = True
         superuser.is_registration_complete = True
