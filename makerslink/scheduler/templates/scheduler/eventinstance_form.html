@@ -1,21 +1,28 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-{% if object.id %}
-<h1>Edit instance {{ object.name }}</h1>
-{% else %}
-<h1>Create template</h1>
-{% endif %}
+<h1>Title: {{ form.instance.title }}</h1>
 
 {{ form.errors }}
 {{ form.non_field_errors }}
+
+<p><strong>Start:</strong> {{ form.instance.start|date:"Y-m-d H:i" }} </p>
+<p><strong>End:</strong> {{ form.instance.end|date:"Y-m-d H:i" }} </p>
+<p><strong>Host:</strong> {{ form.instance.host.slackId }}</p>
+
+<div style="margin-left:20px;margin-top:20px">
+    <h4>Current paticipants: </h4>
+      <p>
+        {% for participant in form.instance.participants.all %}{% if not forloop.first %}, {% endif %}{{ participant.slackId }}{% endfor %}
+      </p>
+  </div>
 
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <table>
     {{ form.as_table }}
     </table>
-    <button type="submit" class="btn  btn-primary">Submit</button>
+    <button type="submit" class="btn  btn-primary">Join</button>
     <a href="{% url 'joinEvent' %}"><button type="button" class="btn btn-default">Cancel</button></a>
 </form>
 {% endblock %}

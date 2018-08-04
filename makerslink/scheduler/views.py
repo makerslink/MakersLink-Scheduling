@@ -16,6 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q, Count
+from accounts.models import User
 import accounts.models
 
 # Create your views here.
@@ -136,7 +137,14 @@ class EventInstanceListView(LoginRequiredMixin, generic.ListView):
     
 class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
     model = EventInstance
-    fields = ('participants', )
+    # Empty field list as we save to the current user when submitted.
+    fields = ( )
+    
+    def form_valid(self, form):
+        event = form.save(commit=False)
+        event.participants.add(self.request.user)  # use your own profile here
+        event.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 class HostListView(UserIsStaffMixin, generic.ListView):
     model = accounts.models.User
@@ -146,6 +154,7 @@ class HostListView(UserIsStaffMixin, generic.ListView):
             events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
         
         return queryset
+
 
 @login_required
 def EventSignupView(request):
