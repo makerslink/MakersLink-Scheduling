@@ -135,6 +135,11 @@ class EventDeleteView(UserIsStaffMixin, DeleteView):
 class EventInstanceListView(LoginRequiredMixin, generic.ListView):
     model = EventInstance
     
+    def get_queryset(self):
+        queryset = EventInstance.objects.all().filter(Q(status=1) & ~Q(event__template__num_participants=0))
+        
+        return queryset
+    
 class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
     model = EventInstance
     # Empty field list as we save to the current user when submitted.
