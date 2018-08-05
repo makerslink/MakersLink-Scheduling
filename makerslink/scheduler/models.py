@@ -8,6 +8,7 @@ from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 import datetime
 from google.oauth2 import service_account
+import googleapiclient.discovery
 from dateutil.rrule import *
 import accounts.models
 
@@ -39,6 +40,52 @@ class EventTemplate(models.Model):
          Returns the url to access a particular instance of EventTemplate.
          """
         return reverse('template-detail', args=[str(self.id)])
+
+    def createEventEntry(self, host, start, end, status):
+        if self.synchronize:
+            data = self._createEventData(host, start, end, status)
+            return self.calendar.createEvent(data)
+        else:
+            return True
+
+
+    def updateEventEntry(self, booking_id, host, start, end, status):
+        if self.synchronize:
+            data =self._createEventData(host, start, end, status)
+            return self.calendar.updateEvent(booking_id, data)
+        else:
+            return True
+
+    def _createEventData(self, host, start, end, status):
+        if status == 2:
+            summary = "Inställt: " + self.title
+        else:
+            summary = self.title
+
+        description = 'Värd: ' + str(host.slackId)
+        if self.header:
+            description += "\n" + self.header
+        if self.body:
+            description += "\n" + self.body
+        event_data = {
+            'summary': summary,
+            'location': 'Makerspace Linköping',
+            'description': description,
+            'start': {
+                'dateTime': start.strftime('%Y-%m-%dT%H:%M:%S'),
+                'timeZone': self.calendar.timezone,
+            },
+            'end': {
+                'dateTime': end.strftime('%Y-%m-%dT%H:%M:%S'),
+                'timeZone': self.calendar.timezone,
+            },
+            'reminders': {
+                'useDefault': False,
+                'overrides': [],
+            },
+        }
+
+        return event_data
 
     def __str__(self):
         """
@@ -76,6 +123,25 @@ class SchedulingCalendar(models.Model):
          Returns the url to access a particular instance of SchedulingCalendar.
          """
         return reverse('calendar-detail', args=[str(self.id)])
+
+    def createEvent(self, data):
+        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=self.scope)
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        try:
+            event = service.events().insert(calendarId=self.google_calendar_id, body=data).execute()
+            return event.get('id')
+        except:
+            raise ValueError("Could not create event in calendar")
+
+    def updateEvent(self, id, data):
+        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=self.scope)
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        try:
+            service.events().update(calendarId=self.google_calendar_id, eventId=id, body=data).execute()
+            return True
+        except:
+            raise ValueError("Could not update event in calendar")
+
 
     def __str__(self):
         """
@@ -315,6 +381,24 @@ class EventInstance(models.Model):
          Returns the url to access a particular instance of EventInstance.
          """
         return reverse('eventinstance-detail', args=[str(self.id)])
+
+    def save(self, *args, **kwargs):
+        logger.warning('EventInstance save called')
+        if self.google_calendar_booking_id:
+            logger.warning("Updating calendar entry with ID: " + self.google_calendar_booking_id)
+            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+                raise ValueError('Could not update calendar')
+        else:
+            logger.warning("Creating new calendar entry")
+            calendar_id = self.event.template.createEventEntry(self.host, self.start, self.end, self.status)
+            if not calendar_id:
+                raise ValueError('Could not create calendar entry')
+
+            logger.warning('Inserting new calendar ID into object')
+            self.google_calendar_booking_id = calendar_id
+
+        logger.warning("Calling super().save()")
+        super().save(*args, **kwargs)
 
     def display_host(self):
         return ''.join([self.host])
