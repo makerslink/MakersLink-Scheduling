@@ -9,8 +9,12 @@
   <p><strong>Start:</strong> {{ event.start }}</p>
   <p><strong>End:</strong> {{ event.end }}</p>
   <p><strong>Repeat End:</strong> {{ event.repeat_end }}</p>
-  <p><strong>Rule:</strong><a href="{% url 'rule-detail' pk=event.rule.pk %}">{{ event.rule.name }}</a></p>
-
+  {% if event.rule is None %}
+    <p><strong>Rule:</strong> No rule set</p>
+  {% else %}
+    <p><strong>Rule:</strong> <a href="{% url 'rule-detail' pk=event.rule.pk %}">{{ event.rule.name }}</a></p>
+  {% endif %}
+  
   <div style="margin-left:20px;margin-top:20px">
     <h4>Events from today and a month forward</h4>
     <table>
