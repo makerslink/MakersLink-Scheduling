@@ -2,10 +2,11 @@
 
 from django.db import migrations
 from ..models import User
+from django.conf import settings
 
 def create_testusers(apps, schema_editor):
     # If deployment don't create test users.
-    if DEBUG:
+    if settings.DEBUG:
         superuser = User()
         superuser.is_active = True
         superuser.is_registration_complete = True

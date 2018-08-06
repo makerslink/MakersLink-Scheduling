@@ -16,10 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.static import serve
+from django.conf import settings
+from django.conf.urls import url
 
 #Force using django server to server static even in prod. Not recommended, but
 #this is such a small deployment.
-if not DEBUG:
+if not settings.DEBUG:
     url(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}), 
     url(r'^static/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT}), 
 
