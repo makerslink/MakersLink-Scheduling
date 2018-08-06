@@ -20,7 +20,7 @@
     <h4>Next 5 instances if today was the startdate:</h4>
       {% for event in eventlist %}
         <hr>
-        <p>{{ event }}</p>
+        <p>{{ event |date:"Y-m-d H:i"}}</p>
       {% endfor %}
   </div>
 {% endblock %}
