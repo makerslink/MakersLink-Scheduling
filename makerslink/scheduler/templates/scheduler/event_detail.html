@@ -9,8 +9,12 @@
   <p><strong>Start:</strong> {{ event.start }}</p>
   <p><strong>End:</strong> {{ event.end }}</p>
   <p><strong>Repeat End:</strong> {{ event.repeat_end }}</p>
-  <p><strong>Rule:</strong><a href="{% url 'rule-detail' pk=event.rule.pk %}">{{ event.rule.name }}</a></p>
-
+  {% if event.rule is None %}
+    <p><strong>Rule:</strong> No rule set</p>
+  {% else %}
+    <p><strong>Rule:</strong> <a href="{% url 'rule-detail' pk=event.rule.pk %}">{{ event.rule.name }}</a></p>
+  {% endif %}
+  
   <div style="margin-left:20px;margin-top:20px">
     <h4>Events from today and a month forward</h4>
     <table>
@@ -29,9 +33,9 @@
           <th>{{ event.host }}</th>
           <th>{{ event.event.booking_template.header }}</th>
           <th>{{ event.event.booking_template.body }}</th>
-          <th>{{ event.start }}</th>
-          <th>{{ event.end }}</th>
-          <th>{{ event.status }}</th>
+          <th>{{ event.start |date:"Y-m-d H:i"}}</th>
+          <th>{{ event.end |date:"Y-m-d H:i"}}</th>
+          <th>{{ event.statusText }}</th>
         </tr>
         <p></p>
       {% endfor %}

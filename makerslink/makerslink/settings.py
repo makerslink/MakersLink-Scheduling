@@ -24,8 +24,11 @@ CALENDAR_PK_DIR = os.path.abspath(os.path.join(BASE_DIR, "../pks/"))
 if os.getenv('DJANGO_ENV') == 'prod':
     print("Running with production settings.")
     DEBUG = False
-    ALLOWED_HOSTS = ['vhost.makerslink','vhost.makerslink.se','scheduling.makerslink.se']
+    ALLOWED_HOSTS = ['scheduling.makerslink.se', 'vhost.makerslink', 'vhost.makerslink.se', '127.0.0.1']
+    USE_X_FORWARDED_HOST = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECRET_KEY = os.environ.get("DJANGO_SECRET" )
+    SITE_URL = 'https://scheduling.makerslink.se'
     # ...
 else:
     DEBUG = True

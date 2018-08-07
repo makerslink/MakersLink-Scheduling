@@ -403,7 +403,7 @@ class EventInstance(models.Model):
         super().save(*args, **kwargs)
 
     def display_host(self):
-        return ''.join([self.host])
+        return ''.join([self.host.email])
     display_host.short_description = "Host"
 
     def as_dict(self):
