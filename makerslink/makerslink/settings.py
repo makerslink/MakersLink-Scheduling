@@ -29,12 +29,14 @@ if os.getenv('DJANGO_ENV') == 'prod':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECRET_KEY = os.environ.get("DJANGO_SECRET" )
     SITE_URL = 'https://scheduling.makerslink.se'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     # ...
 else:
     DEBUG = True
     ALLOWED_HOSTS = []    
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Application definition
 
@@ -132,7 +134,14 @@ AUTH_USER_MODEL = "accounts.User"
 
 LOGIN_REDIRECT_URL = '/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'scheduling@makerslink.se'
+EMAIL_HOST_PASSWORD = os.getenv('SCHEDULING_PASS')
+EMAIL_USE_TLS = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
