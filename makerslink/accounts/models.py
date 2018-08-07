@@ -11,6 +11,12 @@ from django.db import models
 
 class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
+    # Field required to create user, used when creating users from teminal
+    REQUIRED_FIELDS = ['slackId']
+    
+    class Meta:
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
     
     objects = UserManager()
     
