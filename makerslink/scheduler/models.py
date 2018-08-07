@@ -125,7 +125,8 @@ class SchedulingCalendar(models.Model):
         return reverse('calendar-detail', args=[str(self.id)])
 
     def createEvent(self, data):
-        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=self.scope)
+        logger.warning("SchedulingCalendar:createEvent called")
+        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
         try:
             event = service.events().insert(calendarId=self.google_calendar_id, body=data).execute()
@@ -134,7 +135,8 @@ class SchedulingCalendar(models.Model):
             raise ValueError("Could not create event in calendar")
 
     def updateEvent(self, id, data):
-        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=self.scope)
+        logger.warning("SchedulingCalendar:updateEvent called")
+        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
         try:
             service.events().update(calendarId=self.google_calendar_id, eventId=id, body=data).execute()
@@ -384,18 +386,18 @@ class EventInstance(models.Model):
 
     def save(self, *args, **kwargs):
         logger.warning('EventInstance save called')
-        if self.google_calendar_booking_id:
-            logger.warning("Updating calendar entry with ID: " + self.google_calendar_booking_id)
+        if self.google_calendar_booking_id is not None:
+            logger.warning("Updating calendar entry with ID: " + str(self.google_calendar_booking_id))
             if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         else:
             logger.warning("Creating new calendar entry")
             calendar_id = self.event.template.createEventEntry(self.host, self.start, self.end, self.status)
-            if not calendar_id:
-                raise ValueError('Could not create calendar entry')
-
-            logger.warning('Inserting new calendar ID into object')
-            self.google_calendar_booking_id = calendar_id
+            if isinstance(calendar_id, bool):
+                logger.warning('No non-boolean ID was returned, not saving value as calendar id')
+            else:
+                logger.warning('Inserting new calendar ID into object')
+                self.google_calendar_booking_id = calendar_id
 
         logger.warning("Calling super().save()")
         super().save(*args, **kwargs)
