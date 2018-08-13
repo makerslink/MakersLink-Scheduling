@@ -1,14 +1,16 @@
-# From django-tools, slightly modified
-
 from django.conf import settings
 from django.db.models import signals
 from django.utils.text import get_text_list
 from django.db import connection, IntegrityError
 from django.utils.translation import ugettext as _
 from django.dispatch import receiver
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from scheduler.models import EventInstance
+from django.apps import apps
+import datetime
+from scheduler import tasks
 
+# From django-tools, slightly modified
 @receiver(pre_save, sender=EventInstance)
 def check_unique_together(sender, **kwargs):
     """
@@ -54,3 +56,16 @@ def auto_add_check_unique_together(model_class):
     """
     if settings.DATABASE_ENGINE in ('sqlite3',):  # 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
         signals.pre_save.connect(check_unique_together, sender=model_class)
+
+@receiver(post_save, sender=EventInstance)
+def create_statistics_row_after_event(sender, instance, created, **kwargs):
+    # If statistics-app is installed we will create a task to update that after the event is done only if this was a creation event
+    if apps.is_installed('schedulerstatistics') and created:
+        logger.warning('Statistics app is installed and something should happen since this EventInstance was created')
+
+@receiver(post_save, sender=EventInstance)
+def cancel_event_before_start(sender, instance, created, **kwargs):
+    # Check if we are already passed the time for cancelling, if so ignore. That is currently handled directly in the calendar class.
+    cancellation_time = instance.start - datetime.timedelta(hours=settings.SCHEDULER_CALENDAR_TIMELIMIT)
+    if cancellation_time < datetime.datetime.now():
+        tasks.create_cancellation_task(instance.id, cancellation_time)

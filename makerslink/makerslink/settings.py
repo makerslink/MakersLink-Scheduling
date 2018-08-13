@@ -29,12 +29,34 @@ if os.getenv('DJANGO_ENV') == 'prod':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECRET_KEY = os.environ.get("DJANGO_SECRET" )
     SITE_URL = 'https://scheduling.makerslink.se'
+    ########################
+    # APPLICATION SETTINGS #
+    ########################
+
+    # Time limit in hours for when events are cancelled or deemed impromptu events
+    SCHEDULER_CALENDAR_TIMELIMIT = 48
+    # String to be inserted before title in calendar when event is cancelled
+    SCHEDULER_TITLE_CANCELLED = 'Inställt: '
+    # String to be inserted before title in calendar when event is taken after timelimit
+    SCHEDULER_TITLE_IMPROMPTU = 'Impromptu: '
     # ...
 else:
     DEBUG = True
     ALLOWED_HOSTS = []    
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
+    # CELERY SETTINGS
+    CELERY_BROKER_URL = "amqp://bobo:excessive@localhost//"
+    ########################
+    # APPLICATION SETTINGS #
+    ########################
+
+    # Time limit in hours for when events are cancelled or deemed impromptu events
+    SCHEDULER_CALENDAR_TIMELIMIT = 48
+    # String to be inserted before title in calendar when event is cancelled
+    SCHEDULER_TITLE_CANCELLED = 'Inställt: '
+    # String to be inserted before title in calendar when event is taken after timelimit
+    SCHEDULER_TITLE_IMPROMPTU = 'Impromptu: '
 
 # Application definition
 
@@ -156,3 +178,4 @@ BOOTSTRAP4 = {
 #    'jquery-ui',
 #    'bootstrap'
 #)
+
