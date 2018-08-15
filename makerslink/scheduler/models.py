@@ -350,7 +350,7 @@ class EventInstance(models.Model):
     
     @property
     def statusText(self):
-        return EventInstance.STATUS[self.status][1]
+        return EventInstance.STATUS[self.status + 1][1]
     
     @property
     def title(self):
