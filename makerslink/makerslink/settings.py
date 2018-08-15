@@ -34,11 +34,11 @@ if os.getenv('DJANGO_ENV') == 'prod':
     ########################
 
     # Time limit in hours for when events are cancelled or deemed impromptu events
-    SCHEDULER_CALENDAR_TIMELIMIT = 48
+    SCHEDULER_CALENDAR_TIMELIMIT = 24
     # String to be inserted before title in calendar when event is cancelled
     SCHEDULER_TITLE_CANCELLED = 'Inställt: '
     # String to be inserted before title in calendar when event is taken after timelimit
-    SCHEDULER_TITLE_IMPROMPTU = 'Impromptu: '
+    SCHEDULER_TITLE_IMPROMPTU = ''
     # ...
 else:
     DEBUG = True
@@ -46,7 +46,7 @@ else:
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
     # CELERY SETTINGS
-    CELERY_BROKER_URL = "amqp://bobo:excessive@localhost//"
+    CELERY_BROKER_URL = "amqp://makertest:testtest@localhost//"
     ########################
     # APPLICATION SETTINGS #
     ########################
