@@ -71,7 +71,7 @@ class EventTemplate(models.Model):
             description += "\n" + self.body
         event_data = {
             'summary': summary,
-            'location': 'Makerspace Linköping',
+            'location': 'Makerspace Linköping, Westmansgatan 47',
             'description': description,
             'start': {
                 'dateTime': start.strftime('%Y-%m-%dT%H:%M:%S'),
