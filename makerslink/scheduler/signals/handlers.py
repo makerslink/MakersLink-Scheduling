@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from django.conf import settings
 from django.db.models import signals
 from django.utils.text import get_text_list
@@ -67,5 +70,5 @@ def create_statistics_row_after_event(sender, instance, created, **kwargs):
 def cancel_event_before_start(sender, instance, created, **kwargs):
     # Check if we are already passed the time for cancelling, if so ignore. That is currently handled directly in the calendar class.
     cancellation_time = instance.start - datetime.timedelta(hours=settings.SCHEDULER_CALENDAR_TIMELIMIT)
-    if cancellation_time < datetime.datetime.now():
+    if cancellation_time > datetime.datetime.now(datetime.timezone.utc):
         tasks.create_cancellation_task(instance.id, cancellation_time)
