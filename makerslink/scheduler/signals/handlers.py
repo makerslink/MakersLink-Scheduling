@@ -68,7 +68,6 @@ def create_statistics_row_after_event(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=EventInstance)
 def cancel_event_before_start(sender, instance, created, **kwargs):
-    # Check if we are already passed the time for cancelling, if so ignore. That is currently handled directly in the calendar class.
+    # Create a scheduled task that handles checking if event should be cancelled and give it them ETA for cancelling.
     cancellation_time = instance.start - datetime.timedelta(hours=settings.SCHEDULER_CALENDAR_TIMELIMIT)
-    if cancellation_time > datetime.datetime.now(datetime.timezone.utc):
-        tasks.create_cancellation_task(instance.id, cancellation_time)
+    tasks.create_cancellation_task(instance.id, cancellation_time)

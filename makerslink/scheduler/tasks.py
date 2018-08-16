@@ -19,6 +19,11 @@ def create_cancellation_task(id, time):
 def cancel_eventinstance(id):
     logger.warning('EventInstance should now be cancelled')
 
+    # Get instance
     eventInstance = EventInstance.get(pk=id)
-    eventInstance.status=2
-    eventInstance.save()
+    # Check if instance is untaken or waiting to be cancelled
+    if eventInstance.status < 1:
+        # Set status to cancelled
+        eventInstance.status=2
+        # Save and let model logic handle itself
+        eventInstance.save()

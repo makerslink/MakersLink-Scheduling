@@ -59,7 +59,7 @@ class EventTemplate(models.Model):
     def _createEventData(self, host, start, end, status):
         if status == 2:
             summary = settings.SCHEDULER_TITLE_CANCELLED + self.title
-        elif status == 1 and (start - datetime.timedelta(hours=settings.SCHEDULER_CALENDAR_TIMELIMIT)) >= datetime.datetime.now():
+        elif status == 1 and (start - datetime.timedelta(hours=settings.SCHEDULER_CALENDAR_TIMELIMIT)) >= datetime.datetime.now(datetime.timezone.utc):
             summary = settings.SCHEDULER_TITLE_IMPROMPTU + self.title
         else:
             summary = self.title
