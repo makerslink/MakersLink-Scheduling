@@ -164,7 +164,7 @@ class HostListView(UserIsStaffMixin, generic.ListView):
 @login_required
 def EventSignupView(request):
     start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    end = start + relativedelta(months=+3)
+    end = start + relativedelta(months=+4)
 
     event_objects = Event.objects.all()
     event_list = []
