@@ -61,14 +61,12 @@
 <table>
     <thead><tr>
         <th>Rubrik</th>
-        <th>Start</th>
-        <th>Slut</th>
+        <th>Datum & tid</th>
     </tr></thead>
     {% for event in taken_events %}
         <tr>
             <td>{{ event.title }}</td>
-            <td>{{ event.start|date:"Y-m-d H:i" }}</td>
-            <td>{{ event.end|date:"Y-m-d H:i" }}</td>
+            <td>{{ event.start|date:"Y-m-d H:i" }}-{{ event.end|date:"H:i" }}</td>
         </tr>
     {% endfor %}
 </table><br><br>
@@ -82,16 +80,14 @@
         <table id="formset" class="form">
             <thead><tr>
                 <th>Rubrik</th>
-                <th>Start</th>
-                <th>Slut</th>
+                <th>Datum & tid</th>
                 <th>Status</th>
                 <th>Boka/boka av</th>
             </tr></thead>
             {% for form in formset.forms %}
                 <tr class="{% cycle 'row-uneven' 'row-even' %}">
                     <td>{{ form.title.value }}</td>
-                    <td>{{ form.initial.start|date:"Y-m-d H:i" }}</td>
-                    <td>{{ form.initial.end|date:"Y-m-d H:i" }}</td>
+                    <td>{{ form.initial.start|date:"Y-m-d H:i" }}-{{ form.initial.end|date:"H:i" }}</td>
                     <td class="eventstatus{{ form.initial.status }}"></td>
                     {% for field in form.visible_fields %}
                         <td>
