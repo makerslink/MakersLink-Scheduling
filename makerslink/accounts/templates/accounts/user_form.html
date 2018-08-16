@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>User registration</h1>
+<h1>Användarregistrering</h1>
 
 {{ form.errors }}
 {{ form.non_field_errors }}
@@ -13,8 +13,8 @@
     {{ form.as_table }}
     </table>
     
-    <button type="submit" class="btn  btn-primary">Submit</button>
-    <a href="{% url 'templates' %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    <button type="submit" class="btn  btn-primary">Registrera</button>
+    <a href="{% url 'templates' %}"><button type="button" class="btn btn-default">Avbryt</button></a>
 
 </form>
 {% endblock %}

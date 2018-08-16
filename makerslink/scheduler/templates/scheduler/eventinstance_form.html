@@ -1,17 +1,17 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-<h1>Title: {{ form.instance.title }}</h1>
+<h1>{{ form.instance.title }}</h1>
 
 {{ form.errors }}
 {{ form.non_field_errors }}
 
 <p><strong>Start:</strong> {{ form.instance.start|date:"Y-m-d H:i" }} </p>
-<p><strong>End:</strong> {{ form.instance.end|date:"Y-m-d H:i" }} </p>
-<p><strong>Host:</strong> {{ form.instance.host.slackId }}</p>
+<p><strong>Slut:</strong> {{ form.instance.end|date:"Y-m-d H:i" }} </p>
+<p><strong>Värd:</strong> {{ form.instance.host.slackId }}</p>
 
 <div style="margin-left:20px;margin-top:20px">
-    <h4>Current paticipants: </h4>
+    <h4>Deltagare: </h4>
       <p>
         {% for participant in form.instance.participants.all %}{% if not forloop.first %}, {% endif %}{{ participant.slackId }}{% endfor %}
       </p>
@@ -22,7 +22,7 @@
     <table>
     {{ form.as_table }}
     </table>
-    <button type="submit" class="btn  btn-primary">Join</button>
-    <a href="{% url 'joinEvent' %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    <button type="submit" class="btn  btn-primary">Anmäl</button>
+    <a href="{% url 'joinEvent' %}"><button type="button" class="btn btn-default">Avbryt</button></a>
 </form>
 {% endblock %}

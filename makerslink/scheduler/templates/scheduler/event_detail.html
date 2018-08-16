@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Name: {{ event.name }}</h1>
+  <h1>Event: {{ event.name }}</h1>
   <strong class="text-success"><a href="{% url 'event-update' pk=event.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'event-delete' pk=event.pk %}">Delete</a></strong>
 
   <p><strong>Name:</strong> {{ event.name }}</p>
@@ -19,20 +19,14 @@
     <h4>Events from today and a month forward</h4>
     <table>
       <tr>
-        <th>Title</th>
         <th>Host</th>
-        <th>Header</th>
-        <th>Body</th>
         <th>Start</th>
         <th>End</th>
         <th>Status</th>
       </tr>
       {% for event in eventlist %}
         <tr>
-          <th>{{ event.event.booking_template.title }}</th>
           <th>{{ event.host }}</th>
-          <th>{{ event.event.booking_template.header }}</th>
-          <th>{{ event.event.booking_template.body }}</th>
           <th>{{ event.start |date:"Y-m-d H:i"}}</th>
           <th>{{ event.end |date:"Y-m-d H:i"}}</th>
           <th>{{ event.statusText }}</th>

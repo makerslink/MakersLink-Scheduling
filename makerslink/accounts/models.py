@@ -20,11 +20,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     objects = UserManager()
     
-    slackIdValid = RegexValidator(r'^((?!@).)*$', 'Please enter a slack name without @.', 
+    slackIdValid = RegexValidator(r'^((?!@).)*$', 'Ange ditt slacknamn utan @-tecken.', 
             code='invalid_slackId')
     
-    email = models.EmailField(unique=True)
-    slackId = models.CharField(max_length=100, verbose_name="Slack namn", unique=True, blank=False, null=False, validators=[slackIdValid])
+    email = models.EmailField(unique=True, verbose_name="E-post")
+    slackId = models.CharField(max_length=100, verbose_name="Slacknamn", unique=True, blank=False, null=False, validators=[slackIdValid])
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_registration_complete = models.BooleanField(default=False)

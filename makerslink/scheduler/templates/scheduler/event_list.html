@@ -9,7 +9,7 @@
 
       {% for event in event_list %}
       <li>
-        <a href="{{ event.get_absolute_url }}">{{ event.name }}</a>
+        <a href="{{ event.get_absolute_url }}">{{ event.name }} ({{ event.start |date:"Y-m-d"}})</a>
       </li>
       {% endfor %}
 

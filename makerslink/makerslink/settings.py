@@ -33,7 +33,7 @@ if os.getenv('DJANGO_ENV') == 'prod':
     # ...
 else:
     DEBUG = True
-    ALLOWED_HOSTS = []    
+    ALLOWED_HOSTS = ['*']    
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

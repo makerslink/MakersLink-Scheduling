@@ -332,10 +332,10 @@ class EventInstance(models.Model):
 
     # Data
     STATUS = (
-        (-1, 'Reschedule needed'),
-        (0, 'Unscheduled'),
-        (1, 'Scheduled'),
-        (2, 'Cancelled'),
+        (-1, 'Ombokning krävs'),
+        (0, 'Ledigt'),
+        (1, 'Bokat'),
+        (2, 'Inställt'),
     )
     
     # Fields

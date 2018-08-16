@@ -3,25 +3,25 @@
 {% block css %}
 <style>
     .eventstatus-1:before{
-        content: "Reschedule needed";
+        content: "Ombokning krävs";
     }
     .eventstatus-1{
         color: #DD4444;
     }
     .eventstatus0:before{
-        content: "Unscheduled";
+        content: "Ledigt";
     }
     .eventstatus0{
         color: blue;
     }
     .eventstatus1:before{
-        content: "Scheduled";
+        content: "Bokat";
     }
     .eventstatus1{
         color: green;
     }
     .eventstatus2:before{
-        content: "Cancelled";
+        content: "Inställt";
     }
     .eventstatus2{
         color: red;
@@ -45,7 +45,7 @@
 
 {% block content %}
 
-<h1>Available events</h1>
+<h1>Tillgängliga pass</h1>
 
 
 {% for message in messages %}
@@ -57,12 +57,12 @@
 {% endfor %}
 
 {% if taken_events %}
-<b>The following events were not taken due to already being owned by someone else:</b></<br>
+<b>Följande pass bokades inte för att någon annan redan bokat dem:</b></<br>
 <table>
     <thead><tr>
-        <th>Title</th>
+        <th>Rubrik</th>
         <th>Start</th>
-        <th>End</th>
+        <th>Slut</th>
     </tr></thead>
     {% for event in taken_events %}
         <tr>
@@ -78,14 +78,14 @@
         {% csrf_token %}
         {{ formset.management_form }}
         {{ formset.non_form_errors.as_ul }}
-        <button type="submit" class="btn  btn-primary">Submit</button>
+        <button type="submit" class="btn  btn-primary">Skicka</button>
         <table id="formset" class="form">
             <thead><tr>
-                <th>Title</th>
+                <th>Rubrik</th>
                 <th>Start</th>
-                <th>End</th>
+                <th>Slut</th>
                 <th>Status</th>
-                <th>Take/Untake</th>
+                <th>Boka/boka av</th>
             </tr></thead>
             {% for form in formset.forms %}
                 <tr class="{% cycle 'row-uneven' 'row-even' %}">
@@ -107,6 +107,6 @@
                 </tr>
             {% endfor %}
         </table>
-        <button type="submit" class="btn  btn-primary">Submit</button>
+        <button type="submit" class="btn  btn-primary">Skicka</button>
     </form>
 {% endblock content %}

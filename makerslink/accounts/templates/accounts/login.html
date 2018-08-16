@@ -1,7 +1,7 @@
 {% extends "base_form.html" %}
 
 {% block content %}
-<h1>Login</h1>
+<h1>Logga in</h1>
 {% if form.errors and not form.non_field_errors %}
 <p class="errornote">
 {% if form.errors.items|length == 1 %}Please correct the error below.{% else %}Please correct the errors below.{% endif %}
@@ -20,8 +20,7 @@
 
 {% if user.is_authenticated %}
 <p class="errornote">
-    You are authenticated as {{ user }}, but are not authorized to
-    access this page. Would you like to login to a different account?
+    Du är inloggad som {{ user }} och har inte behörighet till denna sida. Vill du logga in som en annan användare?
 </p>
 {% endif %}
 
@@ -38,11 +37,11 @@
   {% url 'admin_password_reset' as password_reset_url %}
   {% if password_reset_url %}
   <div class="password-reset-link">
-    <a href="{{ password_reset_url }}">Forgotten your password or username?</a>
+    <a href="{{ password_reset_url }}">Glömt lösenord eller användarnamn?</a>
   </div>
   {% endif %}
   <div class="submit-row">
-    <label>&nbsp;</label><button class="btn  btn-primary" type="submit">Log in</button>
+    <label>&nbsp;</label><button class="btn  btn-primary" type="submit">Logga in</button>
   </div>
 </form>
 
