@@ -8,7 +8,7 @@
   <p><strong>Description:</strong> {{ event.description }}</p>
   <p><strong>Start:</strong> {{ event.start |date:"Y-m-d H:i"}}</p>
   <p><strong>End:</strong> {{ event.end |date:"Y-m-d H:i"}}</p>
-  <p><strong>Repeat End:</strong> {{ event.repeat_end }}</p>
+  <p><strong>Repeat End:</strong> {{ event.repeat_end |date:"Y-m-d H:i"}}</p>
   {% if event.rule is None %}
     <p><strong>Rule:</strong> No rule set</p>
   {% else %}
