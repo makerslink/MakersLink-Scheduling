@@ -171,6 +171,9 @@ def EventSignupView(request):
     for event in event_objects:
         event_list += event.get_events(start, end, False)
 
+    #for event in event_list:
+    #    logger.warning("EventSignupView: %s", event.start)
+
     event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
 
