@@ -124,7 +124,7 @@ class SchedulingCalendar(models.Model):
     # Metadata
     class Meta:
         ordering = ["name"]
-fc24a75c7353f8662dd9b99712b2ca80b3a9f6a7
+    
     # Methods
     def get_absolute_url(self):
         """
