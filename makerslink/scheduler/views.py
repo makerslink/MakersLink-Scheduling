@@ -168,6 +168,13 @@ class ProfileView(LoginRequiredMixin, generic.DetailView):
 class HostListView(UserIsStaffMixin, generic.ListView):
     model = accounts.models.User
     
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add in a QuerySet of all the books
+        context['booking_count'] = EventInstance.objects.all().count
+        return context
+    
     def get_queryset(self):
         queryset = accounts.models.User.objects.all().annotate(
             events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))

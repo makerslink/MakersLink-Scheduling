@@ -16,7 +16,14 @@
     <td>{{ host.events_count  }}</td>
   </tr>
   {% endfor %}
-
+  <thead><tr>
+  	<th>sum</th>
+  	<th>sum</th>
+  </tr></thead>
+  <tr>
+  	<td>{{ object_list.count }}</td>
+  	<td>{{ booking_count }}</td>
+  </tr>
 </table><br><br>
 {% else %}
   <p>No hosts in list.</p>
