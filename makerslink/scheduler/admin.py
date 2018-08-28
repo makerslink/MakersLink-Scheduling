@@ -9,4 +9,4 @@ admin.site.register(SchedulingRule)
 
 @admin.register(EventInstance)
 class EventInstanceAdmin(admin.ModelAdmin):
-    list_display = ('start', 'end', 'status', 'display_host')
+    list_display = ('title', 'start', 'status', 'display_host')
