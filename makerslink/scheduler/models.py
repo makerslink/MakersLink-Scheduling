@@ -6,7 +6,7 @@ from django.urls import reverse
 import uuid
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
-import datetime
+import datetime, pytz
 from google.oauth2 import service_account
 import googleapiclient.discovery
 from dateutil.rrule import *
@@ -44,6 +44,9 @@ class EventTemplate(models.Model):
     def createEventEntry(self, host, start, end, status):
         if self.synchronize:
             data = self._createEventData(host, start, end, status)
+            #logger.warning("Data:")
+            #logger.warning(data)
+            #return True
             return self.calendar.createEvent(data)
         else:
             return True
@@ -52,11 +55,15 @@ class EventTemplate(models.Model):
     def updateEventEntry(self, booking_id, host, start, end, status):
         if self.synchronize:
             data =self._createEventData(host, start, end, status)
+            #logger.warning("Data:")
+            #logger.warning(data)
+            #return True
             return self.calendar.updateEvent(booking_id, data)
         else:
             return True
 
     def _createEventData(self, host, start, end, status):
+        #logger.warning("createEventData:start: %s", start)
         if status == 2:
             summary = "Inställt: " + self.title
         else:
@@ -67,16 +74,17 @@ class EventTemplate(models.Model):
             description += "\n" + self.header
         if self.body:
             description += "\n" + self.body
+        calendarTZ = pytz.timezone(self.calendar.timezone)
         event_data = {
             'summary': summary,
             'location': 'Makerspace Linköping',
             'description': description,
             'start': {
-                'dateTime': start.strftime('%Y-%m-%dT%H:%M:%S'),
+                'dateTime': start.astimezone(calendarTZ).strftime('%Y-%m-%dT%H:%M:%S'),
                 'timeZone': self.calendar.timezone,
             },
             'end': {
-                'dateTime': end.strftime('%Y-%m-%dT%H:%M:%S'),
+                'dateTime': end.astimezone(calendarTZ).strftime('%Y-%m-%dT%H:%M:%S'),
                 'timeZone': self.calendar.timezone,
             },
             'reminders': {
@@ -116,7 +124,7 @@ class SchedulingCalendar(models.Model):
     # Metadata
     class Meta:
         ordering = ["name"]
-
+fc24a75c7353f8662dd9b99712b2ca80b3a9f6a7
     # Methods
     def get_absolute_url(self):
         """
@@ -198,14 +206,17 @@ class Event(models.Model):
     def create_eventinstance(self, start, end=None):
         if end is None:
             end = start + (self.end - self.start)
+        #logger.warning("create_eventinstacreate_eventinstancence:start: %s", start)
+        #logger.warning("create_eventinstance:end: %s", end)
         return EventInstance(id=None, event=self, start=start, end=end, status=0)
 
     def get_event_list(self, from_date, until_date):
-        # logger.warning("Event:get_event_list called")
+        #logger.warning("Event:get_event_list called")
+        #logger.warning("name: %s", self.name)
         # logger.warning("Event:get_event_list:from_date: %s", from_date)
         # logger.warning("Event:get_event_list:until_date: %s", until_date)
-        # logger.warning("Event:get_event_list:self.start: %s", self.start.tzinfo)
-        # logger.warning("Event:get_event_list:self.end: %s", self.end)
+        #logger.warning("Event:get_event_list:self.start: %s", self.start.tzinfo)
+        #logger.warning("Event:get_event_list:self.end: %s", self.end)
 
         # Create list of Events
         event_list = []
@@ -229,8 +240,8 @@ class Event(models.Model):
             # Check if there is a date set to stop generating events, use that instead of given date if it is before given date
             if self.repeat_end and self.repeat_end < until_date:
                 until_date = self.repeat_end
-            # logger.warning("Event:get_event_list:from_date: %s", from_date)
-            # logger.warning("Event:get_event_list:until_date: %s", until_date)
+            #logger.warning("Event:get_event_list:from_date: %s", from_date)
+            #logger.warning("Event:get_event_list:until_date: %s", until_date)
             start_list = self.rule.get_events(from_date, until_date)
 
             for startdate in start_list:
@@ -238,6 +249,7 @@ class Event(models.Model):
         # If this is a single Event
         else:
             # logger.warning("Event:get_event_list:No rule for repetition found, adding single event")
+            #logger.warning("get_event_list:single: %s", self.start)
             event_list.append(self.create_eventinstance(self.start))
 
         return event_list
@@ -248,9 +260,9 @@ class Event(models.Model):
     If replace=False it removes generated events where there is an actual object in DB but does not replace it.
     """
     def get_events(self, from_date, until_date, replace=True):
-        # logger.warning("Event:get_events called")
-        # logger.warning("Event:get_events:from_date: %s", from_date)
-        # logger.warning("Event:get_events:until_date: %s", until_date)
+        #logger.warning("Event:get_events called")
+        #logger.warning("Event:get_events:from_date: %s", from_date)
+        #logger.warning("Event:get_events:until_date: %s", until_date)
 
         # Get all actual EventInstances created from this Event
         event_instances = self.eventinstance_set.all()
@@ -522,9 +534,10 @@ class SchedulingRule(models.Model):
         return dict(param_dict)
 
     def get_events(self, dtstart=None, until=None, extra_params=""):
-        # logger.warning("Rule:get_events called")
-        # logger.warning("dtstart: %s", dtstart)
-        # logger.warning("until: %s", until)
+        #logger.warning("Rule:get_events called")
+        #logger.warning("dtstart: %s", dtstart)
+        #logger.warning("until: %s", until)
+        #logger.warning("name: %s", self.name)
         params = self.get_params(extra_params=extra_params)
         if (('until' in params) and until):
             del params['until']
@@ -532,8 +545,22 @@ class SchedulingRule(models.Model):
             params['count'] = 10
         if(dtstart is None):
             dtstart = datetime.datetime.now()
+        #if not 'tzid' in params:
+        #    params['tzid'] = settings.TIME_ZONE
         frequency = self.rrule_frequency()
         # logger.warning("params: %s", params)
+        until = until.astimezone(pytz.timezone(settings.TIME_ZONE))
+        until = until.replace(tzinfo=None)
+        dtstart = dtstart.astimezone(pytz.timezone(settings.TIME_ZONE))
+        dtstart = dtstart.replace(tzinfo=None)
         events = rrule(frequency, dtstart=dtstart, until=until, **params)
-        return events
+        tz = pytz.timezone(settings.TIME_ZONE)
+        #logger.warning("get_events:tz"+tz)
+        updatedEvents = []
+        for event in events:
+            updatedEvents.append(tz.normalize(tz.localize(event)).astimezone(pytz.utc))
+        
+        for event in updatedEvents:
+            logger.warning("get_events: %s", event)
+        return updatedEvents
 
