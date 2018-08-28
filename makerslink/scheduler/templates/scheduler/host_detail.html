@@ -9,7 +9,7 @@
     <h4>Värd för följande pass:</h4>
       <ul>
         {% for event in view_user.eventinstance_set.all %}
-          <li>{{ event.title }}</li>
+          <li>{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</li>
         {% empty %}
           Ännu inte värd för några pass.
         {% endfor %}
@@ -20,7 +20,7 @@
     <h4>Deltagare på följande pass:</h4>
       <ul>
         {% for event in view_user.participants.all %}
-          <li>{{ event.title }}</li>
+          <li><a href="{% url 'eventinstance-join' pk=event.pk %}">{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</a></li>
         {% empty %}
           Ännu inte deltagare på några pass.
         {% endfor %}
