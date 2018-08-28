@@ -48,7 +48,8 @@ urlpatterns += [
 ]
 
 urlpatterns += [
+    path('host/<str:slug>', views.HostDetailView.as_view(), name='host-detail'),
+    path('profile', views.ProfileView.as_view(), name='profile'),
     path('signup', views.EventSignupView, name='host-signup'),
-    path('hosts', views.HostListView.as_view(template_name='host_list.html'), 
-    name='hosts'),
+    path('hosts', views.HostListView.as_view(template_name='host_list.html'), name='hosts'),
 ]

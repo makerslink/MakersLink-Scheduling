@@ -151,6 +151,18 @@ class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
         event.save()
         return HttpResponseRedirect(self.get_success_url())
 
+class HostDetailView(UserIsStaffMixin, generic.DetailView):
+    model = User
+    template_name = 'scheduler/host_detail.html'
+    slug_field = "slackId"
+
+class ProfileView(LoginRequiredMixin, generic.DetailView):
+    model = User
+    template_name = 'scheduler/host_detail.html'
+    
+    def get_object(self):
+        return self.request.user
+
 class HostListView(UserIsStaffMixin, generic.ListView):
     model = accounts.models.User
     

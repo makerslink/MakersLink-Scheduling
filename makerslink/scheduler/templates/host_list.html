@@ -12,7 +12,7 @@
 
   {% for host in object_list %}
   <tr>
-    <td>{{ host.slackId }}</td>
+    <td><a href="{% url 'host-detail' slug=host.slackId %}">{{ host.slackId }}</a></td>
     <td>{{ host.events_count  }}</td>
   </tr>
   {% endfor %}
