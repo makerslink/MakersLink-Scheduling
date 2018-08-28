@@ -1,8 +1,29 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Värd: {{ user.slackId }}</h1>
+  <h1>Värd: {{ view_user.slackId }}</h1>
 
-  <p><strong>E-Post:</strong> {{ user.email }}</p>
+  <p><strong>E-Post:</strong> {{ view_user.email }}</p>
+  
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Värd för följande pass:</h4>
+      <ul>
+        {% for event in view_user.eventinstance_set.all %}
+          <li>{{ event.title }}</li>
+        {% empty %}
+          Ännu inte värd för några pass.
+        {% endfor %}
+      </ul>
+  </div>
+  
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Deltagare på följande pass:</h4>
+      <ul>
+        {% for event in view_user.participants.all %}
+          <li>{{ event.title }}</li>
+        {% empty %}
+          Ännu inte deltagare på några pass.
+        {% endfor %}
+      </ul>
+  </div>
 {% endblock %}
-

@@ -155,10 +155,12 @@ class HostDetailView(UserIsStaffMixin, generic.DetailView):
     model = User
     template_name = 'scheduler/host_detail.html'
     slug_field = "slackId"
+    context_object_name = 'view_user'
 
 class ProfileView(LoginRequiredMixin, generic.DetailView):
     model = User
     template_name = 'scheduler/host_detail.html'
+    context_object_name = 'view_user'
     
     def get_object(self):
         return self.request.user
