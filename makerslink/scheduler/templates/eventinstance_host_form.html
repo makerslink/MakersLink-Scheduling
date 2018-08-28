@@ -72,6 +72,8 @@
 </table><br><br>
 {% endif %}
 
+Antal tillgängliga pass är: {{ available_events }}
+
     <form method="post">
         {% csrf_token %}
         {{ formset.management_form }}

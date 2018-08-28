@@ -273,5 +273,5 @@ def EventSignupView(request):
         formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
     logger.warning('rendering')
     #request.session['signup_initialdata'] =initial_values
-    return render(request, 'eventinstance_host_form.html', {'formset': formset})
+    return render(request, 'eventinstance_host_form.html', {'formset': formset, 'available_events':len(initial_values)})
 
