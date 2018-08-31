@@ -1,4 +1,5 @@
 {% extends "base_generic.html" %}
+{% load filters %}
 
 {% block content %}
 <h1>{{ form.instance.title }}</h1>
@@ -22,7 +23,11 @@
     <table>
     {{ form.as_table }}
     </table>
-    <button type="submit" class="btn  btn-primary">Anmäl</button>
+    {% if request.user|is_participant:form.instance %}
+    	<button type="submit" class="btn  btn-primary">Avanmäl</button>
+    {% else %}
+    	<button type="submit" class="btn  btn-primary">Anmäl</button>
+    {% endif %}
     <a href="{% url 'joinEvent' %}"><button type="button" class="btn btn-default">Avbryt</button></a>
 </form>
 {% endblock %}

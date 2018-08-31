@@ -147,7 +147,10 @@ class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
     
     def form_valid(self, form):
         event = form.save(commit=False)
-        event.participants.add(self.request.user)  # use your own profile here
+        if event.participants.filter(id=self.request.user.id).exists():
+        	event.participants.remove(self.request.user)  # User was participant remove them.
+        else:
+        	event.participants.add(self.request.user)  # User was not participant add them.
         event.save()
         return HttpResponseRedirect(self.get_success_url())
 
