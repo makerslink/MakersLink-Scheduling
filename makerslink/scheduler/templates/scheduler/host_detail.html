@@ -9,7 +9,9 @@
     <h4>Värd för följande pass:</h4>
       <ul>
         {% for event in view_user.eventinstance_set.all %}
+          {% if event.status == 1 %}
           <li>{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</li>
+          {% endif %}
         {% empty %}
           Ännu inte värd för några pass.
         {% endfor %}

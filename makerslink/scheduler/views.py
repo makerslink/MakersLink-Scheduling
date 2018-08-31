@@ -171,8 +171,7 @@ class HostListView(UserIsStaffMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        # Add in a QuerySet of all the books
-        context['booking_count'] = EventInstance.objects.all().count
+        context['booking_count'] = EventInstance.objects.filter(status=1).count
         return context
     
     def get_queryset(self):
@@ -279,6 +278,9 @@ def EventSignupView(request):
         logger.warning('view is GET')
         formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
     logger.warning('rendering')
+    
+    num_rebooking = EventInstance.objects.filter(status=-1).count()
+    
     #request.session['signup_initialdata'] =initial_values
-    return render(request, 'eventinstance_host_form.html', {'formset': formset, 'available_events':len(initial_values)})
+    return render(request, 'eventinstance_host_form.html', {'formset': formset, 'available_events':len(initial_values)+num_rebooking})
 
