@@ -549,8 +549,9 @@ class SchedulingRule(models.Model):
         #    params['tzid'] = settings.TIME_ZONE
         frequency = self.rrule_frequency()
         # logger.warning("params: %s", params)
-        until = until.astimezone(pytz.timezone(settings.TIME_ZONE))
-        until = until.replace(tzinfo=None)
+        if until:
+            until = until.astimezone(pytz.timezone(settings.TIME_ZONE))
+            until = until.replace(tzinfo=None)
         dtstart = dtstart.astimezone(pytz.timezone(settings.TIME_ZONE))
         dtstart = dtstart.replace(tzinfo=None)
         events = rrule(frequency, dtstart=dtstart, until=until, **params)
@@ -560,7 +561,7 @@ class SchedulingRule(models.Model):
         for event in events:
             updatedEvents.append(tz.normalize(tz.localize(event)).astimezone(pytz.utc))
         
-        for event in updatedEvents:
-            logger.warning("get_events: %s", event)
+        #for event in updatedEvents:
+        #    logger.warning("get_events: %s", event)
         return updatedEvents
 
