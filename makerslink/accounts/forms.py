@@ -21,4 +21,4 @@ class CustomUserChangeForm(UserChangeForm):
 
     class Meta:
         model = User
-        fields = ('email', 'slackId', 'is_active', 'is_staff', 'is_registration_complete')
+        fields = ('email', 'slackId', 'is_active', 'is_staff', 'is_registration_complete',  'is_superuser')

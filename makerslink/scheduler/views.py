@@ -147,12 +147,35 @@ class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
     
     def form_valid(self, form):
         event = form.save(commit=False)
-        event.participants.add(self.request.user)  # use your own profile here
+        if event.participants.filter(id=self.request.user.id).exists():
+        	event.participants.remove(self.request.user)  # User was participant remove them.
+        else:
+        	event.participants.add(self.request.user)  # User was not participant add them.
         event.save()
         return HttpResponseRedirect(self.get_success_url())
 
+class HostDetailView(UserIsStaffMixin, generic.DetailView):
+    model = User
+    template_name = 'scheduler/host_detail.html'
+    slug_field = "slackId"
+    context_object_name = 'view_user'
+
+class ProfileView(LoginRequiredMixin, generic.DetailView):
+    model = User
+    template_name = 'scheduler/host_detail.html'
+    context_object_name = 'view_user'
+    
+    def get_object(self):
+        return self.request.user
+
 class HostListView(UserIsStaffMixin, generic.ListView):
     model = accounts.models.User
+    
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        context['booking_count'] = EventInstance.objects.filter(status=1).count
+        return context
     
     def get_queryset(self):
         queryset = accounts.models.User.objects.all().annotate(
@@ -258,6 +281,9 @@ def EventSignupView(request):
         logger.warning('view is GET')
         formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
     logger.warning('rendering')
+    
+    num_rebooking = EventInstance.objects.filter(status=-1).count()
+    
     #request.session['signup_initialdata'] =initial_values
-    return render(request, 'eventinstance_host_form.html', {'formset': formset})
+    return render(request, 'eventinstance_host_form.html', {'formset': formset, 'available_events':len(initial_values)+num_rebooking})
 

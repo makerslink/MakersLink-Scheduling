@@ -9,6 +9,10 @@
       {% for eventinstance in eventinstance_list %}
       <li>
         <a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }} {{ eventinstance.start|date:"Y-m-d H:i" }}</a>
+        
+        {% if user.is_staff and eventinstance.participants.all.exists %}
+        	({% for participant in eventinstance.participants.all %}{% if not forloop.first %}, {% endif %}{{ participant.slackId }}{% endfor %})
+        {% endif %}
       </li>
       {% endfor %}
 
@@ -19,3 +23,4 @@
 {% endblock %}
 
 template-detail
+

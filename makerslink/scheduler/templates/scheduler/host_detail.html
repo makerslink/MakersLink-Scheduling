@@ -1,0 +1,31 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Värd: {{ view_user.slackId }}</h1>
+
+  <p><strong>E-Post:</strong> {{ view_user.email }}</p>
+  
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Värd för följande pass:</h4>
+      <ul>
+        {% for event in view_user.eventinstance_set.all %}
+          {% if event.status == 1 %}
+          <li>{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</li>
+          {% endif %}
+        {% empty %}
+          Ännu inte värd för några pass.
+        {% endfor %}
+      </ul>
+  </div>
+  
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Deltagare på följande pass:</h4>
+      <ul>
+        {% for event in view_user.participants.all %}
+          <li><a href="{% url 'eventinstance-join' pk=event.pk %}">{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</a></li>
+        {% empty %}
+          Ännu inte deltagare på några pass.
+        {% endfor %}
+      </ul>
+  </div>
+{% endblock %}
