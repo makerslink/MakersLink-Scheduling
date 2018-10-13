@@ -565,3 +565,20 @@ class SchedulingRule(models.Model):
         #    logger.warning("get_events: %s", event)
         return updatedEvents
 
+class SchedulingPeriod(models.Model):
+    
+    #Fields
+    start = models.DateField(help_text="Start of period", db_index=True)
+    end = models.DateField(help_text="End of period", db_index=True)
+    
+    @property
+    def name(self):
+        return self.start.strftime('%Y %b') + "-" + self.end.strftime('%b')
+    
+    #Functions
+    def get_absolute_url(self):
+        """
+         Returns the url to access a particular instance of SchedulingPeriod.
+         """
+        return reverse('period-detail', args=[str(self.id)])
+

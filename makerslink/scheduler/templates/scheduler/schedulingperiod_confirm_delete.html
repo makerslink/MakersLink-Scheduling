@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<h1>Delete Period</h1>
+
+<p>Are you sure you want to delete the Period: {{ object.name }}?</p>
+
+<form action="" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn  btn-danger">Yes, delete.</button>
+  <a href="{% url 'period-detail' pk=object.pk %}"><button type="button" class="btn btn-default">Cancel</button></a>
+</form>
+
+{% endblock %}

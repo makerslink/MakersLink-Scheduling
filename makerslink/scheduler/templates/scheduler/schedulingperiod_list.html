@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Period List</h1>
+    <a href="{% url 'period-create' %}">Create new</a>
+
+    {% if schedulingperiod_list %}
+    <ul>
+
+      {% for period in schedulingperiod_list %}
+      <li>
+        <a href="{{ period.get_absolute_url }}">{{ period.name }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+    {% else %}
+      <p>No Periods have been created.</p>
+    {% endif %}
+{% endblock %}
+
+template-detail

@@ -1,0 +1,25 @@
+{% extends "base_form.html" %}
+
+{% block content %}
+{% if object.id %}
+<h1>Edit period {{ object.name }}</h1>
+{% else %}
+<h1>Create period</h1>
+{% endif %}
+
+{{ form.errors }}
+{{ form.non_field_errors }}
+
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table>
+    {{ form.as_table }}
+    </table>
+    <button type="submit" class="btn  btn-primary">Submit</button>
+    {% if object.id %}
+    <a href="{% url 'period-detail' pk=object.id %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    {% else %}
+    <a href="{% url 'periods' %}"><button type="button" class="btn btn-default">Cancel</button></a>
+    {% endif %}
+</form>
+{% endblock %}

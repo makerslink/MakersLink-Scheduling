@@ -2,8 +2,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
-from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule
-from .forms import EventInstanceFormSet, EventInstanceForm
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod
+from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm
 from django.forms import modelformset_factory
 from datetime import datetime, timezone
 from dateutil.relativedelta import *
@@ -131,6 +131,24 @@ class EventUpdateView(UserIsStaffMixin, UpdateView):
 class EventDeleteView(UserIsStaffMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
+
+class PeriodListView(UserIsStaffMixin, generic.ListView):
+    model = SchedulingPeriod
+
+class PeriodDetailView(UserIsStaffMixin, generic.DetailView):
+    model = SchedulingPeriod
+
+class PeriodCreateView(UserIsStaffMixin, CreateView):
+    model = SchedulingPeriod
+    form_class = PeriodForm
+
+class PeriodUpdateView(UserIsStaffMixin, UpdateView):
+    model = SchedulingPeriod
+    form_class = PeriodForm
+
+class PeriodDeleteView(UserIsStaffMixin, DeleteView):
+    model = SchedulingPeriod
+    success_url = reverse_lazy('periods')
 
 class EventInstanceListView(LoginRequiredMixin, generic.ListView):
     model = EventInstance

@@ -2,9 +2,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django import forms
+from .widgets import DateMonthPicker
 from django.forms import BaseModelFormSet, BaseFormSet, ModelForm, Textarea
-from bootstrap_datepicker_plus import DateTimePickerInput
-from .models import EventTemplate, SchedulingCalendar, Event, EventInstance
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingPeriod
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 import datetime #for checking renewal date range.
@@ -28,6 +28,17 @@ import datetime #for checking renewal date range.
 
 
 """
+
+
+class PeriodForm(forms.ModelForm):
+    class Meta:
+        fields = '__all__'
+        model = SchedulingPeriod
+        widgets = {
+            'start': DateMonthPicker,
+            'end': DateMonthPicker,
+        }
+
 class EventInstanceFormSet(BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

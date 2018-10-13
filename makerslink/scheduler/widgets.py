@@ -7,3 +7,7 @@ class DateTimePicker(DateTimePickerInput):
 class DatePicker(DateTimePickerInput):
     format='%Y-%m-%d'
     options={"calendarWeeks":True, "locale":"sv"}
+
+class DateMonthPicker(DateTimePickerInput):
+    format='%Y-%m-%d'
+    options={"sideBySide":True, "locale":"sv", "viewMode":"months"}

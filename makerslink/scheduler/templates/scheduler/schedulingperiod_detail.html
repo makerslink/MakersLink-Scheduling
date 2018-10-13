@@ -1,0 +1,11 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Event: {{ object.name }}</h1>
+  <strong class="text-success"><a href="{% url 'period-update' pk=object.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'period-delete' pk=object.pk %}">Delete</a></strong>
+
+  <p><strong>Name:</strong> {{ object.name }}</p>
+  <p><strong>Start:</strong> {{ object.start |date:"Y-m-d"}}</p>
+  <p><strong>End:</strong> {{ object.end |date:"Y-m-d"}}</p>
+{% endblock %}
+
