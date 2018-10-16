@@ -4,6 +4,7 @@
 <h1>Host List</h1>
 
 {% if object_list %}
+
 <table>
   <thead><tr>
     <th>Slack name</th>
@@ -25,7 +26,37 @@
   	<td>{{ booking_count }}</td>
   </tr>
 </table><br><br>
+
+{% regroup user_list by eventinstance__period as period_list %}
+
+<ul>
+{% for period in period_list %}
+    <li>{{ period.grouper }}
+    <ul>
+        {% for user in period.list %}
+          <li>{{ user.slackId }} ({{ user.events_count }})</li>
+        {% endfor %}
+    </ul>
+    </li>
+{% endfor %}
+</ul>
+
+{% regroup user_list by slackId as regrouped %}
+<ul>
+{% for user in regrouped %}
+    <li>{{ user.grouper }}
+    <ul>
+        {% for period in user.list %}
+          <li>{{ period.eventinstance__period }} ({{ period.events_count }})</li>
+        {% endfor %}
+    </ul>
+    </li>
+{% endfor %}
+</ul>
+
 {% else %}
   <p>No hosts in list.</p>
 {% endif %}
+{% debug %}
 {% endblock %}
+

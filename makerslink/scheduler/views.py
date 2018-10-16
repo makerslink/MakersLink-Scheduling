@@ -196,8 +196,10 @@ class HostListView(UserIsStaffMixin, generic.ListView):
         return context
     
     def get_queryset(self):
-        queryset = accounts.models.User.objects.all().annotate(
-            events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
+        #queryset = accounts.models.User.objects.all().annotate(
+        #    events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
+        queryset = accounts.models.User.objects.all().values("slackId", "eventinstance__period", "eventinstance__period__start", "eventinstance__period__end").annotate(
+        	events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
         
         return queryset
 
