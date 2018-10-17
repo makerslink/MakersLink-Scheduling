@@ -446,6 +446,12 @@ class EventInstance(models.Model):
         else:
             return True
 
+    def __str__(self):
+        """
+        String for representing the EventTemplate object (in Admin site etc.)
+        """
+        return self.title+"("+self.host.slackId+", "+self.period.__str__()+")"
+
 class SchedulingRule(models.Model):
     #Data
     freqs = (

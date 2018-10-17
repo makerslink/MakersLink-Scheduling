@@ -15,7 +15,8 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Max
+from django.db.models.expressions import F
 from accounts.models import User
 import accounts.models
 
@@ -198,10 +199,19 @@ class HostListView(UserIsStaffMixin, generic.ListView):
     def get_queryset(self):
         #queryset = accounts.models.User.objects.all().annotate(
         #    events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
-        queryset = accounts.models.User.objects.all().values("slackId", "eventinstance__period", "eventinstance__period__start", "eventinstance__period__end").order_by().annotate(
-        	events_count=Count('eventinstance__host', filter=Q(eventinstance__status=1)))
+        #queryset = accounts.models.User.objects.all().values("slackId", "eventinstance__period", "eventinstance__period__start", "eventinstance__period__end").order_by().annotate(
+        #	events_count=Count('eventinstance__host', filter=Q(eventinstance__status=1)))
+        #queryset = EventInstance.objects.all().order_by().annotate(host_count = Count('host', filter=Q(status=1)), period_count = Count('period', filter=Q(status=1)))
+        #queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(period_count=Count('eventinstance__period', filter=Q(eventinstance__status=1)), host_count=Count('slackId', filter=Q(eventinstance__status=1)), period=Min('eventinstance__period'))
+        
+        queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(period_count=Count('eventinstance__period', filter=Q(eventinstance__status=1)), host_count=Count('slackId', filter=Q(eventinstance__status=1)), period=Max('eventinstance__period'))
         
         return queryset
+	
+    def get_context_data(self, **kwargs):
+        context = super(HostListView, self).get_context_data(**kwargs)
+        context['period_list'] = SchedulingPeriod.objects.all().order_by('start')
+        return context
 
 
 @login_required

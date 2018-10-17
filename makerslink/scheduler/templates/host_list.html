@@ -14,7 +14,7 @@
   {% for host in object_list %}
   <tr>
     <td><a href="{% url 'host-detail' slug=host.slackId %}">{{ host.slackId }}</a></td>
-    <td>{{ host.events_count  }}</td>
+    <td>{{ host.host_count  }} ({{ host.period.start }})</td>
   </tr>
   {% endfor %}
   <thead><tr>
@@ -27,36 +27,41 @@
   </tr>
 </table><br><br>
 
-{% regroup user_list by eventinstance__period as period_list %}
+{% regroup user_list by slackId as host_period_list %}
 
-<ul>
-{% for period in period_list %}
-    <li>{{ period.grouper }}
-    <ul>
-        {% for user in period.list %}
-          <li>{{ user.slackId }} ({{ user.events_count }})</li>
-        {% endfor %}
-    </ul>
-    </li>
-{% endfor %}
-</ul>
+<table>
+  <thead><tr>
+    <th></th>
+    {% for period in period_list %}
+        <th><div style = "width:4.5em;">{{ period }} </div></th>
+    {% endfor %}
+  </tr></thead>
 
-{% regroup user_list by slackId as regrouped %}
-<ul>
-{% for user in regrouped %}
-    <li>{{ user.grouper }}
-    <ul>
-        {% for period in user.list %}
-          <li>{{ period.eventinstance__period }} ({{ period.events_count }})</li>
-        {% endfor %}
-    </ul>
-    </li>
-{% endfor %}
-</ul>
+    {% for host in host_period_list %}
+        <tr>
+            <th>{{ host.grouper }}</th>
+            
+                {% for period in period_list %}
+                    {% for col in host.list %}
+                        {% if col.period == period.pk %}
+                            <td>{{ col.host_count }}</td>
+                        {% elif col.period == None %}
+                            <td>0</td>
+                        {% elif forloop.first and col.period >= period.pk %}
+                            <td>0</td>
+                        {% elif forloop.last and col.period <= period.pk %}
+                            <td>0</td>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+        </tr>
+    {% endfor %}
+
+</table>
 
 {% else %}
   <p>No hosts in list.</p>
 {% endif %}
-{% debug %}
+
 {% endblock %}
 
