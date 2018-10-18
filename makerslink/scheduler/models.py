@@ -359,7 +359,7 @@ class EventInstance(models.Model):
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(default=0, choices=STATUS, help_text="Instance status")
-    period = models.ForeignKey('SchedulingPeriod', on_delete=models.SET_NULL, null=True)
+    period = models.ForeignKey('SchedulingPeriod', on_delete=models.SET_NULL, null=True, blank=True)
     
     @property
     def statusText(self):

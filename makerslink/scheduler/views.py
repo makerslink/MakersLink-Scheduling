@@ -197,20 +197,15 @@ class HostListView(UserIsStaffMixin, generic.ListView):
         return context
     
     def get_queryset(self):
-        #queryset = accounts.models.User.objects.all().annotate(
-        #    events_count=Count('eventinstance', filter=Q(eventinstance__status=1)))
-        #queryset = accounts.models.User.objects.all().values("slackId", "eventinstance__period", "eventinstance__period__start", "eventinstance__period__end").order_by().annotate(
-        #	events_count=Count('eventinstance__host', filter=Q(eventinstance__status=1)))
-        #queryset = EventInstance.objects.all().order_by().annotate(host_count = Count('host', filter=Q(status=1)), period_count = Count('period', filter=Q(status=1)))
-        #queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(period_count=Count('eventinstance__period', filter=Q(eventinstance__status=1)), host_count=Count('slackId', filter=Q(eventinstance__status=1)), period=Min('eventinstance__period'))
-        
-        queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(period_count=Count('eventinstance__period', filter=Q(eventinstance__status=1)), host_count=Count('slackId', filter=Q(eventinstance__status=1)), period=Max('eventinstance__period'))
+        queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
+        	host_count=Count('slackId', filter=Q(eventinstance__status=1)),
+        	period=Max('eventinstance__period'))
         
         return queryset
 	
     def get_context_data(self, **kwargs):
         context = super(HostListView, self).get_context_data(**kwargs)
-        context['period_list'] = SchedulingPeriod.objects.all().order_by('start')
+        context['period_list'] = SchedulingPeriod.objects.all().order_by('-start').annotate(event_count = Count('eventinstance', filter=Q(eventinstance__status=1)))
         return context
 
 

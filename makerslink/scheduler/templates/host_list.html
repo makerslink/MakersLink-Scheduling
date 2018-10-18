@@ -5,41 +5,19 @@
 
 {% if object_list %}
 
-<table>
-  <thead><tr>
-    <th>Slack name</th>
-    <th>Booked events</th>
-  </tr></thead>
-
-  {% for host in object_list %}
-  <tr>
-    <td><a href="{% url 'host-detail' slug=host.slackId %}">{{ host.slackId }}</a></td>
-    <td>{{ host.host_count  }} ({{ host.period.start }})</td>
-  </tr>
-  {% endfor %}
-  <thead><tr>
-  	<th>sum</th>
-  	<th>sum</th>
-  </tr></thead>
-  <tr>
-  	<td>{{ object_list.count }}</td>
-  	<td>{{ booking_count }}</td>
-  </tr>
-</table><br><br>
-
 {% regroup user_list by slackId as host_period_list %}
 
 <table>
   <thead><tr>
-    <th></th>
+    <th>Slack name</th>
     {% for period in period_list %}
-        <th><div style = "width:4.5em;">{{ period }} </div></th>
+        <th><div style = "width:4.5em;text-align: center;">{{ period }} </div></th>
     {% endfor %}
   </tr></thead>
 
     {% for host in host_period_list %}
         <tr>
-            <th>{{ host.grouper }}</th>
+            <th><a href="{% url 'host-detail' slug=host.grouper %}">{{ host.grouper }}</a></th>
             
                 {% for period in period_list %}
                     {% for col in host.list %}
@@ -56,6 +34,12 @@
                 {% endfor %}
         </tr>
     {% endfor %}
+	<thead><tr>
+		<th>{{ host_period_list|length }}</th>
+		{% for period in period_list %}
+		    <th>{{ period.event_count }}</th>
+		{% endfor %}
+	</thead></tr>
 
 </table>
 
