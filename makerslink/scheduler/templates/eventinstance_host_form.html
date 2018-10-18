@@ -71,6 +71,7 @@
     {% endfor %}
 </table><br><br>
 {% endif %}
+{% regroup formset.forms by period_name.value as period_forms %}
 
 Antal tillgängliga pass är: {{ available_events }}
 
@@ -86,23 +87,26 @@ Antal tillgängliga pass är: {{ available_events }}
                 <th>Status</th>
                 <th>Boka/boka av</th>
             </tr></thead>
-            {% for form in formset.forms %}
-                <tr class="{% cycle 'row-uneven' 'row-even' %}">
-                    <td>{{ form.title.value }}</td>
-                    <td>{{ form.initial.start|date:"Y-m-d H:i" }}-{{ form.initial.end|date:"H:i" }}</td>
-                    <td class="eventstatus{{ form.initial.status }}"></td>
-                    {% for field in form.visible_fields %}
-                        <td>
-                            {# Include the hidden fields in the form #}
-                            {% if forloop.first %}
-                                {% for hidden in form.hidden_fields %}
-                                    {{ hidden }}
-                                {% endfor %}
-                            {% endif %}
-                            {{ field }}
-                        </td>
-                    {% endfor %}
-                </tr>
+            {% for period in period_forms %}
+            <tr><th style="text-align:center" colspan=4>{{ period.grouper }}</th></tr>
+		        {% for form in period.list %}
+		            <tr class="{% cycle 'row-uneven' 'row-even' %}">
+		                <td>{{ form.title.value }}</td>
+		                <td>{{ form.initial.start|date:"Y-m-d H:i" }}-{{ form.initial.end|date:"H:i" }}</td>
+		                <td class="eventstatus{{ form.initial.status }}"></td>
+		                {% for field in form.visible_fields %}
+		                    <td>
+		                        {# Include the hidden fields in the form #}
+		                        {% if forloop.first %}
+		                            {% for hidden in form.hidden_fields %}
+		                                {{ hidden }}
+		                            {% endfor %}
+		                        {% endif %}
+		                        {{ field }}
+		                    </td>
+		                {% endfor %}
+		            </tr>
+		        {% endfor %}
             {% endfor %}
         </table>
         <button type="submit" class="btn  btn-primary">Skicka</button>

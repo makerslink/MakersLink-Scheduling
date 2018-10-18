@@ -19,6 +19,7 @@ from django.db.models import Q, Count, Max
 from django.db.models.expressions import F
 from accounts.models import User
 import accounts.models
+import operator
 
 # Create your views here.
 @login_required
@@ -222,7 +223,8 @@ def EventSignupView(request):
     #for event in event_list:
     #    logger.warning("EventSignupView: %s", event.start)
 
-    event_list = sorted(event_list, key=lambda eventinstance: eventinstance.start)
+    event_list = sorted(event_list, key=lambda eventinstance:[eventinstance.period.start, eventinstance.start])
+    
     initial_values = [(event_instance.as_dict()) for event_instance in event_list]
 
     eventinstanceFormSet = modelformset_factory(EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
@@ -230,7 +232,7 @@ def EventSignupView(request):
     if request.method == 'POST':
         taken_events = ""
         logger.warning('form is submitted as POST')
-        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
+        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)).order_by("period", "start"))
 
         logger.warning('starting looping of forms')
         for form in formset:
@@ -304,7 +306,8 @@ def EventSignupView(request):
         return HttpResponseRedirect('')
     else:
         logger.warning('view is GET')
-        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)))
+        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)).order_by("period", "start"))
+        
     logger.warning('rendering')
     
     num_rebooking = EventInstance.objects.filter(status=-1).count()

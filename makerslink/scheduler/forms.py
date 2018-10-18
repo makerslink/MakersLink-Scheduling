@@ -50,7 +50,7 @@ class EventInstanceForm(ModelForm):
 
     class Meta:
         model = EventInstance
-        fields = ('start', 'end', 'status', 'event')
+        fields = ('start', 'end', 'status', 'event', 'period')
 
     def __init__(self, *args, **kwargs):
         super(EventInstanceForm, self).__init__(*args, **kwargs)
@@ -62,6 +62,17 @@ class EventInstanceForm(ModelForm):
         else:
             title = "N/A"
         self.fields["title"] = forms.CharField(required=False, initial=title, widget=forms.HiddenInput())
+        
+        logger.warning("EventInstanceForm inital: %s", self.initial["period"])
+        if 'period' in self.initial:
+            period = SchedulingPeriod.objects.get(pk=self.initial["period"]).name
+        #    self.fields["period"] = forms.CharField(required=False, initial=period, widget=forms.HiddenInput())
+        else:
+            period = "N/A"
+        self.fields["period_name"] = forms.CharField(required=False, initial=period, widget=forms.HiddenInput())
+        
+        #logger.warning("EventInstanceForm: %s", self.initial["period"])
+        #logger.warning("EventInstanceForm: %s",  self.fields["period"])
 
         if 'status' in self.initial:
             if self.initial["status"] == 1:

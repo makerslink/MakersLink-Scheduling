@@ -208,7 +208,17 @@ class Event(models.Model):
             end = start + (self.end - self.start)
         #logger.warning("create_eventinstacreate_eventinstancence:start: %s", start)
         #logger.warning("create_eventinstance:end: %s", end)
-        return EventInstance(id=None, event=self, start=start, end=end, status=0)
+        
+        period = SchedulingPeriod.objects.filter(start__lte=start, end__gte=end)
+        
+        if period.count() == 1:
+       	    period = period[0]
+       	else:
+            period = None
+            
+        event = EventInstance(id=None, event=self, start=start, end=end, status=0, period=period)
+        
+        return event
 
     def get_event_list(self, from_date, until_date):
         #logger.warning("Event:get_event_list called")
@@ -427,7 +437,8 @@ class EventInstance(models.Model):
             'event': self.event.id,
             'start': self.start,
             'end': self.end,
-            'status': self.status
+            'status': self.status,
+            'period': self.period.id
         }
         else:
             return {
@@ -437,7 +448,8 @@ class EventInstance(models.Model):
                 'event': self.event.id,
                 'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
-                'status': self.status
+                'status': self.status,
+            	'period': self.period.id
             }
 
     def can_take(self, user):
