@@ -63,7 +63,6 @@ class EventInstanceForm(ModelForm):
             title = "N/A"
         self.fields["title"] = forms.CharField(required=False, initial=title, widget=forms.HiddenInput())
         
-        logger.warning("EventInstanceForm inital: %s", self.initial["period"])
         if 'period' in self.initial:
             period = SchedulingPeriod.objects.get(pk=self.initial["period"]).name
         #    self.fields["period"] = forms.CharField(required=False, initial=period, widget=forms.HiddenInput())
