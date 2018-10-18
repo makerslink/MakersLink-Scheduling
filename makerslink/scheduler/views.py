@@ -174,16 +174,20 @@ class EventInstanceUpdateView(LoginRequiredMixin, UpdateView):
         event.save()
         return HttpResponseRedirect(self.get_success_url())
 
-class HostDetailView(UserIsStaffMixin, generic.DetailView):
+class UnsecuredHostDetailView(generic.DetailView):
     model = User
     template_name = 'scheduler/host_detail.html'
-    slug_field = "slackId"
     context_object_name = 'view_user'
+    
+    def get_context_data(self, **kwargs):
+        context = super(UnsecuredHostDetailView, self).get_context_data(**kwargs)
+        context['period_list'] = SchedulingPeriod.objects.all().order_by('-start').annotate(event_count = Count('eventinstance', filter=Q(eventinstance__status=1, eventinstance__host=self.get_object())))
+        return context
 
-class ProfileView(LoginRequiredMixin, generic.DetailView):
-    model = User
-    template_name = 'scheduler/host_detail.html'
-    context_object_name = 'view_user'
+class HostDetailView(UserIsStaffMixin, UnsecuredHostDetailView):
+    slug_field = "slackId"
+
+class ProfileView(LoginRequiredMixin, UnsecuredHostDetailView):
     
     def get_object(self):
         return self.request.user
