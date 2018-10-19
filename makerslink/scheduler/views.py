@@ -5,7 +5,7 @@ from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod
 from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm
 from django.forms import modelformset_factory
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from dateutil.relativedelta import *
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -236,7 +236,7 @@ def EventSignupView(request):
     if request.method == 'POST':
         taken_events = ""
         logger.warning('form is submitted as POST')
-        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)).order_by("period", "start"))
+        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)).exclude(start__lt=date.today()).order_by("period", "start"))
 
         logger.warning('starting looping of forms')
         for form in formset:
@@ -310,7 +310,7 @@ def EventSignupView(request):
         return HttpResponseRedirect('')
     else:
         logger.warning('view is GET')
-        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)).order_by("period", "start"))
+        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(Q(host=request.user)|Q(status__lte=0)).exclude(start__lt=date.today()).order_by("period", "start"))
         
     logger.warning('rendering')
     
