@@ -236,7 +236,13 @@ class Event(models.Model):
                 from_date = self.start
             # Set the date to the given startdate but keep the same time if earlier
             else:
-                from_date = datetime.datetime.combine(from_date.date(), self.start.time(), self.start.tzinfo)
+                # As we are combining a current date with a time that might have
+                # been set in with another DST set up, we have to convert the time
+                # to local at the past timezone and convert it back to UTC with
+                # timezone for current local.
+                tz = pytz.timezone(settings.TIME_ZONE)
+                from_date = datetime.datetime.combine(from_date.date(), self.start.astimezone(tz).time(), tz).astimezone(pytz.timezone("utc"))
+                #from_date = datetime.datetime.combine(from_date.date(), self.start.time(), self.start.tzinfo)
             # Check if there is a date set to stop generating events, use that instead of given date if it is before given date
             if self.repeat_end and self.repeat_end < until_date:
                 until_date = self.repeat_end
