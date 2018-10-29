@@ -3,46 +3,29 @@
 {% block content %}
 <h1>Host List</h1>
 
-{% if object_list %}
-
-{% regroup user_list by slackId as host_period_list %}
+{% if schedulingperiod_list %}
 
 <table>
   <thead><tr>
     <th>Slack name</th>
-    {% for period in period_list %}
-        <th><div style = "width:4.5em;text-align: center;">{{ period }} </div></th>
+    {% for period in schedulingperiod_list %}
+      <th><div style = "width:4.5em;text-align: center;">{{ period }} </div></th>
     {% endfor %}
   </tr></thead>
-
-    {% for host in host_period_list %}
-        <tr>
-            <th><a href="{% url 'host-detail' slug=host.grouper %}">{{ host.grouper }}</a></th>
-            
-                {% for period in period_list %}
-                    {% for col in host.list %}
-                        {% if col.period == period.pk %}
-                            <td>{{ col.host_count }}</td>
-                        {% elif col.period == None %}
-                            <td>0</td>
-                        {% elif forloop.first and col.period >= period.pk %}
-                            <td>0</td>
-                        {% elif forloop.last and col.period <= period.pk %}
-                            <td>0</td>
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-        </tr>
+    {% for host, periods in period_host_list.items %}
+      <tr><th><a href="{% url 'host-detail' slug=host %}">{{ host }}</a></th>
+        {% for period, period_key in periods.items %}
+          <td>{{ period_key }}</td>
+		{% endfor %}
+      </tr>
     {% endfor %}
 	<thead><tr>
-		<th>{{ host_period_list|length }}</th>
-		{% for period in period_list %}
+		<th>{{ period_host_list.items|length }}</th>
+		{% for period in schedulingperiod_list %}
 		    <th>{{ period.event_count }}</th>
 		{% endfor %}
 	</thead></tr>
-
 </table>
-
 {% else %}
   <p>No hosts in list.</p>
 {% endif %}

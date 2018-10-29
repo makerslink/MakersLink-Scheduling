@@ -5,6 +5,7 @@
   <strong class="text-success"><a href="{% url 'template-update' pk=eventtemplate.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'template-delete' pk=eventtemplate.pk %}">Delete</a></strong>
 
   <p><strong>Title:</strong> {{ eventtemplate.title }}</p>
+  <p><strong>Couting key:</strong> {{ eventtemplate.count_key }}</p>
   <p><strong>Header:</strong> {{ eventtemplate.header }}</p>
   <p><strong>Body:</strong> {{ eventtemplate.body }}</p>
   <p><strong>Participants #:</strong> {{ eventtemplate.num_participants }}</p>

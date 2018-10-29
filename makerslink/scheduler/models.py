@@ -11,6 +11,8 @@ from google.oauth2 import service_account
 import googleapiclient.discovery
 from dateutil.rrule import *
 import accounts.models
+from .fields import ParticipantKeyField
+from django.db.models import Q, Count, Max
 
 # New Filesystem
 client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
@@ -23,6 +25,7 @@ class EventTemplate(models.Model):
 
     # Fields
     name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this template")
+    count_key = models.CharField(max_length=1, help_text="Key displayed when counting participantcy", default = 'D')
     title = models.CharField(max_length=100, help_text="Enter title to be used for booking")
     header = models.CharField(max_length=200, help_text="Enter a, optional, header for the event to be inserted after the hosts name into the descriptionfield in the calendar event.", null=True, blank=True)
     body = models.TextField(max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
@@ -589,6 +592,8 @@ class SchedulingPeriod(models.Model):
     #Fields
     start = models.DateField(help_text="Start of period", db_index=True)
     end = models.DateField(help_text="End of period", db_index=True)
+    num_required_events = models.IntegerField(default = 6, help_text="Number of events a host should have in this period")
+    participant_key_string = ParticipantKeyField(default = "", help_text="A string representing the events a host is required to be a participant to in this period", max_length=10)
     
     @property
     def name(self):
@@ -600,6 +605,54 @@ class SchedulingPeriod(models.Model):
          Returns the url to access a particular instance of SchedulingPeriod.
          """
         return reverse('period-detail', args=[str(self.id)])
+    
+    def get_participant_key_list(self):
+        userParticipantList = accounts.models.User.objects.all().order_by('eventinstance__participants__slackId', 'eventinstance__period', 'eventinstance__event__template__count_key').annotate(
+            participantName = Max('eventinstance__participants__slackId'), keyChar=Max('eventinstance__event__template__count_key', filter=Q(eventinstance__period=self.id)))
+        
+        currentUser = None
+        resultList = {}
+        for userParticipant in userParticipantList:
+            #logger.warning("get_participant_key_list: %s", userParticipant.participantName)
+            if (currentUser == None or currentUser != userParticipant.participantName) and userParticipant.participantName != None:
+                currentUser = userParticipant.participantName
+                resultList[currentUser] = "";
+            if currentUser != None and userParticipant.keyChar != None:
+                resultList[currentUser] = resultList[currentUser] + userParticipant.keyChar
+        
+        return resultList
+    
+    def get_host_count_list(self):
+        userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
+            host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id)))
+        
+        return userHostList
+    
+    def get_host_count_key_list(self):
+        count_list = self.get_host_count_list()
+        key_list = self.get_participant_key_list()
+        resultList = {}
+        
+        for host in count_list:
+            resultList[host.slackId] = str(host.host_count)
+            if host.slackId in key_list:
+                resultList[host.slackId] = resultList[host.slackId] + " " + key_list[host.slackId]
+        
+        return resultList
+    
+    def get_all_host_count_key_lists():
+        periodList = SchedulingPeriod.objects.all().order_by('-start')
+        
+        resultList = {}
+        
+        for period in periodList:
+            for user, count_key in period.get_host_count_key_list().items():
+                if user not in resultList:
+                    resultList[user] = {}
+                resultList[user][period] = count_key
+        
+        return resultList
+            
     
     def __str__(self):
         """
