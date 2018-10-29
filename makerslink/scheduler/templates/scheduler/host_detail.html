@@ -20,17 +20,32 @@
 {% endblock %}
 
 {% block content %}
+{% regroup participant_list by period as participant_list_by_period %}
+
   <h1>Värd: {{ view_user.slackId }}</h1>
 
   <p><strong>E-Post:</strong> {{ view_user.email }}</p>
   <table>
   <thead>
-    <tr><th colspan =2>Antal pass i period</th></tr>
+    <tr><th colspan =3>Antal pass i period</th></tr>
   </thead>
   {% for period in period_list %}
     <tr class="{% cycle 'row-uneven' 'row-even' %}">
       <td>{{ period.name }}</td>
       <td>{{ period.event_count }}</td>
+      
+      {% for participant_period in participant_list_by_period %}
+        {% if participant_period.grouper == period %}
+          {% regroup participant_period.list by template.count_key as participant_list_by_count_key %}
+          <td>
+            {% for count_key in participant_list_by_count_key %}{% for count_key_instance in count_key.list %}{{ count_key.grouper }}{% endfor %}{% endfor %}
+          </td>
+        {% else %}
+          <td> </td>
+        {% endif %}
+      {% endfor %}
+      
+      
     </tr>
   {% empty %}
     <tr><td colspan=2>Ännu inte värd på några pass.</td></tr>
@@ -60,4 +75,5 @@
         {% endfor %}
       </ul>
   </div>
+  <ul>
 {% endblock %}

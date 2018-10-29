@@ -182,6 +182,7 @@ class UnsecuredHostDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(UnsecuredHostDetailView, self).get_context_data(**kwargs)
         context['period_list'] = SchedulingPeriod.objects.all().order_by('-start').annotate(event_count = Count('eventinstance', filter=Q(eventinstance__status=1, eventinstance__host=self.get_object())))
+        context['participant_list'] = EventInstance.objects.filter(participants__id=self.get_object().id).order_by('period', 'event__template__count_key')
         return context
 
 class HostDetailView(UserIsStaffMixin, UnsecuredHostDetailView):
@@ -193,26 +194,22 @@ class ProfileView(LoginRequiredMixin, UnsecuredHostDetailView):
         return self.request.user
 
 class HostListView(UserIsStaffMixin, generic.ListView):
-    model = accounts.models.User
+    model = SchedulingPeriod
     
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
+        context = super(HostListView, self).get_context_data(**kwargs)
         context['booking_count'] = EventInstance.objects.filter(status=1).count
+        context['period_host_list'] = SchedulingPeriod.get_all_host_count_key_lists()
         return context
     
     def get_queryset(self):
-        queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
-        	host_count=Count('slackId', filter=Q(eventinstance__status=1)),
-        	period=Max('eventinstance__period'))
+        return SchedulingPeriod.objects.all().order_by('-start').annotate(event_count = Count('eventinstance', filter=Q(eventinstance__status=1)))
+        #queryset = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
+        #	host_count=Count('slackId', filter=Q(eventinstance__status=1)),
+        #	period=Max('eventinstance__period'))
         
-        return queryset
-	
-    def get_context_data(self, **kwargs):
-        context = super(HostListView, self).get_context_data(**kwargs)
-        context['period_list'] = SchedulingPeriod.objects.all().order_by('-start').annotate(event_count = Count('eventinstance', filter=Q(eventinstance__status=1)))
-        return context
-
+        #return queryset
 
 @login_required
 def EventSignupView(request):
