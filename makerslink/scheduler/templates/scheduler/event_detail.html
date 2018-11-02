@@ -6,6 +6,7 @@
 
   <p><strong>Name:</strong> {{ event.name }}</p>
   <p><strong>Description:</strong> {{ event.description }}</p>
+  <p><strong>Template:</strong> <a href="{% url 'template-detail' pk=event.template.pk %}">{{ event.template }}</a></p>
   <p><strong>Start:</strong> {{ event.start |date:"Y-m-d H:i"}}</p>
   <p><strong>End:</strong> {{ event.end |date:"Y-m-d H:i"}}</p>
   <p><strong>Repeat End:</strong> {{ event.repeat_end |date:"Y-m-d H:i"}}</p>
