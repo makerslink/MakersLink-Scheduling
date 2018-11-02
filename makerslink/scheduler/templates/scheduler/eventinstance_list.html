@@ -1,26 +1,74 @@
 {% extends "base_generic.html" %}
 
+{% block css %}
+<style>
+    tr.row-uneven{
+        background: #EDEDED;
+    }
+    tr.row-even{
+        background: #DCDCDC;
+    }
+    td, th{
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    th{
+        background: #4CAF50;
+        color: white
+    }
+    th a{
+        color: white
+    }
+    th a:hover { 
+        color: white
+    }
+</style>
+{% endblock %}
+
 {% block content %}
     <h1>Tillgängliga tillfällen</h1>
+    
+    Klicka på typen av pass för att öppna eller stänga listan.
 
     {% if eventinstance_list %}
-    <ul>
-
-      {% for eventinstance in eventinstance_list %}
-      <li>
-        <a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }} {{ eventinstance.start|date:"Y-m-d H:i" }}</a>
-        
-        {% if user.is_staff and eventinstance.participants.all.exists %}
-        	({% for participant in eventinstance.participants.all %}{% if not forloop.first %}, {% endif %}{{ participant.slackId }}{% endfor %})
-        {% endif %}
-      </li>
-      {% endfor %}
-
-    </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rubrik</th>
+                    <th>Datum & tid</th>
+                    <th>Typ av pass</th>
+                </tr>
+            </thead>
+            
+            {% regroup eventinstance_list by event.template as template_list %}
+            
+            {% for template in template_list %}
+                <tr>
+                    <th colspan =3>
+                        <a data-toggle="collapse" href="#collapse{{ template.grouper }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                            {{ template.grouper }}
+                        </a>
+                    </th>
+                </tr>
+                <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ template.grouper }}">
+                    {% for eventinstance in template.list %}
+                        <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
+                            <td><a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }}</a></td>
+                            <td>{{ eventinstance.start|date:"Y-m-d H:i" }}</td>
+                            <td>{{ eventinstance.event.template }}</td>
+                        </tr>
+                        {% if user.is_staff and eventinstance.participants.all.exists %}
+                            <tr class = "{{ rowclass }}">
+                                <td colspan =3>
+                                    {% for participant in eventinstance.participants.all %}{% if not forloop.first %}, {% endif %}{{ participant.slackId }}{% endfor %}
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            {% endfor %}
+        </table>
     {% else %}
       <p>No Events have been created.</p>
     {% endif %}
 {% endblock %}
-
-template-detail
-

@@ -156,7 +156,7 @@ class EventInstanceListView(LoginRequiredMixin, generic.ListView):
     model = EventInstance
     
     def get_queryset(self):
-        queryset = EventInstance.objects.all().filter(Q(status=1) & ~Q(event__template__num_participants=0))
+        queryset = EventInstance.objects.all().filter(Q(status=1) & ~Q(event__template__num_participants=0)).order_by("event__template", "start")
         
         return queryset
     
