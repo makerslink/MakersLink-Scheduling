@@ -183,6 +183,8 @@ class UnsecuredHostDetailView(generic.DetailView):
         context = super(UnsecuredHostDetailView, self).get_context_data(**kwargs)
         context['period_list'] = SchedulingPeriod.objects.all().order_by('-start').annotate(event_count = Count('eventinstance', filter=Q(eventinstance__status=1, eventinstance__host=self.get_object())))
         context['period_host_list'] = SchedulingPeriod.get_all_host_count_key_lists()
+        context['hosted_events'] = self.get_object().eventinstance_set.filter(status=1).order_by('period', 'start')
+        context['participant_events'] = self.get_object().participants.all().order_by('period', 'start')
         return context
 
 class HostDetailView(UserIsStaffMixin, UnsecuredHostDetailView):

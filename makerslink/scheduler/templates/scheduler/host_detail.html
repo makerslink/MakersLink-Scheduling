@@ -28,28 +28,74 @@
   {% endfor %}
   </table>
   
-  <div style="margin-left:20px;margin-top:20px">
+  <div style="margin-top:20px">
     <h4>Värd för följande pass:</h4>
-      <ul>
-        {% for event in view_user.eventinstance_set.all %}
-          {% if event.status == 1 %}
-          <li>{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</li>
-          {% endif %}
-        {% empty %}
-          Ännu inte värd för några pass.
+    {% if hosted_events %}
+      <table>
+        <thead>
+          <tr>
+            <th>Rubrik</th>
+            <th>Datum & tid</th>
+          </tr>
+        </thead>
+        {% regroup hosted_events by period as period_list %}
+      
+        {% for period in period_list %}
+          <tr>
+            <td class="emph sub-head" colspan =2>
+              <a data-toggle="collapse" href="#collapse{{ period.grouper }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                {{ period.grouper }}
+              </a>
+            </td>
+          </tr>
+          <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ period.grouper }}">
+            {% for eventinstance in period.list %}
+              <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
+                <td>{{ eventinstance.title }}</td>
+                <td>{{ eventinstance.start|date:"Y-m-d H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
         {% endfor %}
-      </ul>
+      </table>
+    {% else %}
+      Ännu inte värd för några pass.
+    {% endif %}
   </div>
   
-  <div style="margin-left:20px;margin-top:20px">
+  <div style="margin-top:20px">
     <h4>Deltagare på följande pass:</h4>
-      <ul>
-        {% for event in view_user.participants.all %}
-          <li><a href="{% url 'eventinstance-join' pk=event.pk %}">{{ event.title }} {{ event.start|date:"Y-m-d H:i" }}</a></li>
-        {% empty %}
-          Ännu inte deltagare på några pass.
+    {% if participant_events %}
+      <table>
+        <thead>
+          <tr>
+            <th>Rubrik</th>
+            <th>Datum & tid</th>
+          </tr>
+        </thead>
+        {% regroup participant_events by period as period_list %}
+      
+        {% for period in period_list %}
+          <tr>
+            <td class="emph sub-head" colspan =2>
+              <a data-toggle="collapse" href="#collapse{{ period.grouper }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                {{ period.grouper }}
+              </a>
+            </td>
+          </tr>
+          <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ period.grouper }}">
+            {% for eventinstance in period.list %}
+              <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
+                <td>{{ eventinstance.title }}</td>
+                <td>{{ eventinstance.start|date:"Y-m-d H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
         {% endfor %}
-      </ul>
+      </table>
+    {% else %}
+      Ännu inte deltagare på några pass.
+    {% endif %}
   </div>
   <ul>
 {% endblock %}
