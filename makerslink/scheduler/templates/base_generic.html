@@ -10,6 +10,43 @@
   {% bootstrap_css %}         {# Embed Bootstrap CSS #}
   {% bootstrap_javascript jquery='full' %}  {# Embed Bootstrap JS+jQuery #}
   {% block css %}{% endblock %}
+  <style>
+    tr.row-uneven{
+        background: #EDEDED;
+    }
+    tr.row-even{
+        background: #DCDCDC;
+    }
+    td.emph{
+        background: #6fbf72;
+        font-weight:bold;
+        color: white;
+    }
+    td, th{
+        border: 1px solid #FFFFFF;
+        padding: 8px;
+    }
+    th{
+        background: #4CAF50;
+        color: white;
+    }
+    th a{
+        color: white;
+    }
+    th a:hover { 
+        color: white;
+    }
+    td.emph a{
+        color: white;
+    }
+    td.emph a:hover { 
+        color: white;
+    }
+    .sub-head{
+        text-align:center;
+    }
+</style>
+  
   {% block script %}{% endblock %}
 </head>
 

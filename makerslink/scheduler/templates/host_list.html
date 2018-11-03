@@ -13,18 +13,18 @@
     {% endfor %}
   </tr></thead>
     {% for host, periods in period_host_list.items %}
-      <tr><th><a href="{% url 'host-detail' slug=host %}">{{ host }}</a></th>
+      <tr class="{% cycle 'row-uneven' 'row-even' %}"><td><a href="{% url 'host-detail' slug=host %}">{{ host }}</a></td>
         {% for period, period_key in periods.items %}
           <td>{{ period_key }}</td>
 		{% endfor %}
       </tr>
     {% endfor %}
 	<thead><tr>
-		<th>{{ period_host_list.items|length }}</th>
+		<td class="emph">{{ period_host_list.items|length }}</td>
 		{% for period in schedulingperiod_list %}
-		    <th>{{ period.event_count }}</th>
+		    <td class="emph">{{ period.event_count }}</td>
 		{% endfor %}
-	</thead></tr>
+	</tr></thead>
 </table>
 {% else %}
   <p>No hosts in list.</p>

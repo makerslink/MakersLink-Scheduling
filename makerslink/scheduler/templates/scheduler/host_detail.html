@@ -1,24 +1,4 @@
 {% extends "base_generic.html" %}
-
-{% block css %}
-<style>
-    tr.row-uneven{
-        background: #EDEDED;
-    }
-    tr.row-even{
-        background: #DCDCDC;
-    }
-    td, th{
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-    th{
-        background: #4CAF50;
-        color: white
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 {% regroup participant_list by period as participant_list_by_period %}
 

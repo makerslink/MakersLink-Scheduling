@@ -26,20 +26,6 @@
     .eventstatus2{
         color: red;
     }
-    tr.row-uneven{
-        background: #EDEDED;
-    }
-    tr.row-even{
-        background: #DCDCDC;
-    }
-    td, th{
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-    th{
-        background: #4CAF50;
-        color: white
-    }
 </style>
 {% endblock %}
 
@@ -88,7 +74,7 @@ Antal tillgängliga pass är: {{ available_events }}
                 <th>Boka/boka av</th>
             </tr></thead>
             {% for period in period_forms %}
-            <tr><th style="text-align:center" colspan=4>{{ period.grouper }}</th></tr>
+            <tr><td class="emph sub-head" colspan=4>{{ period.grouper }}</th></tr>
 		        {% for form in period.list %}
 		            <tr class="{% cycle 'row-uneven' 'row-even' %}">
 		                <td>{{ form.title.value }}</td>
