@@ -4,8 +4,11 @@ from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, Sch
 # Register your models here.
 admin.site.register(EventTemplate)
 admin.site.register(SchedulingCalendar)
-admin.site.register(Event)
 admin.site.register(SchedulingRule)
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start')
 
 @admin.register(EventInstance)
 class EventInstanceAdmin(admin.ModelAdmin):
