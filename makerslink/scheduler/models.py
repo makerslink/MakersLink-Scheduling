@@ -247,14 +247,14 @@ class Event(models.Model):
             # Set the start to the Events start if later
             if self.start > from_date:
                 from_date = self.start
-            # Set the date to the given startdate but keep the same time if earlier
             else:
+            	# Set the date to the given startdate but keep the same time if earlier
                 # As we are combining a current date with a time that might have
                 # been set in with another DST set up, we have to convert the time
                 # to local at the past timezone and convert it back to UTC with
                 # timezone for current local.
                 tz = pytz.timezone(settings.TIME_ZONE)
-                from_date = datetime.datetime.combine(from_date.date(), self.start.astimezone(tz).time(), tz).astimezone(pytz.timezone("utc"))
+                from_date = datetime.datetime.combine(from_date.date(), self.start.astimezone(tz).time()).astimezone(pytz.timezone("utc"))
                 #from_date = datetime.datetime.combine(from_date.date(), self.start.time(), self.start.tzinfo)
             # Check if there is a date set to stop generating events, use that instead of given date if it is before given date
             if self.repeat_end and self.repeat_end < until_date:
@@ -577,6 +577,7 @@ class SchedulingRule(models.Model):
         #    params['tzid'] = settings.TIME_ZONE
         frequency = self.rrule_frequency()
         # logger.warning("params: %s", params)
+        # Move time to timezone currently used and make time objects unaware to avoid any problems with rrule
         if until:
             until = until.astimezone(pytz.timezone(settings.TIME_ZONE))
             until = until.replace(tzinfo=None)
