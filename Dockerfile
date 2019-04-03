@@ -1,11 +1,11 @@
 # Use an official Python runtime as a parent image
 FROM ubuntu
 
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get install -y ca-certificates
-RUN apt-get install -y sqlite3 libsqlite3-dev
-RUN apt-get install -y python3 python3-pip
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata ca-certificates sqlite3 libsqlite3-dev python3 python3-pip
+
+RUN echo "Europe/Stockholm" > /etc/timezone
+RUN dpkg-reconfigure -f noninteractive tzdata
 
 # Set the working directory to /scheduling
 WORKDIR /scheduling
