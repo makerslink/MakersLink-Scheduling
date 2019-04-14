@@ -591,7 +591,7 @@ class SchedulingRule(models.Model):
         rules = rruleset()
         rules.rrule(rrule(frequency, dtstart=dtstart, until=until, **params))
 
-        if self.ignore_exclusions:
+        if self.use_exclusions:
             #Here we should add all excluded dates
             rule_exclusions = SchedulingRuleExclusion.objects.filter(
                 excluded_date__range=(dtstart.date(), until.date())
