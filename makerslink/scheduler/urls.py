@@ -61,3 +61,11 @@ urlpatterns += [
     path('signup', views.EventSignupView, name='host-signup'),
     path('hosts', views.HostListView.as_view(template_name='host_list.html'), name='hosts'),
 ]
+# SchedulingRuleExclusion
+urlpatterns += [
+    path('ruleexclusions', views.SchedulingRuleExclusionListView.as_view(), name='ruleexclusions'),
+    path('ruleexclusion/<int:pk>', views.SchedulingRuleExclusionDetailView.as_view(), name='ruleexclusion-detail'),
+    path('ruleexclusion/create/', views.SchedulingRuleExclusionCreateView.as_view(), name='ruleexclusion-create'),
+    path('ruleexclusion/<int:pk>/update', views.SchedulingRuleExclusionUpdateView.as_view(), name='ruleexclusion-update'),
+    path('ruleexclusion/<int:pk>/delete', views.SchedulingRuleExclusionDeleteView.as_view(), name='ruleexclusion-delete'),
+]
