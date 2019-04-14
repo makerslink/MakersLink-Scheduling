@@ -1,10 +1,11 @@
 from django.contrib import admin
-from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
 
 # Register your models here.
 admin.site.register(EventTemplate)
 admin.site.register(SchedulingCalendar)
 admin.site.register(SchedulingRule)
+admin.site.register(SchedulingRuleExclusion)
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
