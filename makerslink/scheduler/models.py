@@ -597,8 +597,8 @@ class SchedulingRule(models.Model):
                 excluded_date__range=(dtstart.date(), until.date())
             )
             for rule_exclusion in rule_exclusions:
-                exclusion = dtstart
-                exclusion.replace(year=rule_exclusion.year, month=rule_exclusion.month, day=rule_exclusion.day)
+                excluded_date = rule_exclusion.excluded_date
+                exclusion = dtstart.replace(year=excluded_date.year, month=excluded_date.month, day=excluded_date.day)
                 rules.exdate(exclusion)
 
         events = rules.between(dtstart, until)
