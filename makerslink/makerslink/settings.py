@@ -38,6 +38,10 @@ else:
     SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+MENU_EXTRA = [
+    {'name':'Hjälp', 'link':'https://docs.google.com/document/d/1ut9KHgJejQpmta0l_Gh0D8yWoMklXmgzCSI5yfROSEA/edit?usp=sharing', 'class':'bg-info text-white font-weight-bold'},
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -77,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'scheduler.context_processors.extra_menu_processor'
             ],
         },
     },

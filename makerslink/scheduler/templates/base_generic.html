@@ -55,25 +55,29 @@
   <div class="container-fluid">
 
     <div class="row">
-      <div class="col-sm-2">
+      <div class="col-sm-auto">
       {% block sidebar %}
-      <ul class="sidebar-nav">
-          <li><a href="{% url 'index' %}">Boka pass</a></li>
-          <li><a href="{% url 'joinEvent' %}">Anmäl deltagande</a></li>
+      <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'index' %}">Boka pass</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}">Anmäl deltagande</a></li>
           {% if user.is_staff %}
-          <li><a href="{% url 'hosts' %}">Hosts</a></li>
-          <li><a href="{% url 'calendars' %}">Calendars</a></li>
-          <li><a href="{% url 'templates' %}">Templates</a></li>
-          <li><a href="{% url 'rules' %}">Rules</a></li>
-          <li><a href="{% url 'events' %}">Events</a></li>
-          <li><a href="{% url 'periods' %}">Periods</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'hosts' %}">Hosts</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'calendars' %}">Calendars</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'templates' %}">Templates</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'rules' %}">Rules</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'events' %}">Events</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'periods' %}">Periods</a></li>
           {% endif %}
-          <li><a href="{% url 'profile' %}">Användarprofil</a></li>
-          <li><a href="{% url 'logout' %}">Logga ut</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'profile' %}">Användarprofil</a></li>
+          <li class="nav-item"><a class="nav-link bg-warning text-dark" href="{% url 'logout' %}">Logga ut</a></li>
+          <br>
+          {% for menu_item in menu_extra%}
+            <li class="nav-item"><a class="nav-link {% if menu_item.class %} {{ menu_item.class }}{% endif %}" href="{{ menu_item.link }}">{{ menu_item.name }}</a></li>
+          {% endfor %}
       </ul>
      {% endblock %}
       </div>
-      <div class="col-sm-10 ">
+      <div class="col-sm-auto">
       {% block content %}{% endblock %}
       </div>
     </div>
