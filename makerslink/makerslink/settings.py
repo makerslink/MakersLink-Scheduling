@@ -42,6 +42,10 @@ MENU_EXTRA = [
     {'name':'Hjälp', 'link':'https://docs.google.com/document/d/1ut9KHgJejQpmta0l_Gh0D8yWoMklXmgzCSI5yfROSEA/edit?usp=sharing', 'class':'bg-info text-white font-weight-bold'},
 ]
 
+LOGO_PATH = "makerslink/MakersLink-group-color.png"
+
+MENU_TITLE = "Bokningssystem"
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -149,12 +153,16 @@ EMAIL_USE_TLS = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "../static/"))
+STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "./static/"))
 
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     #'djangobower.finders.BowerFinder',
+]
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "./makerslink/static"),
 ]
 
 BOOTSTRAP4 = {
