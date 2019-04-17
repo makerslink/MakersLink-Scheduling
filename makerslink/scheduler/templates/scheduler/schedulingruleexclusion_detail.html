@@ -1,0 +1,10 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Exclusion: {{ object.name }}</h1>
+  <strong class="text-success"><a href="{% url 'ruleexclusion-update' pk=object.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'ruleexclusion-delete' pk=object.pk %}">Delete</a></strong>
+
+  <p><strong>Description:</strong> {{ object.description }}</p>
+  <p><strong>Excluded date:</strong> {{ object.excluded_date |date:"Y-m-d"}}</p>
+{% endblock %}
+

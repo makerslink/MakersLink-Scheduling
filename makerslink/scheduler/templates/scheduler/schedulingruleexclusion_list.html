@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Exclusion List</h1>
+    <a href="{% url 'ruleexclusion-create' %}">Create new</a>
+
+    {% if schedulingruleexclusion_list %}
+    <ul>
+
+      {% for exclusion in schedulingruleexclusion_list %}
+      <li>
+        <a href="{{ exclusion.get_absolute_url }}">{{ exclusion.name }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+    {% else %}
+      <p>No exclusions have been created.</p>
+    {% endif %}
+{% endblock %}
+
+template-detail

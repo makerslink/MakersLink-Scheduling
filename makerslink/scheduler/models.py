@@ -694,7 +694,7 @@ class SchedulingRuleExclusion(models.Model):
 
     @property
     def name(self):
-        return '{} ({}).'.format(self.excluded_date.strftime("%Y-%m-%d"), self.description)
+        return '{} ({})'.format(self.excluded_date.strftime("%Y-%m-%d"), self.description)
 
     # Functions
     def get_absolute_url(self):

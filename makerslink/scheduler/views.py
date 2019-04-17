@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
-from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm
+from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm, RuleExclusionForm
 from django.forms import modelformset_factory
 from datetime import datetime, timezone, date
 from dateutil.relativedelta import *
@@ -337,11 +337,11 @@ class SchedulingRuleExclusionDetailView(UserIsStaffMixin, generic.DetailView):
 
 class SchedulingRuleExclusionCreateView(UserIsStaffMixin, CreateView):
     model = SchedulingRuleExclusion
-    fields = '__all__'
+    form_class = RuleExclusionForm
 
 class SchedulingRuleExclusionUpdateView(UserIsStaffMixin, UpdateView):
     model = SchedulingRuleExclusion
-    fields = '__all__'
+    form_class = RuleExclusionForm
 
 class SchedulingRuleExclusionDeleteView(UserIsStaffMixin, DeleteView):
     model = SchedulingRuleExclusion
