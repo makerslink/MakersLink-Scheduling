@@ -51,7 +51,7 @@
           <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ period.grouper }}">
             {% for eventinstance in period.list %}
               <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
-                <td>{{ eventinstance.title }}</td>
+                <td><a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }}</a></td>
                 <td>{{ eventinstance.start|date:"Y-m-d H:i" }}</td>
               </tr>
             {% endfor %}
@@ -86,7 +86,7 @@
           <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ period.grouper }}">
             {% for eventinstance in period.list %}
               <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
-                <td>{{ eventinstance.title }}</td>
+                <td><a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }}</a></td>
                 <td>{{ eventinstance.start|date:"Y-m-d H:i" }}</td>
               </tr>
             {% endfor %}

@@ -46,8 +46,12 @@
     .sub-head{
         text-align:center;
     }
-</style>
-  
+  </style>
+  <script>
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
+  </script>
   {% block script %}{% endblock %}
 </head>
 
@@ -59,16 +63,16 @@
       <div class="col-sm-auto">
       {% block sidebar %}
       <ul class="nav flex-column">
-          {% if logo_path %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">
-            <img src="{% static logo_path %}" style="margin:5px" width="140" class="align-top" alt="Logo">
+          {% if logo %}
+            <li class="nav-item"><a class="nav-link" href="{{ logo.link }}">
+            <img src="{% static logo.path %}" style="margin:5px" width="140" class="align-top" alt="Logo">
             </a></li>
           {% endif %}
           {% if menu_title %}
             <li class="nav-item"><span style="margin-bottom:4px" class="nav-link bg-dark text-white font-weight-bold">{{ menu_title }}</span></li>
           {% endif %}
-          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'index' %}">Boka pass</a></li>
-          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}">Anmäl deltagande</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'index' %}" data-toggle="tooltip" data-placement="right" title="Boka värdpass">Boka pass</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}" data-toggle="tooltip" data-placement="right" title="Boka gå brevid pass och fixarpass">Anmäl deltagande</a></li>
           {% if user.is_staff %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'hosts' %}">Hosts</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'calendars' %}">Calendars</a></li>
@@ -77,11 +81,11 @@
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'events' %}">Events</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'periods' %}">Periods</a></li>
           {% endif %}
-          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'profile' %}">Användarprofil</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'profile' %}" data-toggle="tooltip" data-placement="right" title="Se en översikt av dina bokade pass">Användarprofil</a></li>
           <li class="nav-item"><a class="nav-link bg-warning text-dark" href="{% url 'logout' %}">Logga ut</a></li>
           <br>
           {% for menu_item in menu_extra%}
-            <li class="nav-item"><a class="nav-link {% if menu_item.class %} {{ menu_item.class }}{% endif %}" href="{{ menu_item.link }}">{{ menu_item.name }}</a></li>
+            <li class="nav-item"><a class="nav-link {% if menu_item.class %} {{ menu_item.class }}{% endif %}" href="{{ menu_item.link }}" data-toggle="tooltip" data-placement="right" title="{{ menu_item.tooltip }}">{{ menu_item.name }}</a></li>
           {% endfor %}
       </ul>
      {% endblock %}

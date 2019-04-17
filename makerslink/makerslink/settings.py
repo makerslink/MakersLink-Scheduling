@@ -39,10 +39,11 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MENU_EXTRA = [
-    {'name':'Hjälp', 'link':'https://docs.google.com/document/d/1ut9KHgJejQpmta0l_Gh0D8yWoMklXmgzCSI5yfROSEA/edit?usp=sharing', 'class':'bg-info text-white font-weight-bold'},
+    {'name':'Schema', 'link':'https://www.makerslink.se/pa-gang-i-makerslink/', 'class':'bg-primary text-white', 'tooltip':'Schemat på hemsidan'},
+    {'name':'Hjälp', 'link':'https://docs.google.com/document/d/1ut9KHgJejQpmta0l_Gh0D8yWoMklXmgzCSI5yfROSEA/edit?usp=sharing', 'class':'bg-info text-white font-weight-bold', 'tooltip':'Dokument som beskriver systemet.'},
 ]
 
-LOGO_PATH = "makerslink/MakersLink-group-color.png"
+LOGO = {'path':"makerslink/MakersLink-group-color.png", 'link':'https://www.makerslink.se'}
 
 MENU_TITLE = "Bokningssystem"
 
