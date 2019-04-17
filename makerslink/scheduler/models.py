@@ -593,15 +593,19 @@ class SchedulingRule(models.Model):
 
         if self.use_exclusions:
             #Here we should add all excluded dates
-            rule_exclusions = SchedulingRuleExclusion.objects.filter(
-                excluded_date__range=(dtstart.date(), until.date())
-            )
+            if until:
+                rule_exclusions = SchedulingRuleExclusion.objects.filter(
+                    excluded_date__range=(dtstart.date(), until.date()))
+            else:
+                rule_exclusions = SchedulingRuleExclusion.objects.filter(
+                    excluded_date__gte=dtstart.date())
             for rule_exclusion in rule_exclusions:
                 excluded_date = rule_exclusion.excluded_date
                 exclusion = dtstart.replace(year=excluded_date.year, month=excluded_date.month, day=excluded_date.day)
                 rules.exdate(exclusion)
-
-        events = rules.between(dtstart, until)
+        
+        #events = rules.between(dtstart, until)
+        events = rules
 
         tz = pytz.timezone(settings.TIME_ZONE)
         #logger.warning("get_events:tz"+tz)
