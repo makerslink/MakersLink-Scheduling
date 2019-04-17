@@ -497,6 +497,8 @@ class SchedulingRule(models.Model):
     description = models.TextField()
     frequency = models.CharField("frequency", choices=freqs, max_length=10)
     params = models.TextField("params", blank=True)
+    use_exclusions = models.BooleanField(default=True,
+                                      help_text="If active, this rule for generating dates will ignore excluded dates generated dates falling on those dates will not be added.")
 
     #Functions
     def get_absolute_url(self):
@@ -583,7 +585,24 @@ class SchedulingRule(models.Model):
             until = until.replace(tzinfo=None)
         dtstart = dtstart.astimezone(pytz.timezone(settings.TIME_ZONE))
         dtstart = dtstart.replace(tzinfo=None)
-        events = rrule(frequency, dtstart=dtstart, until=until, **params)
+
+        # Changing from rrule to rruleset
+        #events = rrule(frequency, dtstart=dtstart, until=until, **params)
+        rules = rruleset()
+        rules.rrule(rrule(frequency, dtstart=dtstart, until=until, **params))
+
+        if self.use_exclusions:
+            #Here we should add all excluded dates
+            rule_exclusions = SchedulingRuleExclusion.objects.filter(
+                excluded_date__range=(dtstart.date(), until.date())
+            )
+            for rule_exclusion in rule_exclusions:
+                excluded_date = rule_exclusion.excluded_date
+                exclusion = dtstart.replace(year=excluded_date.year, month=excluded_date.month, day=excluded_date.day)
+                rules.exdate(exclusion)
+
+        events = rules.between(dtstart, until)
+
         tz = pytz.timezone(settings.TIME_ZONE)
         #logger.warning("get_events:tz"+tz)
         updatedEvents = []
@@ -667,3 +686,25 @@ class SchedulingPeriod(models.Model):
         """
         return self.name
 
+
+class SchedulingRuleExclusion(models.Model):
+    # Fields
+    excluded_date = models.DateField(help_text="Date to exclude", db_index=True)
+    description = models.TextField()
+
+    @property
+    def name(self):
+        return '{} ({}).'.format(self.excluded_date.strftime("%Y-%m-%d"), self.description)
+
+    # Functions
+    def get_absolute_url(self):
+        """
+         Returns the url to access a particular instance of SchedulingRuleExclusion.
+         """
+        return reverse('ruleexclusion-detail', args=[str(self.id)])
+
+    def __str__(self):
+        """
+        String for representing the SchedulingRuleExclusion object (in Admin site etc.)
+        """
+        return self.name

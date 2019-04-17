@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
-from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod
+from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
 from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm
 from django.forms import modelformset_factory
 from datetime import datetime, timezone, date
@@ -319,3 +319,30 @@ def EventSignupView(request):
     #request.session['signup_initialdata'] =initial_values
     return render(request, 'eventinstance_host_form.html', {'formset': formset, 'available_events':len(initial_values)+num_rebooking})
 
+class SchedulingRuleExclusionListView(UserIsStaffMixin, generic.ListView):
+    model = SchedulingRuleExclusion
+
+class SchedulingRuleExclusionDetailView(UserIsStaffMixin, generic.DetailView):
+    model = SchedulingRuleExclusion
+
+    '''
+    
+    def get_context_data(self, **kwargs):
+        context = super(SchedulingRuleExclusionDetailView, self).get_context_data(**kwargs)
+        events = self.object.get_events(extra_params="count:5;")
+        context['eventlist'] = events
+        return context
+        
+    '''
+
+class SchedulingRuleExclusionCreateView(UserIsStaffMixin, CreateView):
+    model = SchedulingRuleExclusion
+    fields = '__all__'
+
+class SchedulingRuleExclusionUpdateView(UserIsStaffMixin, UpdateView):
+    model = SchedulingRuleExclusion
+    fields = '__all__'
+
+class SchedulingRuleExclusionDeleteView(UserIsStaffMixin, DeleteView):
+    model = SchedulingRuleExclusion
+    success_url = reverse_lazy('ruleexclusions')
