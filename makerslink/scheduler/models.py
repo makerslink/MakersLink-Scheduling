@@ -98,6 +98,12 @@ class EventTemplate(models.Model):
 
         return event_data
 
+    def deleteEventEntry(self, booking_id):
+        if self.synchronize:
+            return self.calendar.deleteEvent(booking_id)
+        else:
+            return True
+
     def __str__(self):
         """
         String for representing the EventTemplate object (in Admin site etc.)
@@ -155,6 +161,15 @@ class SchedulingCalendar(models.Model):
         except:
             raise ValueError("Could not update event in calendar")
 
+    def deleteEvent(self, id):
+        logger.warning("SchedulingCalendar:deleteEvent called")
+        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        try:
+            service.events().delete(calendarId=self.google_calendar_id, eventId=id).execute()
+            return True
+        except:
+            raise ValueError("Could not delete event in calendar")
 
     def __str__(self):
         """
@@ -433,6 +448,12 @@ class EventInstance(models.Model):
 
         logger.warning("Calling super().save()")
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.google_calendar_booking_id is not None:
+            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+                raise ValueError('Could not update calendar')
+        super().delete(*args, **kwargs)
 
     def display_host(self):
         return ''.join([self.host.email])
