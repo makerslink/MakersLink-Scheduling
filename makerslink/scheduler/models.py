@@ -717,6 +717,9 @@ class SchedulingRuleExclusion(models.Model):
     def name(self):
         return '{} ({})'.format(self.excluded_date.strftime("%Y-%m-%d"), self.description)
 
+    class Meta:
+        ordering = ["excluded_date"]
+
     # Functions
     def get_absolute_url(self):
         """
