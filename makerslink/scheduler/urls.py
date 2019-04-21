@@ -69,3 +69,11 @@ urlpatterns += [
     path('ruleexclusion/<int:pk>/update', views.SchedulingRuleExclusionUpdateView.as_view(), name='ruleexclusion-update'),
     path('ruleexclusion/<int:pk>/delete', views.SchedulingRuleExclusionDeleteView.as_view(), name='ruleexclusion-delete'),
 ]
+
+# EventInstance admin
+urlpatterns += [
+    path('eventinstances-admin', views.EventInstanceAdminListView.as_view(), name='eventinstances-admin'),
+    path('eventinstance-admin/<uuid:pk>', views.EventInstanceAdminDetailView.as_view(), name='eventinstance-admin-detail'),
+    path('eventinstance-admin/<uuid:pk>/update', views.EventInstanceAdminUpdateView.as_view(), name='eventinstance-admin-update'),
+    path('eventinstance-admin/<uuid:pk>/delete', views.EventInstanceAdminDeleteView.as_view(), name='eventinstance-admin-delete'),
+]

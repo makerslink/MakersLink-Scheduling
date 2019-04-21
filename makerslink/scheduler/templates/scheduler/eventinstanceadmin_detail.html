@@ -1,0 +1,23 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>EventInstance: {{ eventinstance.name }}</h1>
+  <strong class="text-success"><a href="{% url 'eventinstance-admin-update' pk=eventinstance.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'eventinstance-admin-delete' pk=eventinstance.pk %}">Delete</a></strong>
+
+  <p><strong>Title:</strong> {{ eventinstance.title }}</p>
+  <p><strong>Start:</strong> {{ eventinstance.start }}</p>
+  <p><strong>End:</strong> {{ eventinstance.end }}</p>
+  <p><strong>Calendar ID:</strong> {{ eventinstance.google_calendar_booking_id }}</p>
+  <p><strong>Host:</strong> {{ eventinstance.host }}</p>
+  <p><strong>Status:</strong> {{ eventinstance.statusText }}({{ eventinstance.status }})</p>
+  <p><strong>Period:</strong> <a href="{{ eventinstance.period.get_absolute_url }}">{{ eventinstance.period }}</a></p>
+  <p><strong>Unique title (for cancelling):</strong> {{ eventinstance.unique_title }}</p>
+  <p><strong>Unique description (for cancelling):</strong> {{ eventinstance.unique_description }}</p>
+  <p><strong>Participants:</strong>
+    <ul>
+      {% for participant in eventinstance.participants.all %}
+        <li>{{ participant }}</li>
+      {% endfor %}
+</ul></p>
+
+{% endblock %}

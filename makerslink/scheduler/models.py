@@ -403,8 +403,8 @@ class EventInstance(models.Model):
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(default=0, choices=STATUS, help_text="Instance status")
     period = models.ForeignKey('SchedulingPeriod', on_delete=models.SET_NULL, null=True, blank=True)
-    unique_title = models.CharField(max_length=100, default="", help_text="Enter title to be used for cancelling, leave blank to use default: {}".format(settings.CANCELLED_TITLE))
-    unique_description = models.CharField(max_length=400, default="", help_text="Enter a description for a cancelled event, leave blank to use default: {}".format(settings.CANCELLED_DESCRIPTION))
+    unique_title = models.CharField(max_length=100, default="", blank=True, help_text="Enter title to be inserted before the header when cancelling, leave blank to use default: {}".format(settings.CANCELLED_TITLE))
+    unique_description = models.CharField(max_length=400, default="", blank=True, help_text="Enter a description for a cancelled event, leave blank to use default: {}".format(settings.CANCELLED_DESCRIPTION))
 
     @property
     def statusText(self):
