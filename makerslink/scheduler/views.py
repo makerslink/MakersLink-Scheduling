@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 
 from django.shortcuts import render
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
-from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm, RuleExclusionForm
+from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm, RuleExclusionForm, EventInstanceAdminForm
 from django.forms import modelformset_factory
 from datetime import datetime, timezone, date
 from dateutil.relativedelta import *
@@ -346,3 +346,31 @@ class SchedulingRuleExclusionUpdateView(UserIsStaffMixin, UpdateView):
 class SchedulingRuleExclusionDeleteView(UserIsStaffMixin, DeleteView):
     model = SchedulingRuleExclusion
     success_url = reverse_lazy('ruleexclusions')
+
+# EventInstance admin
+
+class EventInstanceAdminListView(UserIsStaffMixin, generic.ListView):
+    model = EventInstance
+    template_name = "scheduler/eventinstanceadmin_list.html"
+
+    def get_queryset(self):
+        today = datetime.now().date()
+        queryset = EventInstance.objects.all().filter(start__gte=today).order_by("start")
+        return queryset
+
+class EventInstanceAdminDetailView(UserIsStaffMixin, generic.DetailView):
+    model = EventInstance
+    template_name = "scheduler/eventinstanceadmin_detail.html"
+
+class EventInstanceAdminUpdateView(UserIsStaffMixin, UpdateView):
+    model = EventInstance
+    form_class = EventInstanceAdminForm
+    template_name = "scheduler/eventinstanceadmin_form.html"
+
+    def get_success_url(self):
+        return reverse_lazy('eventinstance-admin-detail', kwargs={'pk': self.object.id})
+
+class EventInstanceAdminDeleteView(UserIsStaffMixin, DeleteView):
+    model = EventInstance
+    template_name = "scheduler/eventinstanceadmin_confirm_delete.html"
+    success_url = reverse_lazy('eventinstances-admin')

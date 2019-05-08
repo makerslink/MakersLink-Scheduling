@@ -1,0 +1,65 @@
+{% extends "base_form.html" %}
+
+{% block css %}
+<style>
+    .eventstatus-1:before{
+        content: "Ombokning krävs";
+    }
+    .eventstatus-1{
+        color: #DD4444;
+    }
+    .eventstatus0:before{
+        content: "Ledigt";
+    }
+    .eventstatus0{
+        color: blue;
+    }
+    .eventstatus1:before{
+        content: "Bokat";
+    }
+    .eventstatus1{
+        color: green;
+    }
+    .eventstatus2:before{
+        content: "Inställt";
+    }
+    .eventstatus2{
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>Pass som finns i databasen</h1>
+
+
+{% for message in messages %}
+    {% if 'safe' in message.tags %}
+        {{ message|safe }}
+    {% else %}
+        { message }}
+    {% endif %}
+{% endfor %}
+
+{% if eventinstance_list %}
+    <table>
+        <thead>
+            <tr>
+                <th>Rubrik</th>
+                <th>Datum & tid</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        {% for eventinstance in eventinstance_list %}
+            <tr class="{% cycle 'row-uneven' 'row-even' %}">
+                <td><a href="{% url 'eventinstance-admin-detail' pk=eventinstance.pk %}">{{ eventinstance.title }}</a></td>
+                <td>{{ eventinstance.start|date:"Y-m-d H:i" }}-{{ eventinstance.end|date:"H:i" }}</td>
+                <td class="eventstatus{{ eventinstance.status }}"></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No EventInstances found.</p>
+{% endif %}
+{% endblock content %}

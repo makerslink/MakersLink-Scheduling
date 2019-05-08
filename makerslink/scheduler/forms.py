@@ -47,6 +47,12 @@ class RuleExclusionForm(forms.ModelForm):
             'excluded_date': DatePicker,
         }
 
+class EventInstanceAdminForm(forms.ModelForm):
+    class Meta:
+        #fields = '__all__'
+        fields = ('status', 'unique_title', 'unique_description', 'participants')
+        model = EventInstance
+
 class EventInstanceFormSet(BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -24,7 +24,7 @@ sudo docker save -o ./MakersLink-Scheduling-$VERSION_NUM.tar makerslink_scheduli
 # Change owner to your self
 sudo chown me:me ./MakersLink-Scheduling-$VERSION_NUM.tar
 # Push image to server
-sudo scp MakersLink-Scheduling-$VERSION_NUM.tar somebody@somewhere:/a/dir
+scp MakersLink-Scheduling-$VERSION_NUM.tar somebody@somewhere:/a/dir
 
 Then on the server:
 # Load docker image

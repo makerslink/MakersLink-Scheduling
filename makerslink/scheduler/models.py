@@ -46,7 +46,7 @@ class EventTemplate(models.Model):
 
     def createEventEntry(self, host, start, end, status):
         if self.synchronize:
-            data = self._createEventData(host, start, end, status)
+            data = self._createUpdatedEventData(host, start, end, status)
             #logger.warning("Data:")
             #logger.warning(data)
             #return True
@@ -57,7 +57,7 @@ class EventTemplate(models.Model):
 
     def updateEventEntry(self, booking_id, host, start, end, status):
         if self.synchronize:
-            data =self._createEventData(host, start, end, status)
+            data =self._createUpdatedEventData(host, start, end, status)
             #logger.warning("Data:")
             #logger.warning(data)
             #return True
@@ -65,18 +65,27 @@ class EventTemplate(models.Model):
         else:
             return True
 
-    def _createEventData(self, host, start, end, status):
+    def _createUpdatedEventData(self, host, start, end, status, unique_title="", unique_description=""):
         #logger.warning("createEventData:start: %s", start)
         if status == 2:
-            summary = "Inställt: " + self.title
+            if unique_title == "":
+                summary = settings.CANCELLED_TITLE + self.title
+            else:
+                summary = unique_title + self.title
+
+            if unique_description == "":
+                description = settings.CANCELLED_DESCRIPTION
+            else:
+                description = unique_description
         else:
             summary = self.title
 
-        description = 'Värd: ' + str(host.slackId)
-        if self.header:
-            description += "\n" + self.header
-        if self.body:
-            description += "\n" + self.body
+            description = 'Värd: ' + str(host.slackId)
+            if self.header:
+                description += "\n" + self.header
+            if self.body:
+                description += "\n" + self.body
+
         calendarTZ = pytz.timezone(self.calendar.timezone)
         event_data = {
             'summary': summary,
@@ -97,6 +106,12 @@ class EventTemplate(models.Model):
         }
 
         return event_data
+
+    def deleteEventEntry(self, booking_id):
+        if self.synchronize:
+            return self.calendar.deleteEvent(booking_id)
+        else:
+            return True
 
     def __str__(self):
         """
@@ -155,6 +170,15 @@ class SchedulingCalendar(models.Model):
         except:
             raise ValueError("Could not update event in calendar")
 
+    def deleteEvent(self, id):
+        logger.warning("SchedulingCalendar:deleteEvent called")
+        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        try:
+            service.events().delete(calendarId=self.google_calendar_id, eventId=id).execute()
+            return True
+        except:
+            raise ValueError("Could not delete event in calendar")
 
     def __str__(self):
         """
@@ -379,7 +403,9 @@ class EventInstance(models.Model):
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(default=0, choices=STATUS, help_text="Instance status")
     period = models.ForeignKey('SchedulingPeriod', on_delete=models.SET_NULL, null=True, blank=True)
-    
+    unique_title = models.CharField(max_length=100, default="", blank=True, help_text="Enter title to be inserted before the header when cancelling, leave blank to use default: {}".format(settings.CANCELLED_TITLE))
+    unique_description = models.CharField(max_length=400, default="", blank=True, help_text="Enter a description for a cancelled event, leave blank to use default: {}".format(settings.CANCELLED_DESCRIPTION))
+
     @property
     def statusText(self):
         return EventInstance.STATUS[self.status + 1][1]
@@ -420,6 +446,7 @@ class EventInstance(models.Model):
         logger.warning('EventInstance save called')
         if self.google_calendar_booking_id is not None:
             logger.warning("Updating calendar entry with ID: " + str(self.google_calendar_booking_id))
+
             if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         else:
@@ -433,6 +460,12 @@ class EventInstance(models.Model):
 
         logger.warning("Calling super().save()")
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.google_calendar_booking_id is not None:
+            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+                raise ValueError('Could not update calendar')
+        super().delete(*args, **kwargs)
 
     def display_host(self):
         return ''.join([self.host.email])
@@ -699,6 +732,9 @@ class SchedulingRuleExclusion(models.Model):
     @property
     def name(self):
         return '{} ({})'.format(self.excluded_date.strftime("%Y-%m-%d"), self.description)
+
+    class Meta:
+        ordering = ["excluded_date"]
 
     # Functions
     def get_absolute_url(self):

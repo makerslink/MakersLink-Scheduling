@@ -63,6 +63,10 @@ LOGO = {'path':"makerslink/MakersLink-group-color.png", 'link':'https://www.make
 
 MENU_TITLE = "Bokningssystem"
 
+# EventInstance-settings
+CANCELLED_TITLE = "Inställt: "
+CANCELLED_DESCRIPTION = "Detta pass har blivit inställt, Makerspace Linköping har EJ öppet denna tid!"
+
 # Application definition
 
 INSTALLED_APPS = [

@@ -49,7 +49,10 @@
   </style>
   <script>
   $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
+    if(!('ontouchstart' in window))
+    {
+      $('[data-toggle="tooltip"]').tooltip()
+    }
   })
   </script>
   {% block script %}{% endblock %}
@@ -64,8 +67,8 @@
       {% block sidebar %}
       <ul class="nav flex-column">
           {% if logo %}
-            <li class="nav-item"><a class="nav-link" href="{{ logo.link }}">
-            <img src="{% static logo.path %}" style="margin:5px" width="140" class="align-top" alt="Logo">
+            <li class="nav-item"><a class="nav-link" style="" href="{{ logo.link }}">
+              <img src="{% static logo.path %}" style="margin:5px; display:block; margin-left:auto; margin-right:auto" width="140" class="align-top" alt="Logo">
             </a></li>
           {% endif %}
           {% if menu_title %}
@@ -81,10 +84,10 @@
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'events' %}">Events</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'periods' %}">Periods</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'ruleexclusions' %}">Exlude dates</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'eventinstances-admin' %}">Administrate EventInstances</a></li>
           {% endif %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'profile' %}" data-toggle="tooltip" data-placement="right" title="Se en översikt av dina bokade pass">Användarprofil</a></li>
           <li class="nav-item"><a class="nav-link bg-warning text-dark" href="{% url 'logout' %}">Logga ut</a></li>
-          <br>
           {% for menu_item in menu_extra%}
             <li class="nav-item"><a class="nav-link {% if menu_item.class %} {{ menu_item.class }}{% endif %}" href="{{ menu_item.link }}" data-toggle="tooltip" data-placement="right" title="{{ menu_item.tooltip }}">{{ menu_item.name }}</a></li>
           {% endfor %}
