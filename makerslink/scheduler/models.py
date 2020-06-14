@@ -288,12 +288,16 @@ class Event(models.Model):
             start_list = self.rule.get_events(from_date, until_date)
 
             for startdate in start_list:
-                event_list.append(self.create_eventinstance(startdate, startdate+event_duration))
+                event_instance = self.create_eventinstance(startdate, startdate+event_duration)
+                if event_instance.period:
+                    event_list.append(event_instance)
         # If this is a single Event
         else:
             # logger.warning("Event:get_event_list:No rule for repetition found, adding single event")
             #logger.warning("get_event_list:single: %s", self.start)
-            event_list.append(self.create_eventinstance(self.start))
+            event_instance =self.create_eventinstance(self.start)
+            if event_instance.period:
+                event_list.append(event_instance)
 
         return event_list
 
@@ -504,7 +508,10 @@ class EventInstance(models.Model):
         """
         String for representing the EventTemplate object (in Admin site etc.)
         """
-        return self.title+"("+self.host.slackId+", "+self.period.__str__()+")"
+        if self.host and self.period:
+            return self.title+"("+self.host.slackId+", "+self.period.__str__()+")"
+        else:
+            return self.title
 
 class SchedulingRule(models.Model):
     #Data
