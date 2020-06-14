@@ -41,7 +41,7 @@ if [[ $latestVersion =~ $regex ]]; then
     minor="${BASH_REMATCH[2]}"
     patch="${BASH_REMATCH[3]}"
 else
-    echo "Invalid version-number, exiting script!"
+    echo "Invalid version-number format in repo, exiting script!"
     exit -1
 fi
 
