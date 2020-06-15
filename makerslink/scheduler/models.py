@@ -695,7 +695,7 @@ class SchedulingPeriod(models.Model):
     
     def get_host_count_list(self):
         userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
-            host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id)))
+            host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id))).order_by('host_count')
         
         return userHostList
     
