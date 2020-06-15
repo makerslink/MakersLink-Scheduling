@@ -37,6 +37,7 @@ class PeriodForm(forms.ModelForm):
         widgets = {
             'start': DateMonthPicker,
             'end': DateMonthPicker,
+            'hosts': forms.CheckboxSelectMultiple,
         }
 
 class RuleExclusionForm(forms.ModelForm):
