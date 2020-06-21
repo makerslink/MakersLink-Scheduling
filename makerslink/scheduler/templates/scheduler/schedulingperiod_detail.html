@@ -7,5 +7,34 @@
   <p><strong>Name:</strong> {{ object.name }}</p>
   <p><strong>Start:</strong> {{ object.start |date:"Y-m-d"}}</p>
   <p><strong>End:</strong> {{ object.end |date:"Y-m-d"}}</p>
+  <p><strong>Hosts:</strong></p>
+  {% if object.hosts.all %}
+    <ul>
+
+      {% for host in object.hosts.all %}
+      <li>
+        <a href="{% url 'host-detail' slug=host %}">{{ host }}</a>
+      </li>
+      {% endfor %}
+
+    </ul>
+  {% else %}
+    <p>No hosts has been assigned to this period.</p>
+  {% endif %}
+  <p><strong>Suggested hosts to add to period</strong></p>
+  {% if object.active_unassigned_hosts %}
+    <ul>
+
+      {% for host in object.active_unassigned_hosts %}
+            <li>
+                <a href="{% url 'host-detail' slug=host %}">{{ host }}</a>
+            </li>
+      {% endfor %}
+
+    </ul>
+  {% else %}
+    <p>No unassgined hosts active this period.</p>
+  {% endif %}
+  
 {% endblock %}
 

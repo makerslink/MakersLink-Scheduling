@@ -59,6 +59,7 @@ urlpatterns += [
     path('host/<str:slug>', views.HostDetailView.as_view(), name='host-detail'),
     path('profile', views.ProfileView.as_view(), name='profile'),
     path('signup', views.EventSignupView, name='host-signup'),
+    path('hosts/<str:filter>', views.HostListView.as_view(template_name='host_list.html'), name='hosts_filter'),
     path('hosts', views.HostListView.as_view(template_name='host_list.html'), name='hosts'),
 ]
 # SchedulingRuleExclusion

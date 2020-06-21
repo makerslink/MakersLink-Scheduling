@@ -143,6 +143,11 @@ class PeriodDetailView(UserIsStaffMixin, generic.DetailView):
 class PeriodCreateView(UserIsStaffMixin, CreateView):
     model = SchedulingPeriod
     form_class = PeriodForm
+    
+    def get_context_data(self, **kwargs):
+        context = super(PeriodCreateView, self).get_context_data(**kwargs)
+        context['hosts_last_period'] = SchedulingPeriod.objects.latest('end')
+        return context
 
 class PeriodUpdateView(UserIsStaffMixin, UpdateView):
     model = SchedulingPeriod
@@ -202,8 +207,9 @@ class HostListView(UserIsStaffMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(HostListView, self).get_context_data(**kwargs)
-        context['booking_count'] = EventInstance.objects.filter(status=1).count
-        context['period_host_list'] = SchedulingPeriod.get_all_host_count_key_lists()
+        only_hosts_in_last_period = 'filter' in self.kwargs and self.kwargs['filter'] == "last"
+        #context['booking_count'] = EventInstance.objects.filter(status=1).count
+        context['period_host_list'] = SchedulingPeriod.get_all_host_count_key_lists(only_hosts_in_last_period = only_hosts_in_last_period)
         return context
     
     def get_queryset(self):

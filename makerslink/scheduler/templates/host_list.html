@@ -3,6 +3,12 @@
 {% block content %}
 <h1>Host List</h1>
 
+{% if view.kwargs.filter %}
+    <a href="{% url 'hosts' %}">Remove filter</a>
+{% else %}
+    <a href="{% url 'hosts_filter' filter='last' %}">Filter on hosts in last period</a>
+{% endif %}
+
 {% if schedulingperiod_list %}
 
 <table>

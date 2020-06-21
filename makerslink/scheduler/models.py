@@ -401,7 +401,7 @@ class EventInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this bookinginstance")
     google_calendar_booking_id = models.CharField(max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
     host = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
-    participants = models.ManyToManyField('accounts.User', related_name="participants", blank=True)
+    participants = models.ManyToManyField('accounts.User', related_name="participants", related_query_name="participant", blank=True)
     event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
@@ -664,6 +664,7 @@ class SchedulingPeriod(models.Model):
     end = models.DateField(help_text="End of period", db_index=True)
     num_required_events = models.IntegerField(default = 6, help_text="Number of events a host should have in this period")
     participant_key_string = ParticipantKeyField(default = "", help_text="A string representing the events a host is required to be a participant to in this period", max_length=10)
+    hosts = models.ManyToManyField(accounts.models.User, related_name="periods", related_query_name="period", blank=True)
     
     @property
     def name(self):
@@ -710,26 +711,36 @@ class SchedulingPeriod(models.Model):
         
         return resultList
     
-    def get_all_host_count_key_lists():
+    def get_all_host_count_key_lists(only_hosts_in_last_period = False):
         periodList = SchedulingPeriod.objects.all().order_by('-start')
         
         resultList = {}
         
         for period in periodList:
             for user, count_key in period.get_host_count_key_list().items():
-                if user not in resultList:
-                    resultList[user] = {}
-                resultList[user][period] = count_key
+                if not only_hosts_in_last_period or user in SchedulingPeriod.objects.latest('end').hosts.all().values_list('slackId', flat=True):
+                    if user not in resultList:
+                        resultList[user] = {}
+                    resultList[user][period] = count_key
         
         return resultList
-            
+    
+    @property
+    def active_unassigned_hosts(self):
+        """
+        Returns a list of all hosts that have been active this period. Either as
+        a host or as a participant.
+        """
+        
+        hosts = accounts.models.User.objects.filter((Q(eventinstance__period = self.id) | Q(participant__period = self.id)) & ~Q(id__in = self.hosts.all())).order_by().distinct()
+        
+        return hosts
     
     def __str__(self):
         """
         String for representing the EventTemplate object (in Admin site etc.)
         """
         return self.name
-
 
 class SchedulingRuleExclusion(models.Model):
     # Fields

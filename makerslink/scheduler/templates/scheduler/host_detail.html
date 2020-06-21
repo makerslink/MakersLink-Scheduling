@@ -7,11 +7,20 @@
   <p><strong>E-Post:</strong> {{ view_user.email }}</p>
   <table>
   <thead>
-    <tr><th colspan =3>Antal pass i period</th></tr>
+    {% if user.is_staff %}
+        <tr><th colspan =4>Antal pass i period</th></tr>
+    {% else %}
+        <tr><th colspan =3>Antal pass i period</th></tr>
+    {% endif %}
   </thead>
   {% for period in period_list %}
     <tr class="{% cycle 'row-uneven' 'row-even' %}">
-      <td>{{ period.name }}</td>
+        
+      {% if user.is_staff %}
+        <td><a href="{{ period.get_absolute_url }}">{{ period.name }}</a></td>
+      {% else %}
+        <td>{{ period.name }}</td>
+      {% endif %}
       <td>{{ period.event_count }}</td>
       <td>
           {% for host, key_string in period.get_participant_key_list.items %}
@@ -20,11 +29,23 @@
 		    {% endif %}
           {% endfor %}
       </td>
-      
+      {% if user.is_staff %}
+        <td>
+            {% if view_user in period.hosts.all %}
+                Är värd
+            {% else %}
+                Är inte värd
+            {% endif %}
+        </td>
+      {% endif %}
       
     </tr>
   {% empty %}
-    <tr><td colspan=2>Ännu inte värd på några pass.</td></tr>
+    {% if user.is_staff %}
+        <tr><td colspan=4>Ännu inte värd på några pass.</td></tr>
+    {% else %}
+        <tr><td colspan=3>Ännu inte värd på några pass.</td></tr>
+    {% endif %}
   {% endfor %}
   </table>
   
