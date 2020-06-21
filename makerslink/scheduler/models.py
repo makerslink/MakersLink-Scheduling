@@ -725,13 +725,13 @@ class SchedulingPeriod(models.Model):
         return resultList
     
     @property
-    def active_hosts(self):
+    def active_unassigned_hosts(self):
         """
         Returns a list of all hosts that have been active this period. Either as
         a host or as a participant.
         """
         
-        hosts = accounts.models.User.objects.filter(Q(eventinstance__period = self.id) | Q(participant__period = self.id)).order_by().distinct()
+        hosts = accounts.models.User.objects.filter((Q(eventinstance__period = self.id) | Q(participant__period = self.id)) & ~Q(id__in = self.hosts.all())).order_by().distinct()
         
         return hosts
     

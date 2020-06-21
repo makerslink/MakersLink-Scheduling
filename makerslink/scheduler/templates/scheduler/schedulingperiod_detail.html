@@ -22,13 +22,13 @@
     <p>No hosts has been assigned to this period.</p>
   {% endif %}
   <p><strong>Suggested hosts to add to period</strong></p>
-  {% if object.active_hosts %}
+  {% if object.active_unassigned_hosts %}
     <ul>
 
-      {% for host in object.active_hosts %}
-      <li>
-        <a href="{% url 'host-detail' slug=host %}">{{ host }}</a>
-      </li>
+      {% for host in object.active_unassigned_hosts %}
+            <li>
+                <a href="{% url 'host-detail' slug=host %}">{{ host }}</a>
+            </li>
       {% endfor %}
 
     </ul>
