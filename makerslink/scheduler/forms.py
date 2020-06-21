@@ -31,7 +31,7 @@ import datetime #for checking renewal date range.
 
 
 class PeriodForm(forms.ModelForm):
-    add_from_last = forms.BooleanField(help_text="Add hosts from last period.")
+    add_from_last = forms.BooleanField(help_text="Add hosts from last period.", required=False)
     class Meta:
         fields = '__all__'
         model = SchedulingPeriod

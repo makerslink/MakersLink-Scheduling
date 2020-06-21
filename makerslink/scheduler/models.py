@@ -711,16 +711,17 @@ class SchedulingPeriod(models.Model):
         
         return resultList
     
-    def get_all_host_count_key_lists():
+    def get_all_host_count_key_lists(only_hosts_in_last_period = False):
         periodList = SchedulingPeriod.objects.all().order_by('-start')
         
         resultList = {}
         
         for period in periodList:
             for user, count_key in period.get_host_count_key_list().items():
-                if user not in resultList:
-                    resultList[user] = {}
-                resultList[user][period] = count_key
+                if not only_hosts_in_last_period or user in SchedulingPeriod.objects.latest('end').hosts.all().values_list('slackId', flat=True):
+                    if user not in resultList:
+                        resultList[user] = {}
+                    resultList[user][period] = count_key
         
         return resultList
     
