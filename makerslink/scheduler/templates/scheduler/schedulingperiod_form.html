@@ -22,4 +22,22 @@
     <a href="{% url 'periods' %}"><button type="button" class="btn btn-default">Cancel</button></a>
     {% endif %}
 </form>
+
+{% if hosts_last_period.hosts %}
+
+<p><strong>Hosts in last period will be added to new period if
+"add from last" is selected above.</strong></p>
+
+<ul>
+
+  {% for host in hosts_last_period.hosts.all %}
+  <li>
+    {{ host }}
+  </li>
+  {% endfor %}
+
+</ul>
+
+{% endif %}
+
 {% endblock %}

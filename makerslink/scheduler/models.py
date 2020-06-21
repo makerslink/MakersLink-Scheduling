@@ -664,7 +664,7 @@ class SchedulingPeriod(models.Model):
     end = models.DateField(help_text="End of period", db_index=True)
     num_required_events = models.IntegerField(default = 6, help_text="Number of events a host should have in this period")
     participant_key_string = ParticipantKeyField(default = "", help_text="A string representing the events a host is required to be a participant to in this period", max_length=10)
-    hosts = models.ManyToManyField(accounts.models.User, related_name="periods", related_query_name="period")
+    hosts = models.ManyToManyField(accounts.models.User, related_name="periods", related_query_name="period", blank=True)
     
     @property
     def name(self):
@@ -740,7 +740,6 @@ class SchedulingPeriod(models.Model):
         String for representing the EventTemplate object (in Admin site etc.)
         """
         return self.name
-
 
 class SchedulingRuleExclusion(models.Model):
     # Fields

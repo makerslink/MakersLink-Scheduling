@@ -31,6 +31,7 @@ import datetime #for checking renewal date range.
 
 
 class PeriodForm(forms.ModelForm):
+    add_from_last = forms.BooleanField(help_text="Add hosts from last period.")
     class Meta:
         fields = '__all__'
         model = SchedulingPeriod
@@ -39,6 +40,11 @@ class PeriodForm(forms.ModelForm):
             'end': DateMonthPicker,
             'hosts': forms.CheckboxSelectMultiple,
         }
+    def save(self, commit=True):
+        if self.cleaned_data['add_from_last']:
+            self.cleaned_data['hosts'] = SchedulingPeriod.objects.latest('end').hosts.all() | self.cleaned_data['hosts']
+        
+        return super(PeriodForm, self).save(commit=commit)
 
 class RuleExclusionForm(forms.ModelForm):
     class Meta:
