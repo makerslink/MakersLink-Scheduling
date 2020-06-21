@@ -401,7 +401,7 @@ class EventInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this bookinginstance")
     google_calendar_booking_id = models.CharField(max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
     host = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
-    participants = models.ManyToManyField('accounts.User', related_name="participants", blank=True)
+    participants = models.ManyToManyField('accounts.User', related_name="participants", related_query_name="participant", blank=True)
     event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
@@ -723,7 +723,17 @@ class SchedulingPeriod(models.Model):
                 resultList[user][period] = count_key
         
         return resultList
-            
+    
+    @property
+    def active_hosts(self):
+        """
+        Returns a list of all hosts that have been active this period. Either as
+        a host or as a participant.
+        """
+        
+        hosts = accounts.models.User.objects.filter(Q(eventinstance__period = self.id) | Q(participant__period = self.id)).order_by().distinct()
+        
+        return hosts
     
     def __str__(self):
         """
