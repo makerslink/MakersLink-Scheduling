@@ -64,15 +64,15 @@
         {% for period in period_list %}
           <tr>
             <td class="emph sub-head" colspan =2>
-              <a data-toggle="collapse" href="#collapse{{ period.grouper }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+              <a data-toggle="collapse" href="#collapse-host-{{ forloop.counter0 }}" role="button" aria-expanded="false" aria-controls="collapseExample">
                 {{ period.grouper }}
               </a>
             </td>
           </tr>
-          <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ period.grouper }}">
+          <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse-host-{{ forloop.counter0 }}">
             {% for eventinstance in period.list %}
               <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
-                <td><a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }}</a></td>
+                <td><a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }}{{ period.id }}</a></td>
                 <td>{{ eventinstance.start|date:"Y-m-d H:i" }}</td>
               </tr>
             {% endfor %}
@@ -99,12 +99,12 @@
         {% for period in period_list %}
           <tr>
             <td class="emph sub-head" colspan =2>
-              <a data-toggle="collapse" href="#collapse{{ period.grouper }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+              <a data-toggle="collapse" href="#collapse-participant-{{ forloop.counter0 }}" role="button" aria-expanded="false" aria-controls="collapseExample">
                 {{ period.grouper }}
               </a>
             </td>
           </tr>
-          <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse{{ period.grouper }}">
+          <tbody class="collapse {% if forloop.first %}show{% endif %}" id="collapse-participant-{{ forloop.counter0 }}">
             {% for eventinstance in period.list %}
               <tr class="{% cycle 'row-uneven' 'row-even' as rowclass %}">
                 <td><a href="{% url 'eventinstance-join' pk=eventinstance.pk %}">{{ eventinstance.title }}</a></td>
