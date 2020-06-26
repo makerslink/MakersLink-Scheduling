@@ -666,6 +666,9 @@ class SchedulingPeriod(models.Model):
     participant_key_string = ParticipantKeyField(default = "", help_text="A string representing the events a host is required to be a participant to in this period", max_length=10)
     hosts = models.ManyToManyField(accounts.models.User, related_name="periods", related_query_name="period", blank=True)
     
+    class Meta:
+        ordering = ('-start', '-end' )
+    
     @property
     def name(self):
         return self.start.strftime('%Y %b') + "-" + self.end.strftime('%b')
