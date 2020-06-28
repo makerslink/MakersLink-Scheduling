@@ -13,7 +13,7 @@
 
       {% for host in object.hosts.all %}
       <li>
-        <a href="{% url 'host-detail' slug=host %}">{{ host }}</a>
+        <a href="{% url 'host-detail' slug=host.slackId %}">{{ host }}</a>
       </li>
       {% endfor %}
 
@@ -27,7 +27,7 @@
 
       {% for host in object.active_unassigned_hosts %}
             <li>
-                <a href="{% url 'host-detail' slug=host %}">{{ host }}</a>
+                <a href="{% url 'host-detail' slug=host.slackId %}">{{ host }}</a>
             </li>
       {% endfor %}
 
