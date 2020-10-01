@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'scheduler.apps.SchedulerConfig',
     'accounts.apps.AccountsConfig',
+    'keys.apps.KeysConfig',
     'bootstrap4',
     'bootstrap_datepicker_plus',
     #'djangobower',
