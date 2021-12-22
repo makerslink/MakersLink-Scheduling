@@ -9,7 +9,7 @@ admin.site.register(SchedulingRuleExclusion)
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start')
+    list_display = ('name', 'start', 'end')
 
 @admin.register(EventInstance)
 class EventInstanceAdmin(admin.ModelAdmin):

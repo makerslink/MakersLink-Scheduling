@@ -1,37 +1,50 @@
+import pytz
+from django.utils import timezone
+import datetime
+from django.db.models import Q, Count, Max
+from .fields import ParticipantKeyField
+import accounts.models
+from dateutil.rrule import *
+import googleapiclient.discovery
+from google.oauth2 import service_account
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+import uuid
+from django.urls import reverse
+from django.db import models
+from django.db.models import CheckConstraint, Q, F
+from django.core.exceptions import ValidationError
 import logging
 logger = logging.getLogger(__name__)
-
-from django.db import models
-from django.urls import reverse
-import uuid
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-import datetime, pytz
-from google.oauth2 import service_account
-import googleapiclient.discovery
-from dateutil.rrule import *
-import accounts.models
-from .fields import ParticipantKeyField
-from django.db.models import Q, Count, Max
 
 # New Filesystem
 client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
 
 # Create your models here.
+
+
 class EventTemplate(models.Model):
     """
     Defines how something will look in the google calendar
     """
 
     # Fields
-    name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this template")
-    count_key = models.CharField(max_length=1, help_text="Key displayed when counting participantcy", default = 'D')
-    title = models.CharField(max_length=100, help_text="Enter title to be used for booking")
-    header = models.CharField(max_length=200, help_text="Enter a, optional, header for the event to be inserted after the hosts name into the descriptionfield in the calendar event.", null=True, blank=True)
-    body = models.TextField(max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
-    num_participants = models.IntegerField(default = 0, help_text="Number of participants, -1 for infinite")
-    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.SET_NULL, null=True, help_text="Select the calendar to sync events to.")
-    synchronize = models.BooleanField(default=True, help_text="If active, scheduled events will be synced to Google calendar upon creation.")
+    name = models.CharField(
+        max_length=50, help_text="Enter a human-friendly name for this template")
+    count_key = models.CharField(
+        max_length=1, help_text="Key displayed when counting participantcy", default='D')
+    title = models.CharField(
+        max_length=100, help_text="Enter title to be used for booking")
+    header = models.CharField(
+        max_length=200, help_text="Enter a, optional, header for the event to be inserted after the hosts name into the descriptionfield in the calendar event.", null=True, blank=True)
+    body = models.TextField(
+        max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
+    num_participants = models.IntegerField(
+        default=0, help_text="Number of participants, -1 for infinite")
+    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.SET_NULL,
+                                 null=True, help_text="Select the calendar to sync events to.")
+    synchronize = models.BooleanField(
+        default=True, help_text="If active, scheduled events will be synced to Google calendar upon creation.")
 
     # Metadata
     class Meta:
@@ -47,20 +60,19 @@ class EventTemplate(models.Model):
     def createEventEntry(self, host, start, end, status):
         if self.synchronize:
             data = self._createUpdatedEventData(host, start, end, status)
-            #logger.warning("Data:")
-            #logger.warning(data)
-            #return True
+            # logger.warning("Data:")
+            # logger.warning(data)
+            # return True
             return self.calendar.createEvent(data)
         else:
             return True
 
-
     def updateEventEntry(self, booking_id, host, start, end, status):
         if self.synchronize:
-            data =self._createUpdatedEventData(host, start, end, status)
-            #logger.warning("Data:")
-            #logger.warning(data)
-            #return True
+            data = self._createUpdatedEventData(host, start, end, status)
+            # logger.warning("Data:")
+            # logger.warning(data)
+            # return True
             return self.calendar.updateEvent(booking_id, data)
         else:
             return True
@@ -119,6 +131,7 @@ class EventTemplate(models.Model):
         """
         return self.name
 
+
 class SchedulingCalendar(models.Model):
     """
     Defines a Google calendar to insert bookings into
@@ -131,18 +144,25 @@ class SchedulingCalendar(models.Model):
     )
 
     # Fields
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this calendar")
-    name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this Google Calendar")
-    google_calendar_id = models.CharField(max_length=250, help_text="Enter a calendar id")
-    service_account_username = models.CharField(max_length=250, help_text="Enter the username for the service account used")
-    timezone = models.CharField(max_length=50, choices=TIMEZONES, help_text='Calendar timezone')
-    service_account = models.FileField(storage=client_secret_fs, help_text='Upload client_secret json-file', null=True, blank=True)
-    scope = models.TextField(default="https://www.googleapis.com/auth/calendar", help_text='Enter scope of api calls, change at your own risk')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4,
+                          editable=False, help_text="Unique ID for this calendar")
+    name = models.CharField(
+        max_length=50, help_text="Enter a human-friendly name for this Google Calendar")
+    google_calendar_id = models.CharField(
+        max_length=250, help_text="Enter a calendar id")
+    service_account_username = models.CharField(
+        max_length=250, help_text="Enter the username for the service account used")
+    timezone = models.CharField(
+        max_length=50, choices=TIMEZONES, help_text='Calendar timezone')
+    service_account = models.FileField(
+        storage=client_secret_fs, help_text='Upload client_secret json-file', null=True, blank=True)
+    scope = models.TextField(default="https://www.googleapis.com/auth/calendar",
+                             help_text='Enter scope of api calls, change at your own risk')
 
     # Metadata
     class Meta:
         ordering = ["name"]
-    
+
     # Methods
     def get_absolute_url(self):
         """
@@ -152,28 +172,36 @@ class SchedulingCalendar(models.Model):
 
     def createEvent(self, data):
         logger.warning("SchedulingCalendar:createEvent called")
-        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
-        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        credentials = service_account.Credentials.from_service_account_file(
+            self.service_account.path, scopes=[self.scope])
+        service = googleapiclient.discovery.build(
+            'calendar', 'v3', credentials=credentials)
         try:
-            event = service.events().insert(calendarId=self.google_calendar_id, body=data).execute()
+            event = service.events().insert(
+                calendarId=self.google_calendar_id, body=data).execute()
             return event.get('id')
         except:
             raise ValueError("Could not create event in calendar")
 
     def updateEvent(self, id, data):
         logger.warning("SchedulingCalendar:updateEvent called")
-        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
-        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        credentials = service_account.Credentials.from_service_account_file(
+            self.service_account.path, scopes=[self.scope])
+        service = googleapiclient.discovery.build(
+            'calendar', 'v3', credentials=credentials)
         try:
-            service.events().update(calendarId=self.google_calendar_id, eventId=id, body=data).execute()
+            service.events().update(calendarId=self.google_calendar_id,
+                                    eventId=id, body=data).execute()
             return True
         except:
             raise ValueError("Could not update event in calendar")
 
     def deleteEvent(self, id):
         logger.warning("SchedulingCalendar:deleteEvent called")
-        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
-        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        credentials = service_account.Credentials.from_service_account_file(
+            self.service_account.path, scopes=[self.scope])
+        service = googleapiclient.discovery.build(
+            'calendar', 'v3', credentials=credentials)
         try:
             service.events().delete(calendarId=self.google_calendar_id, eventId=id).execute()
             return True
@@ -187,7 +215,8 @@ class SchedulingCalendar(models.Model):
         return self.name
 
     def get_credentials(self):
-        credentials = service_account.Credentials.from_service_account_file(self.service_account.path, scopes=[self.scope])
+        credentials = service_account.Credentials.from_service_account_file(
+            self.service_account.path, scopes=[self.scope])
         return credentials
 
 
@@ -200,24 +229,49 @@ class Event(models.Model):
     #objects = BookingManager()
 
     # Fields
-    name = models.CharField(max_length=50, help_text="Enter a human-friendly name for this type of Event")
-    description = models.CharField(max_length=300, help_text="Enter a description for this type of Event", null=True, blank=True)
-    template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True, help_text="Select a template for how scheduled Events will look in the calendar.")
-    start = models.DateTimeField(help_text="Start of event repetition and start time of events", db_index=True)
-    end = models.DateTimeField(help_text="End time of events, must be after start", db_index=True)
-    repeat_end = models.DateTimeField(help_text="Date to end repetition", null=True, blank=True)
-    rule = models.ForeignKey('SchedulingRule', null=True, blank=True, help_text="Select '----' for a one time only event.", on_delete=models.SET_NULL)
+    name = models.CharField(
+        max_length=50, help_text="Enter a human-friendly name for this type of Event")
+    description = models.CharField(
+        max_length=300, help_text="Enter a description for this type of Event", null=True, blank=True)
+    template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True,
+                                 help_text="Select a template for how scheduled Events will look in the calendar.")
+    start = models.DateTimeField(
+        help_text="Start of event repetition and start time of events", db_index=True)
+    end = models.DateTimeField(
+        help_text="End time of events, must be after start", db_index=True)
+    repeat_end = models.DateTimeField(
+        help_text="Date to end repetition, must be after start", null=True, blank=True)
+    rule = models.ForeignKey('SchedulingRule', null=True, blank=True,
+                             help_text="Select '----' for a one time only event.", on_delete=models.SET_NULL)
 
     # Metadata
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.CheckConstraint(
+                check=Q(start__lt=F('end')),
+                name='check_start_before_end'
+            ),
+            models.CheckConstraint(
+                check=Q(start__lt=F('repeat_end')),
+                name='check_start_before_repeat_end'
+            ),
+        ]
 
     # Methods
-    
     @property
     def max_num_participants(self):
         return self.template.num_participants
-    
+
+    def clean(self):
+        # Only validate future requirement on create not on edit.
+        if self.pk is None and self.start <= timezone.now():
+            raise ValidationError({'start': ('Start date is not in the future')})
+        if self.start > self.end:
+            raise ValidationError({'start': ('Start date is after end date')})
+        if self.repeat_end and self.start > self.repeat_end:
+            raise ValidationError({'start': ('Start date is after repeat end date')})
+
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of EventTemplate.
@@ -235,16 +289,18 @@ class Event(models.Model):
             end = start + (self.end - self.start)
         #logger.warning("create_eventinstacreate_eventinstancence:start: %s", start)
         #logger.warning("create_eventinstance:end: %s", end)
-        
-        period = SchedulingPeriod.objects.filter(start__lte=start, end__gte=end)
-        
+
+        period = SchedulingPeriod.objects.filter(
+            start__lte=start, end__gte=end)
+
         if period.count() == 1:
-       	    period = period[0]
-       	else:
+            period = period[0]
+        else:
             period = None
-            
-        event = EventInstance(id=None, event=self, start=start, end=end, status=0, period=period)
-        
+
+        event = EventInstance(id=None, event=self, start=start,
+                              end=end, status=0, period=period)
+
         return event
 
     def get_event_list(self, from_date, until_date):
@@ -272,13 +328,14 @@ class Event(models.Model):
             if self.start > from_date:
                 from_date = self.start
             else:
-            	# Set the date to the given startdate but keep the same time if earlier
+                # Set the date to the given startdate but keep the same time if earlier
                 # As we are combining a current date with a time that might have
                 # been set in with another DST set up, we have to convert the time
                 # to local at the past timezone and convert it back to UTC with
                 # timezone for current local.
                 tz = pytz.timezone(settings.TIME_ZONE)
-                from_date = datetime.datetime.combine(from_date.date(), self.start.astimezone(tz).time()).astimezone(pytz.timezone("utc"))
+                from_date = datetime.datetime.combine(from_date.date(), self.start.astimezone(
+                    tz).time()).astimezone(pytz.timezone("utc"))
                 #from_date = datetime.datetime.combine(from_date.date(), self.start.time(), self.start.tzinfo)
             # Check if there is a date set to stop generating events, use that instead of given date if it is before given date
             if self.repeat_end and self.repeat_end < until_date:
@@ -288,14 +345,15 @@ class Event(models.Model):
             start_list = self.rule.get_events(from_date, until_date)
 
             for startdate in start_list:
-                event_instance = self.create_eventinstance(startdate, startdate+event_duration)
+                event_instance = self.create_eventinstance(
+                    startdate, startdate+event_duration)
                 if event_instance.period:
                     event_list.append(event_instance)
         # If this is a single Event
         else:
             # logger.warning("Event:get_event_list:No rule for repetition found, adding single event")
             #logger.warning("get_event_list:single: %s", self.start)
-            event_instance =self.create_eventinstance(self.start)
+            event_instance = self.create_eventinstance(self.start)
             if event_instance.period:
                 event_list.append(event_instance)
 
@@ -306,6 +364,7 @@ class Event(models.Model):
     If replace=True it replaces generated events with actual objects from DB
     If replace=False it removes generated events where there is an actual object in DB but does not replace it.
     """
+
     def get_events(self, from_date, until_date, replace=True):
         #logger.warning("Event:get_events called")
         #logger.warning("Event:get_events:from_date: %s", from_date)
@@ -327,8 +386,9 @@ class Event(models.Model):
             if event_replacer.has_eventinstance(event_instance):
                 if replace:
                     # logger.warning("Replacing with real event")
-                    final_eventlist.append(event_replacer.get_eventinstance(event_instance))
-                #else:
+                    final_eventlist.append(
+                        event_replacer.get_eventinstance(event_instance))
+                # else:
                     # logger.warning("Skipping event since replace=False")
             # If it doesn't, add the generated EventInstance
             else:
@@ -337,7 +397,8 @@ class Event(models.Model):
 
         # Finally we add the straggling EventInstances that coincides with these dates unless replace is false in which case we only want generated events
         if replace:
-            final_eventlist += event_replacer.get_straggling_eventinstances(from_date, until_date)
+            final_eventlist += event_replacer.get_straggling_eventinstances(
+                from_date, until_date)
         # Return list
         return final_eventlist
 
@@ -353,13 +414,16 @@ class Event(models.Model):
         :return:
         """
 
+
 class EventReplacer(object):
     """
     Used to replace generated Events with actual EventInstances
     """
     # Create a dict to keep track of actual EventInstances when creating an instance of this class
+
     def __init__(self, event_instances):
-        lookup = [((event_instance.event.id, event_instance.start, event_instance.end), event_instance) for event_instance in event_instances]
+        lookup = [((event_instance.event.id, event_instance.start, event_instance.end),
+                   event_instance) for event_instance in event_instances]
         self.lookup = dict(lookup)
 
     # Return an actual EventInstance that matches "event_instance" and remove it since it has been matched
@@ -374,15 +438,18 @@ class EventReplacer(object):
             if not self.lookup:
                 return False
             else:
-                raise TypeError('A problem with checking if an actual EventInstace exists occured!')
+                raise TypeError(
+                    'A problem with checking if an actual EventInstace exists occured!')
 
     # Return stragglers that start between the given dates. This can happen if you schedule events and then change the rule generating events
     def get_straggling_eventinstances(self, from_date, until_date):
         return [event_instance for _, event_instance in list(self.lookup.items()) if (event_instance.start < until_date and event_instance.start >= from_date and not event_instance.status == 2)]
 
+
 class EventManager(models.Manager):
     def get_instances(self, fromTime, untilTime):
         return self.eventinstance_set.filter(start__gte=fromTime, start__lte=untilTime)
+
 
 class EventInstance(models.Model):
     """
@@ -396,40 +463,48 @@ class EventInstance(models.Model):
         (1, 'Bokat'),
         (2, 'Inställt'),
     )
-    
+
     # Fields
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, help_text="Unique ID for this bookinginstance")
-    google_calendar_booking_id = models.CharField(max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
-    host = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True)
-    participants = models.ManyToManyField('accounts.User', related_name="participants", related_query_name="participant", blank=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4,
+                          editable=False, help_text="Unique ID for this bookinginstance")
+    google_calendar_booking_id = models.CharField(
+        max_length=300, help_text="Unique ID from google after instance is created", null=True, blank=True)
+    host = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL, null=True)
+    participants = models.ManyToManyField(
+        'accounts.User', related_name="participants", related_query_name="participant", blank=True)
     event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
-    status = models.IntegerField(default=0, choices=STATUS, help_text="Instance status")
-    period = models.ForeignKey('SchedulingPeriod', on_delete=models.SET_NULL, null=True, blank=True)
-    unique_title = models.CharField(max_length=100, default="", blank=True, help_text="Enter title to be inserted before the header when cancelling, leave blank to use default: {}".format(settings.CANCELLED_TITLE))
-    unique_description = models.CharField(max_length=400, default="", blank=True, help_text="Enter a description for a cancelled event, leave blank to use default: {}".format(settings.CANCELLED_DESCRIPTION))
+    status = models.IntegerField(
+        default=0, choices=STATUS, help_text="Instance status")
+    period = models.ForeignKey(
+        'SchedulingPeriod', on_delete=models.SET_NULL, null=True, blank=True)
+    unique_title = models.CharField(max_length=100, default="", blank=True,
+                                    help_text="Enter title to be inserted before the header when cancelling, leave blank to use default: {}".format(settings.CANCELLED_TITLE))
+    unique_description = models.CharField(max_length=400, default="", blank=True,
+                                          help_text="Enter a description for a cancelled event, leave blank to use default: {}".format(settings.CANCELLED_DESCRIPTION))
 
     @property
     def statusText(self):
         return EventInstance.STATUS[self.status + 1][1]
-    
+
     @property
     def title(self):
         return self.event.template.title
-    
+
     @property
     def header(self):
         return self.event.template.header
-    
+
     @property
     def body(self):
         return self.event.template.body
-    
+
     @property
     def max_num_participants(self):
         return self.event.template.num_participants
-    
+
     @property
     def template(self):
         return self.event.template
@@ -438,8 +513,21 @@ class EventInstance(models.Model):
     class Meta:
         ordering = ["start", "end"]
         unique_together = ('event', 'start', 'end')
+        constraints = [
+            models.CheckConstraint(
+                check=Q(start__lt=F('end')),
+                name='check_instance_start_before_end'
+            ),
+        ]
 
     # Methods
+    def clean(self):
+        # Only validate future requirement on create not on edit.
+        if self.pk is None and self.start <= timezone.now():
+            raise ValidationError({'start': ('Start date is not in the future')})
+        if self.start > self.end:
+            raise ValidationError({'start': ('Start date is after end date')})
+
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of EventInstance.
@@ -449,15 +537,18 @@ class EventInstance(models.Model):
     def save(self, *args, **kwargs):
         logger.warning('EventInstance save called')
         if self.google_calendar_booking_id is not None:
-            logger.warning("Updating calendar entry with ID: " + str(self.google_calendar_booking_id))
+            logger.warning("Updating calendar entry with ID: " +
+                           str(self.google_calendar_booking_id))
 
             if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         else:
             logger.warning("Creating new calendar entry")
-            calendar_id = self.event.template.createEventEntry(self.host, self.start, self.end, self.status)
+            calendar_id = self.event.template.createEventEntry(
+                self.host, self.start, self.end, self.status)
             if isinstance(calendar_id, bool):
-                logger.warning('No non-boolean ID was returned, not saving value as calendar id')
+                logger.warning(
+                    'No non-boolean ID was returned, not saving value as calendar id')
             else:
                 logger.warning('Inserting new calendar ID into object')
                 self.google_calendar_booking_id = calendar_id
@@ -478,14 +569,14 @@ class EventInstance(models.Model):
     def as_dict(self):
         if self.id == None:
             return {
-            'google_calendar_booking_id': self.google_calendar_booking_id,
-            'host': str(self.host),
-            'event': self.event.id,
-            'start': self.start,
-            'end': self.end,
-            'status': self.status,
-            'period': self.period.id
-        }
+                'google_calendar_booking_id': self.google_calendar_booking_id,
+                'host': str(self.host),
+                'event': self.event.id,
+                'start': self.start,
+                'end': self.end,
+                'status': self.status,
+                'period': self.period.id
+            }
         else:
             return {
                 'id': str(self.id),
@@ -495,7 +586,7 @@ class EventInstance(models.Model):
                 'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
                 'status': self.status,
-            	'period': self.period.id
+                'period': self.period.id
             }
 
     def can_take(self, user):
@@ -513,13 +604,14 @@ class EventInstance(models.Model):
         else:
             return self.title
 
+
 class SchedulingRule(models.Model):
-    #Data
+    # Data
     freqs = (
         ("YEARLY", "Yearly"),
-         ("MONTHLY", "Monthly"),
-         ("WEEKLY", "Weekly"),
-         ("DAILY", "Daily"),
+        ("MONTHLY", "Monthly"),
+        ("WEEKLY", "Weekly"),
+        ("DAILY", "Daily"),
     )
 
     _week_days = {
@@ -532,15 +624,15 @@ class SchedulingRule(models.Model):
         'SU': SU
     }
 
-    #Fields
+    # Fields
     name = models.CharField(max_length=50)
     description = models.TextField()
     frequency = models.CharField("frequency", choices=freqs, max_length=10)
     params = models.TextField("params", blank=True)
     use_exclusions = models.BooleanField(default=True,
-                                      help_text="If active, this rule for generating dates will ignore excluded dates generated dates falling on those dates will not be added.")
+                                         help_text="If active, this rule for generating dates will ignore excluded dates generated dates falling on those dates will not be added.")
 
-    #Functions
+    # Functions
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of EventTemplate.
@@ -615,7 +707,7 @@ class SchedulingRule(models.Model):
             params['count'] = 10
         if(dtstart is None):
             dtstart = datetime.datetime.now()
-        #if not 'tzid' in params:
+        # if not 'tzid' in params:
         #    params['tzid'] = settings.TIME_ZONE
         frequency = self.rrule_frequency()
         # logger.warning("params: %s", params)
@@ -632,7 +724,7 @@ class SchedulingRule(models.Model):
         rules.rrule(rrule(frequency, dtstart=dtstart, until=until, **params))
 
         if self.use_exclusions:
-            #Here we should add all excluded dates
+            # Here we should add all excluded dates
             if until:
                 rule_exclusions = SchedulingRuleExclusion.objects.filter(
                     excluded_date__range=(dtstart.date(), until.date()))
@@ -641,113 +733,134 @@ class SchedulingRule(models.Model):
                     excluded_date__gte=dtstart.date())
             for rule_exclusion in rule_exclusions:
                 excluded_date = rule_exclusion.excluded_date
-                exclusion = dtstart.replace(year=excluded_date.year, month=excluded_date.month, day=excluded_date.day)
+                exclusion = dtstart.replace(
+                    year=excluded_date.year, month=excluded_date.month, day=excluded_date.day)
                 rules.exdate(exclusion)
-        
+
         #events = rules.between(dtstart, until)
         events = rules
 
         tz = pytz.timezone(settings.TIME_ZONE)
-        #logger.warning("get_events:tz"+tz)
+        # logger.warning("get_events:tz"+tz)
         updatedEvents = []
         for event in events:
-            updatedEvents.append(tz.normalize(tz.localize(event)).astimezone(pytz.utc))
-        
-        #for event in updatedEvents:
+            updatedEvents.append(tz.normalize(
+                tz.localize(event)).astimezone(pytz.utc))
+
+        # for event in updatedEvents:
         #    logger.warning("get_events: %s", event)
         return updatedEvents
 
+
 class SchedulingPeriod(models.Model):
-    
-    #Fields
+
+    # Fields
     start = models.DateField(help_text="Start of period", db_index=True)
     end = models.DateField(help_text="End of period", db_index=True)
-    num_required_events = models.IntegerField(default = 6, help_text="Number of events a host should have in this period")
-    participant_key_string = ParticipantKeyField(default = "", help_text="A string representing the events a host is required to be a participant to in this period", max_length=10)
-    hosts = models.ManyToManyField(accounts.models.User, related_name="periods", related_query_name="period", blank=True)
-    
+    num_required_events = models.IntegerField(
+        default=6, help_text="Number of events a host should have in this period")
+    participant_key_string = ParticipantKeyField(
+        default="", help_text="A string representing the events a host is required to be a participant to in this period", max_length=10)
+    hosts = models.ManyToManyField(
+        accounts.models.User, related_name="periods", related_query_name="period", blank=True)
+
     class Meta:
-        ordering = ('-start', '-end' )
-    
+        ordering = ('-start', '-end')
+        constraints = [
+            models.CheckConstraint(
+                check=Q(start__lt=F('end')),
+                name='check_period_start_before_end'
+            ),
+        ]
+
     @property
     def name(self):
         return self.start.strftime('%Y %b') + "-" + self.end.strftime('%b')
-    
-    #Functions
+
+    # Functions
+    def clean(self):
+        if self.start > self.end:
+            raise ValidationError({'start': ('Start date is after end date')})
+
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of SchedulingPeriod.
          """
         return reverse('period-detail', args=[str(self.id)])
-    
+
     def get_participant_key_list(self):
         userParticipantList = accounts.models.User.objects.all().order_by('eventinstance__participants__slackId', 'eventinstance__period', 'eventinstance__event__template__count_key').annotate(
-            participantName = Max('eventinstance__participants__slackId'), keyChar=Max('eventinstance__event__template__count_key', filter=Q(eventinstance__period=self.id)))
-        
+            participantName=Max('eventinstance__participants__slackId'), keyChar=Max('eventinstance__event__template__count_key', filter=Q(eventinstance__period=self.id)))
+
         currentUser = None
         resultList = {}
         for userParticipant in userParticipantList:
             #logger.warning("get_participant_key_list: %s", userParticipant.participantName)
             if (currentUser == None or currentUser != userParticipant.participantName) and userParticipant.participantName != None:
                 currentUser = userParticipant.participantName
-                resultList[currentUser] = "";
+                resultList[currentUser] = ""
             if currentUser != None and userParticipant.keyChar != None:
-                resultList[currentUser] = resultList[currentUser] + userParticipant.keyChar
-        
+                resultList[currentUser] = resultList[currentUser] + \
+                    userParticipant.keyChar
+
         return resultList
-    
+
     def get_host_count_list(self):
         userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
             host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id))).order_by('host_count')
-        
+
         return userHostList
-    
+
     def get_host_count_key_list(self):
         count_list = self.get_host_count_list()
         key_list = self.get_participant_key_list()
         resultList = {}
-        
+
         for host in count_list:
             resultList[host.slackId] = str(host.host_count)
             if host.slackId in key_list:
-                resultList[host.slackId] = resultList[host.slackId] + " " + key_list[host.slackId]
-        
+                resultList[host.slackId] = resultList[host.slackId] + \
+                    " " + key_list[host.slackId]
+
         return resultList
-    
-    def get_all_host_count_key_lists(only_hosts_in_last_period = False):
+
+    def get_all_host_count_key_lists(only_hosts_in_last_period=False):
         periodList = SchedulingPeriod.objects.all().order_by('-start')
-        
+
         resultList = {}
-        
+
         for period in periodList:
             for user, count_key in period.get_host_count_key_list().items():
                 if not only_hosts_in_last_period or user in SchedulingPeriod.objects.latest('end').hosts.all().values_list('slackId', flat=True):
                     if user not in resultList:
                         resultList[user] = {}
                     resultList[user][period] = count_key
-        
+
         return resultList
-    
+
     @property
     def active_unassigned_hosts(self):
         """
         Returns a list of all hosts that have been active this period. Either as
         a host or as a participant.
         """
-        
-        hosts = accounts.models.User.objects.filter((Q(eventinstance__period = self.id) | Q(participant__period = self.id)) & ~Q(id__in = self.hosts.all())).order_by().distinct()
-        
+
+        hosts = accounts.models.User.objects.filter((Q(eventinstance__period=self.id) | Q(
+            participant__period=self.id)) & ~Q(id__in=self.hosts.all())).order_by().distinct()
+
         return hosts
-    
+
     def __str__(self):
         """
         String for representing the EventTemplate object (in Admin site etc.)
         """
         return self.name
 
+
 class SchedulingRuleExclusion(models.Model):
     # Fields
-    excluded_date = models.DateField(help_text="Date to exclude", db_index=True)
+    excluded_date = models.DateField(
+        help_text="Date to exclude", db_index=True)
     description = models.TextField()
 
     @property
