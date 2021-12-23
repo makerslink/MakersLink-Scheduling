@@ -246,7 +246,7 @@ class Event(models.Model):
 
     # Metadata
     class Meta:
-        ordering = ["name"]
+        ordering = ["-start"]
         constraints = [
             models.CheckConstraint(
                 check=Q(start__lt=F('end')),
@@ -804,6 +804,13 @@ class SchedulingPeriod(models.Model):
                     userParticipant.keyChar
 
         return resultList
+    
+    
+    def get_period_for_date(date):
+        """
+        Get the period that covers the provided date, will return the period that starts first and covers the date.
+        """
+        return SchedulingPeriod.objects.all().filter(start__lte=date, end__gte=date).order_by("start").first()
 
     def get_host_count_list(self):
         userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(

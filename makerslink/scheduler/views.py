@@ -1,5 +1,6 @@
 import operator
 import accounts.models
+from django import utils
 from accounts.models import User
 from django.db.models.expressions import F
 from django.db.models import Q, Count, Max
@@ -12,7 +13,7 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views import generic
 from dateutil.relativedelta import *
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, time, date
 from django.forms import modelformset_factory
 from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm, RuleExclusionForm, EventInstanceAdminForm
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
@@ -130,6 +131,32 @@ class SchedulingRuleDeleteView(UserIsStaffMixin, DeleteView):
 class EventListView(UserIsStaffMixin, generic.ListView):
     model = Event
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(EventListView, self).get_context_data(**kwargs)
+
+        if 'filter' in self.kwargs:
+            context['filter'] = self.kwargs['filter']
+        else:
+            context['filter'] = "last"
+            self.kwargs['filter'] = "last"
+
+        return context
+
+    def get_queryset(self):
+        period = SchedulingPeriod.get_period_for_date(utils.timezone.now())
+        if not 'filter' in self.kwargs:
+            self.kwargs['filter'] = "last"
+
+        querySet = super(EventListView, self).get_queryset()
+        if self.kwargs['filter'] == "last":
+            return querySet.filter(
+                start__lte=datetime.combine(period.end, time(0, 0), timezone.utc)
+                ).filter(
+                    Q(end__gte=datetime.combine(period.start, time(0, 0), timezone.utc)) |
+                    Q(repeat_end__gte=datetime.combine(period.start, time(0, 0), timezone.utc))
+                )
+        return querySet
 
 class EventDetailView(UserIsStaffMixin, generic.DetailView):
     model = Event

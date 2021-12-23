@@ -2,7 +2,13 @@
 
 {% block content %}
     <h1>Event List</h1>
-    <a href="{% url 'event-create' %}">Create new</a>
+    <a href="{% url 'event-create' %}">Create new</a><br>
+
+    {% if view.kwargs.filter and view.kwargs.filter != "none"%}
+      <a href="{% url 'events_filter' filter='none'%}">Remove filter</a>
+    {% else %}
+      <a href="{% url 'events' %}">Filter on events in last period</a>
+    {% endif %}
 
     {% if event_list %}
     <ul>
