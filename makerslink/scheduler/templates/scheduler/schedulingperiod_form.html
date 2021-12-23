@@ -13,12 +13,14 @@
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form|crispy }}
-    <button type="submit" class="btn  btn-primary">Submit</button>
-    {% if object.id %}
-    <a href="{% url 'period-detail' pk=object.id %}"><button type="button" class="btn btn-default">Cancel</button></a>
-    {% else %}
-    <a href="{% url 'periods' %}"><button type="button" class="btn btn-default">Cancel</button></a>
-    {% endif %}
+    <div class="btn-group btn-group-toggle">
+      <button type="submit" class="btn  btn-primary">Submit</button>
+      {% if object.id %}
+      <a href="{% url 'period-detail' pk=object.id %}" class="btn btn-outline-secondary">Cancel</a>
+      {% else %}
+      <a href="{% url 'periods' %}" class="btn btn-outline-secondary">Cancel</a>
+      {% endif %}
+  </div>
 </form>
 
 {% if hosts_last_period.hosts %}

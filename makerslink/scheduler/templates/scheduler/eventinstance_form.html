@@ -23,11 +23,13 @@
     <table>
     {{ form.as_table }}
     </table>
-    {% if request.user|is_participant:form.instance %}
-    	<button type="submit" class="btn  btn-primary">Avanmäl</button>
-    {% else %}
-    	<button type="submit" class="btn  btn-primary">Anmäl</button>
-    {% endif %}
-    <a href="{% url 'joinEvent' %}"><button type="button" class="btn btn-default">Avbryt</button></a>
+    <div class="btn-group btn-group-toggle">
+      {% if request.user|is_participant:form.instance %}
+    	  <button type="submit" class="btn  btn-primary">Avanmäl</button>
+      {% else %}
+    	  <button type="submit" class="btn  btn-primary">Anmäl</button>
+      {% endif %}
+      <a href="{% url 'joinEvent' %}" class="btn btn btn-outline-secondary">Avbryt</a>
+  </div>
 </form>
 {% endblock %}

@@ -8,8 +8,10 @@
 
 <form action="" method="POST">
   {% csrf_token %}
-  <button type="submit" class="btn  btn-danger">Yes, delete.</button>
-  <a href="{% url 'rule-detail' pk=schedulingrule.pk %}"><button type="button" class="btn btn-default">Cancel</button></a>
+  <div class="btn-group btn-group-toggle">
+    <button type="submit" class="btn  btn-danger">Yes, delete</button>
+    <a href="{% url 'rule-detail' pk=object.id %}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
 </form>
 
 {% endblock %}
