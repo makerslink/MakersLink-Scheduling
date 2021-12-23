@@ -3,6 +3,13 @@
 {% regroup participant_list by period as participant_list_by_period %}
 
   <h1>Värd: {{ view_user.slackId }}</h1>
+  {% if user.is_staff %}
+    <div class="btn-toolbar">
+      <div class="btn-group btn-group-toggle">
+        <a class="btn btn-primary btn-sm" role="button" href="{% url 'hosts' %}">List</a>
+      </div>
+    </div>
+  {% endif %}
 
   <p><strong>E-Post:</strong> {{ view_user.email }}</p>
   <table>

@@ -266,11 +266,13 @@ class Event(models.Model):
     def clean(self):
         # Only validate future requirement on create not on edit.
         if self.pk is None and self.start <= timezone.now():
-            raise ValidationError({'start': ('Start date is not in the future')})
+            raise ValidationError(
+                {'start': ('Start date is not in the future')})
         if self.start > self.end:
             raise ValidationError({'start': ('Start date is after end date')})
         if self.repeat_end and self.start > self.repeat_end:
-            raise ValidationError({'start': ('Start date is after repeat end date')})
+            raise ValidationError(
+                {'start': ('Start date is after repeat end date')})
 
     def get_absolute_url(self):
         """
@@ -524,7 +526,8 @@ class EventInstance(models.Model):
     def clean(self):
         # Only validate future requirement on create not on edit.
         if self.pk is None and self.start <= timezone.now():
-            raise ValidationError({'start': ('Start date is not in the future')})
+            raise ValidationError(
+                {'start': ('Start date is not in the future')})
         if self.start > self.end:
             raise ValidationError({'start': ('Start date is after end date')})
 
@@ -804,13 +807,18 @@ class SchedulingPeriod(models.Model):
                     userParticipant.keyChar
 
         return resultList
-    
-    
+
     def get_period_for_date(date):
         """
         Get the period that covers the provided date, will return the period that starts first and covers the date.
         """
         return SchedulingPeriod.objects.all().filter(start__lte=date, end__gte=date).order_by("start").first()
+
+    def get_previous_period(this):
+        """
+        Get the period the last period that starts before this period.
+        """
+        return SchedulingPeriod.objects.all().filter(start__lt=this.start).order_by("start").last()
 
     def get_host_count_list(self):
         userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(

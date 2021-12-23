@@ -2,7 +2,11 @@
 
 {% block content %}
     <h1>Template List</h1>
-    <a href="{% url 'template-create' %}">Create new</a>
+    <div class="btn-toolbar">
+      <div class="btn-group btn-group-toggle">
+        <a class="btn btn-primary btn-sm" role="button" href="{% url 'template-create' %}">Create new</a>
+      </div>
+    </div>
 
     {% if eventtemplate_list %}
     <ul>

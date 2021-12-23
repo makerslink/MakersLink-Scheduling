@@ -2,7 +2,11 @@
 
 {% block content %}
     <h1>Rule List</h1>
-    <a href="{% url 'rule-create' %}">Create new</a>
+    <div class="btn-toolbar">
+      <div class="btn-group btn-group-toggle">
+        <a class="btn btn-primary btn-sm" role="button" href="{% url 'rule-create' %}">Create new</a>
+      </div>
+    </div>
 
     {% if schedulingrule_list %}
     <ul>

@@ -2,12 +2,13 @@
 
 {% block content %}
 <h1>Host List</h1>
-
-{% if view.kwargs.filter %}
-    <a href="{% url 'hosts' %}">Remove filter</a>
-{% else %}
-    <a href="{% url 'hosts_filter' filter='last' %}">Filter on hosts in last period</a>
-{% endif %}
+<div class="btn-toolbar">
+  <div class="btn-group btn-group-toggle" data-toggle="tooltip" data-placement="top" title="Filter for hosts">
+    {% for filter_option in filter_options %}
+      <a class="btn btn-secondary btn-sm {% if filter_option == filter %}active{% endif %}" role="button" href="{% url 'hosts_filter' filter=filter_option%}">{{filter_option|capfirst}}</a>
+    {% endfor %}
+  </div>
+</div>
 
 {% if schedulingperiod_list %}
 

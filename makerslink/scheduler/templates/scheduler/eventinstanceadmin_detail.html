@@ -1,8 +1,14 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>EventInstance: {{ eventinstance.name }}</h1>
-  <strong class="text-success"><a href="{% url 'eventinstance-admin-update' pk=eventinstance.pk %}">Edit</a></strong> - <strong class="text-warning"><a href="{% url 'eventinstance-admin-delete' pk=eventinstance.pk %}">Delete</a></strong>
+  <h1>EventInstance: {{ eventinstance.title }}</h1>
+  <div class="btn-toolbar">
+    <div class="btn-group btn-group-toggle">
+      <a class="btn btn-primary btn-sm" role="button" href="{% url 'eventinstances-admin' %}">List</a>
+      <a class="btn btn-primary btn-sm" role="button" href="{% url 'eventinstance-admin-update' pk=eventinstance.pk %}">Edit</a>
+      <a class="btn btn-outline-danger btn-sm" role="button" href="{% url 'eventinstance-admin-delete' pk=eventinstance.pk %}">Delete</a>
+    </div>
+  </div>
 
   <p><strong>Title:</strong> {{ eventinstance.title }}</p>
   <p><strong>Start:</strong> {{ eventinstance.start }}</p>

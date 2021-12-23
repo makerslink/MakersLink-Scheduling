@@ -134,6 +134,7 @@ class EventListView(UserIsStaffMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(EventListView, self).get_context_data(**kwargs)
+        context['filter_options'] = ["none", "previous", "last", "future"]
 
         if 'filter' in self.kwargs:
             context['filter'] = self.kwargs['filter']
@@ -149,14 +150,24 @@ class EventListView(UserIsStaffMixin, generic.ListView):
             self.kwargs['filter'] = "last"
 
         querySet = super(EventListView, self).get_queryset()
-        if self.kwargs['filter'] == "last":
+
+        if self.kwargs['filter'] == "last" or self.kwargs['filter'] == "previous":
+            if self.kwargs['filter'] == "previous":
+                period = period.get_previous_period()
+
             return querySet.filter(
-                start__lte=datetime.combine(period.end, time(0, 0), timezone.utc)
-                ).filter(
-                    Q(end__gte=datetime.combine(period.start, time(0, 0), timezone.utc)) |
-                    Q(repeat_end__gte=datetime.combine(period.start, time(0, 0), timezone.utc))
-                )
+                start__lte=datetime.combine(
+                    period.end, time(0, 0), timezone.utc)
+            ).filter(
+                Q(end__gte=datetime.combine(period.start, time(0, 0), timezone.utc)) |
+                Q(repeat_end__gte=datetime.combine(
+                    period.start, time(0, 0), timezone.utc))
+            )
+        elif self.kwargs['filter'] == "future":
+            return querySet.filter(start__gte=utils.timezone.now())
+
         return querySet
+
 
 class EventDetailView(UserIsStaffMixin, generic.DetailView):
     model = Event
@@ -278,8 +289,12 @@ class HostListView(UserIsStaffMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super(HostListView, self).get_context_data(**kwargs)
-        only_hosts_in_last_period = 'filter' in self.kwargs and self.kwargs['filter'] == "last"
+        if not 'filter' in self.kwargs:
+            self.kwargs['filter'] = "none"
+        only_hosts_in_last_period = self.kwargs['filter'] == "last"
         #context['booking_count'] = EventInstance.objects.filter(status=1).count
+        context['filter_options'] = ["none", "last"]
+        context['filter'] = self.kwargs['filter']
         context['period_host_list'] = SchedulingPeriod.get_all_host_count_key_lists(
             only_hosts_in_last_period=only_hosts_in_last_period)
         return context

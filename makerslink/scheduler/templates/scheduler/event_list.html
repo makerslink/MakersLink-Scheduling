@@ -2,13 +2,16 @@
 
 {% block content %}
     <h1>Event List</h1>
-    <a href="{% url 'event-create' %}">Create new</a><br>
-
-    {% if view.kwargs.filter and view.kwargs.filter != "none"%}
-      <a href="{% url 'events_filter' filter='none'%}">Remove filter</a>
-    {% else %}
-      <a href="{% url 'events' %}">Filter on events in last period</a>
-    {% endif %}
+    <div class="btn-toolbar">
+      <div class="btn-group mr-2">
+        <a class="btn btn-primary btn-sm" role="button" href="{% url 'event-create' %}">Create new</a>
+      </div>
+      <div class="btn-group btn-group-toggle" data-toggle="tooltip" data-placement="top" title="Filter for events">
+        {% for filter_option in filter_options %}
+          <a class="btn btn-secondary btn-sm {% if filter_option == filter %}active{% endif %}" role="button" href="{% url 'events_filter' filter=filter_option%}">{{filter_option|capfirst}}</a>
+        {% endfor %}
+      </div>
+    </div>
 
     {% if event_list %}
     <ul>
