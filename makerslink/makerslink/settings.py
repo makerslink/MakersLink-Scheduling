@@ -24,16 +24,17 @@ CALENDAR_PK_DIR = os.path.abspath(os.path.join(BASE_DIR, "../pks/"))
 if os.getenv('DJANGO_ENV') == 'prod':
     print("Running with production settings.")
     DEBUG = False
-    ALLOWED_HOSTS = ['beta.scheduling.makerslink.se', 'scheduling.makerslink.se', 'vhost.makerslink', 'vhost.makerslink.se', '127.0.0.1']
+    ALLOWED_HOSTS = ['beta.scheduling.makerslink.se', 'scheduling.makerslink.se',
+                     'vhost.makerslink', 'vhost.makerslink.se', '127.0.0.1']
     USE_X_FORWARDED_HOST = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECRET_KEY = os.environ.get("DJANGO_SECRET" )
+    SECRET_KEY = os.environ.get("DJANGO_SECRET")
     SITE_URL = 'https://scheduling.makerslink.se'
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     # ...
 else:
     DEBUG = True
-    ALLOWED_HOSTS = ['*']    
+    ALLOWED_HOSTS = ['*']
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY = '!wdai3!c+cs7z!@w=27*b7(ggxi32!uw449=*ji+4m(mp#au+1'
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -55,11 +56,14 @@ else:
     }
 
 MENU_EXTRA = [
-    {'name':'Schema', 'link':'https://www.makerslink.se/pa-gang-i-makerslink/', 'class':'bg-primary text-white', 'tooltip':'Schemat på hemsidan'},
-    {'name':'Hjälp', 'link':'https://docs.google.com/document/d/1ut9KHgJejQpmta0l_Gh0D8yWoMklXmgzCSI5yfROSEA/edit?usp=sharing', 'class':'bg-info text-white font-weight-bold', 'tooltip':'Dokument som beskriver systemet.'},
+    {'name': 'Schema', 'link': 'https://www.makerslink.se/pa-gang-i-makerslink/',
+        'class': 'bg-primary text-white', 'tooltip': 'Schemat på hemsidan'},
+    {'name': 'Hjälp', 'link': 'https://docs.google.com/document/d/1ut9KHgJejQpmta0l_Gh0D8yWoMklXmgzCSI5yfROSEA/edit?usp=sharing',
+        'class': 'bg-info text-white font-weight-bold', 'tooltip': 'Dokument som beskriver systemet.'},
 ]
 
-LOGO = {'path':"makerslink/MakersLink-group-color.png", 'link':'https://www.makerslink.se'}
+LOGO = {'path': "makerslink/MakersLink-group-color.png",
+        'link': 'https://www.makerslink.se'}
 
 MENU_TITLE = "Bokningssystem"
 
@@ -80,7 +84,8 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'bootstrap4',
     'bootstrap_datepicker_plus',
-    #'djangobower',
+    'crispy_forms',
+    # 'djangobower',
 ]
 
 MIDDLEWARE = [
@@ -179,20 +184,22 @@ STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "./static/"))
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    #'djangobower.finders.BowerFinder',
+    # 'djangobower.finders.BowerFinder',
 ]
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "./makerslink/static"),
 ]
 
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
 BOOTSTRAP4 = {
     'include_jquery': True,
 }
 
 #BOWER_COMPONENTS_ROOT = '//home/bobo/django-apps/makerslink/makerslink/components/'
-#BOWER_INSTALLED_APPS = (
+# BOWER_INSTALLED_APPS = (
 #    'jquery',
 #    'jquery-ui',
 #    'bootstrap'
-#)
+# )
