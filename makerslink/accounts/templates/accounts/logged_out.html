@@ -1,9 +1,10 @@
 {% extends "base_generic.html" %}
 
-{% block content %}
-<h1>Utloggad</h1>
+{% block page_title %}Utloggad{% endblock %}
 
-<p>Thanks for spending some quality time with the Web site today.</p>
+{% block content %}
+
+<p>Tack för din hjälp med att driva MakersLink.</p>
 
 <a href="{% url 'login' %}"><button type="button" class="btn  btn-primary">Logga in igen</button></a>
 

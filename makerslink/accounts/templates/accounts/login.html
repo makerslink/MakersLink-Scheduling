@@ -1,12 +1,17 @@
 {% extends "base_form.html" %}
+{% load crispy_forms_tags %}
+{% block page_title %}Logga in{% endblock %}
 
 {% block content %}
-<h1>Logga in</h1>
+
 {% if form.errors and not form.non_field_errors %}
 <p class="errornote">
 {% if form.errors.items|length == 1 %}Please correct the error below.{% else %}Please correct the errors below.{% endif %}
 </p>
 {% endif %}
+
+
+{{ form|as_crispy_errors }}
 
 {% if form.non_field_errors %}
 {% for error in form.non_field_errors %}
@@ -24,7 +29,10 @@
 </p>
 {% endif %}
 
-<form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+<form action="{{ app_path }}" method="post" id="login-form">
+  {% csrf_token %}
+  {{ form|crispy }}
+<!--
   <div class="form-row">
     {{ form.username.errors }}
     {{ form.username.label_tag }} {{ form.username }}
@@ -33,7 +41,7 @@
     {{ form.password.errors }}
     {{ form.password.label_tag }} {{ form.password }}
     <input type="hidden" name="next" value="{{ next }}">
-  </div>
+  </div>-->
   {% url 'password_reset' as password_reset_url %}
   {% if password_reset_url %}
   <div class="password-reset-link">

@@ -1,20 +1,20 @@
 {% extends "base_form.html" %}
+{% load crispy_forms_tags %}
+{% block page_title %}Användarregistrering{% endblock %}
 
 {% block content %}
-
-<h1>Användarregistrering</h1>
 
 {{ form.errors }}
 {{ form.non_field_errors }}
 
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <table>
-    {{ form.as_table }}
-    </table>
+    {{ form|crispy }}
     
-    <button type="submit" class="btn  btn-primary">Registrera</button>
-    <a href="{% url 'templates' %}"><button type="button" class="btn btn-default">Avbryt</button></a>
+    <div class="btn-group btn-group-toggle">
+        <button type="submit" class="btn  btn-primary">Registrera</button>
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary">Avbryt</a>
+    </div>
 
 </form>
 {% endblock %}
