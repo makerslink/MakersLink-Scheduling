@@ -1,15 +1,8 @@
 {% extends "base_generic.html" %}
 
-{% block content %}
-  <h1>Event: {{ event.name }}</h1>
-  <div class="btn-toolbar">
-    <div class="btn-group btn-group-toggle">
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'events' %}">List</a>
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'event-update' pk=event.pk %}">Edit</a>
-      <a class="btn btn-outline-danger btn-sm" role="button" href="{% url 'event-delete' pk=event.pk %}">Delete</a>
-    </div>
-  </div>
+{% block page_title %}Event: {{ event.name }}{% endblock %}
 
+{% block content %}
   <p><strong>Name:</strong> {{ event.name }}</p>
   <p><strong>Description:</strong> {{ event.description }}</p>
   <p><strong>Template:</strong> <a href="{% url 'template-detail' pk=event.template.pk %}">{{ event.template }}</a></p>

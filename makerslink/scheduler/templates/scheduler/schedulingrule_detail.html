@@ -1,15 +1,7 @@
 {% extends "base_generic.html" %}
+{% block page_title %}Rule: {{ schedulingrule.name }}{% endblock %}
 
 {% block content %}
-  <h1>Rule: {{ schedulingrule.name }}</h1>
-  <div class="btn-toolbar">
-    <div class="btn-group btn-group-toggle">
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'rules' %}">List</a>
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'rule-update' pk=schedulingrule.pk %}">Edit</a>
-      <a class="btn btn-outline-danger btn-sm" role="button" href="{% url 'rule-delete' pk=schedulingrule.pk %}">Delete</a>
-    </div>
-  </div>
-
   <p><strong>Name:</strong> {{ schedulingrule.name }}</p>
   <p><strong>Description:</strong> {{ schedulingrule.description }}</p>
   <p><strong>Frequency:</strong> {{ schedulingrule.frequency }}</p>

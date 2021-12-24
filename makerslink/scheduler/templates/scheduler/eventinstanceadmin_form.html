@@ -1,9 +1,10 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 
+{% block page_title %}Edit eventinstance {{ object.title }}{% endblock %}
+
 {% block content %}
 {% if object.id %}
-<h1>Edit eventinstance {{ object.title }}</h1>
 {{ form|as_crispy_errors }}
 
 <form action="" method="post" enctype="multipart/form-data">

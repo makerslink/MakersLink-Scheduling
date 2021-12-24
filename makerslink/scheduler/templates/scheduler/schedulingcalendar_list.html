@@ -1,13 +1,7 @@
 {% extends "base_generic.html" %}
+{% block page_title %}Calendar List{% endblock %}
 
 {% block content %}
-    <h1>Calendar List</h1>
-    <div class="btn-toolbar">
-      <div class="btn-group btn-group-toggle">
-        <a class="btn btn-primary btn-sm" role="button" href="{% url 'calendar-create' %}">Create new</a>
-      </div>
-    </div>
-
     {% if schedulingcalendar_list %}
     <ul>
 

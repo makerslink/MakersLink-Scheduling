@@ -1,12 +1,14 @@
 {% extends "base_form.html" %}
 {% load crispy_forms_tags %}
+{% block page_title %}
+{% if object.id %}
+Edit period {{ object.name }}
+{% else %}
+Create period
+{% endif %}
+{% endblock %}
 
 {% block content %}
-{% if object.id %}
-<h1>Edit period {{ object.name }}</h1>
-{% else %}
-<h1>Create period</h1>
-{% endif %}
 
 {{ form|as_crispy_errors }}
 

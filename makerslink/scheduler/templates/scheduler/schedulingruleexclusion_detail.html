@@ -1,14 +1,8 @@
 {% extends "base_generic.html" %}
 
+{% block page_title %}Exclusion: {{ object.name }}{% endblock %}
+
 {% block content %}
-  <h1>Exclusion: {{ object.name }}</h1>
-  <div class="btn-toolbar">
-    <div class="btn-group btn-group-toggle">
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'ruleexclusions' %}">List</a>
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'ruleexclusion-update' pk=object.pk %}">Edit</a>
-      <a class="btn btn-outline-danger btn-sm" role="button" href="{% url 'ruleexclusion-delete' pk=object.pk %}">Delete</a>
-    </div>
-  </div>
 
   <p><strong>Description:</strong> {{ object.description }}</p>
   <p><strong>Excluded date:</strong> {{ object.excluded_date |date:"Y-m-d"}}</p>

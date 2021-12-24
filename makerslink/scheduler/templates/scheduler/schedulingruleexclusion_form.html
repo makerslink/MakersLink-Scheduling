@@ -1,12 +1,14 @@
 {% extends "base_form.html" %}
 {% load crispy_forms_tags %}
+{% block page_title %}
+{% if object.id %}
+Edit exclusion {{ object.name }}
+{% else %}
+Create exclusion
+{% endif %}
+{% endblock %}
 
 {% block content %}
-{% if object.id %}
-<h1>Edit exclusion {{ object.name }}</h1>
-{% else %}
-<h1>Create exclusion</h1>
-{% endif %}
 
 {{ form|as_crispy_errors }}
 

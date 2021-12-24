@@ -1,13 +1,8 @@
 {% extends "base_generic.html" %}
 
-{% block content %}
-    <h1>Exclusion List</h1>
-    <div class="btn-toolbar">
-      <div class="btn-group btn-group-toggle">
-        <a class="btn btn-primary btn-sm" role="button" href="{% url 'ruleexclusion-create' %}">Create new</a>
-      </div>
-    </div>
+{% block page_title %}Exclusion List{% endblock %}
 
+{% block content %}
     {% if schedulingruleexclusion_list %}
     <ul>
 

@@ -1,5 +1,7 @@
 {% extends "base_form.html" %}
 
+{% block page_title %}Tillgängliga pass{% endblock %}
+
 {% block css %}
 <style>
     .eventstatus-1:before{
@@ -30,9 +32,6 @@
 {% endblock %}
 
 {% block content %}
-
-<h1>Tillgängliga pass</h1>
-
 
 {% for message in messages %}
     {% if 'safe' in message.tags %}

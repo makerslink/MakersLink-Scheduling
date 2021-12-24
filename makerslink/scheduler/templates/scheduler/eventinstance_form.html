@@ -1,8 +1,9 @@
 {% extends "base_generic.html" %}
 {% load filters %}
 
+{% block page_title %}{{ form.instance.title }}{% endblock %}
+
 {% block content %}
-<h1>{{ form.instance.title }}</h1>
 
 {{ form.errors }}
 {{ form.non_field_errors }}

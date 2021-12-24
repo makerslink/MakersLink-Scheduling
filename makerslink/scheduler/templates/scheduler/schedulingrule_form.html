@@ -1,12 +1,14 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
+{% block page_title %}
+{% if object.id %}
+Edit rule {{ object.name }}
+{% else %}
+Create rule
+{% endif %}
+{% endblock %}
 
 {% block content %}
-{% if object.id %}
-<h1>Edit rule {{ object.name }}</h1>
-{% else %}
-<h1>Create rule</h1>
-{% endif %}
 
 {{ form|as_crispy_errors }}
 

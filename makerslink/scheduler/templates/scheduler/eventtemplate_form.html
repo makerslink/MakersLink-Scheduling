@@ -1,12 +1,15 @@
 {% extends "base_generic.html" %}
 {% load crispy_forms_tags %}
 
-{% block content %}
+{% block page_title %}
 {% if object.id %}
-<h1>Edit template {{ object.name }}</h1>
+Edit template {{ object.name }}
 {% else %}
-<h1>Create template</h1>
+Create template
 {% endif %}
+{% endblock %}
+
+{% block content %}
 
 {{ form|as_crispy_errors }}
 

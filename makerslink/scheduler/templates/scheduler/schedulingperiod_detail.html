@@ -1,15 +1,7 @@
 {% extends "base_generic.html" %}
+{% block page_title %}Period: {{ object.name }}{% endblock %}
 
 {% block content %}
-  <h1>Period: {{ object.name }}</h1>
-  <div class="btn-toolbar">
-    <div class="btn-group btn-group-toggle">
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'periods' %}">List</a>
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'period-update' pk=object.pk %}">Edit</a>
-      <a class="btn btn-outline-danger btn-sm" role="button" href="{% url 'period-delete' pk=object.pk %}">Delete</a>
-    </div>
-  </div>
-
   <p><strong>Name:</strong> {{ object.name }}</p>
   <p><strong>Start:</strong> {{ object.start |date:"Y-m-d"}}</p>
   <p><strong>End:</strong> {{ object.end |date:"Y-m-d"}}</p>

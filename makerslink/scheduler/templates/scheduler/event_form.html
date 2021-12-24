@@ -1,12 +1,13 @@
 {% extends "base_form.html" %}
 {% load crispy_forms_tags %}
-
-{% block content %}
+{% block page_title %}
 {% if object.id %}
-<h1>Edit event {{ object.name }}</h1>
+Edit event {{ object.name }}
 {% else %}
-<h1>Create event</h1>
+Create event
 {% endif %}
+{% endblock %}
+{% block content %}
 
 {{ form|as_crispy_errors }}
 

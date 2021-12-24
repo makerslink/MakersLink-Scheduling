@@ -1,9 +1,7 @@
 {% extends "base_generic.html" %}
+{% block page_title %}Delete {{ object }}{% endblock %}
 
 {% block content %}
-
-<h1>Delete {{ object }}</h1>
-
 <p>Are you sure you want to delete the object: {{ object }}?</p>
 
 <form action="" method="POST">

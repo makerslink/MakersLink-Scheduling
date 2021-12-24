@@ -63,20 +63,54 @@
 
 <body>
 
-  <div class="container-fluid">
-
-    <div class="row">
-      <div class="col-sm-auto">
-      {% block sidebar %}
-      <ul class="nav flex-column">
+  <div class="container-fluid" style="display: table;">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <ul class="nav flex-column">
           {% if logo %}
-            <li class="nav-item"><a class="nav-link" style="" href="{{ logo.link }}">
-              <img src="{% static logo.path %}" style="margin:5px; display:block; margin-left:auto; margin-right:auto" width="140" class="align-top" alt="Logo">
-            </a></li>
+          <li class="nav-item"><a class="nav-link" style="" href="{{ logo.link }}">
+            <img src="{% static logo.path %}" style="margin:5px; display:block; margin-left:auto; margin-right:auto" width="140" class="align-top" alt="Logo">
+          </a></li>
           {% endif %}
+        </ul>
+      </div>
+      <div class="col">
+        <h1>{% block page_title %}{% endblock %}</h1>
+      </div>
+    </div>
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <ul class="nav flex-column">
           {% if menu_title %}
-            <li class="nav-item"><span style="margin-bottom:4px" class="nav-link bg-dark text-white font-weight-bold">{{ menu_title }}</span></li>
+          <li class="nav-item"><span class="nav-link bg-dark text-white font-weight-bold">{{ menu_title }}</span></li>
           {% endif %}
+        </ul>
+      </div>
+      <div class="col">
+        <div class="btn-toolbar">
+          {% if commands %}
+          <div class="btn-group btn-group-toggle mr-2">
+            {% if commands.list %}
+            <a class="btn btn-primary btn" role="button" href="{% url commands.list %}">List</a>
+            {% endif %}
+            {% if commands.create %}
+            <a class="btn btn-primary btn" role="button" href="{% url commands.create %}">Create new</a>
+            {% endif %}
+            {% if commands.edit %}
+            <a class="btn btn-primary btn" role="button" href="{% url commands.edit pk=object.pk %}">Edit</a>
+            {% endif %}
+            {% if commands.delete %}
+            <a class="btn btn-outline-danger btn" role="button" href="{% url commands.delete pk=object.pk %}">Delete</a>
+            {% endif %}
+          </div>
+          {% endif %}
+          {% block commands %}{% endblock %}
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-auto">
+        <ul class="nav flex-column" style="margin-top:4px">
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'index' %}" data-toggle="tooltip" data-placement="right" title="Boka värdpass">Boka pass</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}" data-toggle="tooltip" data-placement="right" title="Boka gå brevid pass och fixarpass">Anmäl deltagande</a></li>
           {% if user.is_staff %}
@@ -87,21 +121,21 @@
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'events' %}">Events</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'periods' %}">Periods</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'ruleexclusions' %}">Exlude dates</a></li>
-          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'eventinstances-admin' %}">Administrate EventInstances</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'eventinstances-admin' %}">EventInstances</a></li>
           {% endif %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'profile' %}" data-toggle="tooltip" data-placement="right" title="Se en översikt av dina bokade pass">Användarprofil</a></li>
           <li class="nav-item"><a class="nav-link bg-warning text-dark" href="{% url 'logout' %}">Logga ut</a></li>
           {% for menu_item in menu_extra%}
             <li class="nav-item"><a class="nav-link {% if menu_item.class %} {{ menu_item.class }}{% endif %}" href="{{ menu_item.link }}" data-toggle="tooltip" data-placement="right" title="{{ menu_item.tooltip }}">{{ menu_item.name }}</a></li>
           {% endfor %}
-      </ul>
-     {% endblock %}
+        </ul>
       </div>
-      <div class="col-sm-auto">
-      {% block content %}{% endblock %}
+      <div class="col">
+        <div class="container-fluid pt-3 pl-0">
+          {% block content %}{% endblock %}
+        </div>
       </div>
     </div>
-
   </div>
 </body>
 </html>

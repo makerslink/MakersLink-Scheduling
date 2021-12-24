@@ -28,12 +28,9 @@
     }
 </style>
 {% endblock %}
+{% block page_title %}Pass som finns i databasen{% endblock %}
 
 {% block content %}
-
-<h1>Pass som finns i databasen</h1>
-
-
 {% for message in messages %}
     {% if 'safe' in message.tags %}
         {{ message|safe }}

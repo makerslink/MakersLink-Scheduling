@@ -1,14 +1,8 @@
 {% extends "base_generic.html" %}
 
+{% block page_title %}Template: {{ eventtemplate.name }}{% endblock %}
+
 {% block content %}
-  <h1>Template: {{ eventtemplate.name }}</h1>
-  <div class="btn-toolbar">
-    <div class="btn-group btn-group-toggle">
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'templates' %}">List</a>
-      <a class="btn btn-primary btn-sm" role="button" href="{% url 'template-update' pk=eventtemplate.pk %}">Edit</a>
-      <a class="btn btn-outline-danger btn-sm" role="button" href="{% url 'template-delete' pk=eventtemplate.pk %}">Delete</a>
-    </div>
-  </div>
 
   <p><strong>Title:</strong> {{ eventtemplate.title }}</p>
   <p><strong>Counting key:</strong> {{ eventtemplate.count_key }}</p>
