@@ -780,6 +780,10 @@ class SchedulingPeriod(models.Model):
     def name(self):
         return self.start.strftime('%Y %b') + "-" + self.end.strftime('%b')
 
+    @property
+    def num_required_participant(self):
+        return len(self.participant_key_string)
+
     # Functions
     def clean(self):
         if self.start > self.end:
@@ -814,17 +818,103 @@ class SchedulingPeriod(models.Model):
         """
         return SchedulingPeriod.objects.all().filter(start__lte=date, end__gte=date).order_by("start").first()
 
-    def get_previous_period(this):
+    def get_current_period():
+        """
+        Get the period that covers the current date, will return the period that starts first and covers the date.
+        """
+        return SchedulingPeriod.get_period_for_date(timezone.now())
+
+    def get_previous_period(self):
         """
         Get the period the last period that starts before this period.
         """
-        return SchedulingPeriod.objects.all().filter(start__lt=this.start).order_by("start").last()
+        return SchedulingPeriod.objects.all().filter(start__lt=self.start).order_by("start").last()
+
+    def get_length(self):
+        return (self.end - self.start).days
+
+    def get_elapsed(self):
+        currentDate = timezone.now().date()
+        if currentDate < self.start:
+            # Period has not begun yet so zero days have elapsed.
+            return 0
+        elif currentDate > self.end:
+            # Period has ended so all days have elepased.
+            return self.get_length()
+        else:
+            return (currentDate - self.start).days
+
+    def get_progress(self):
+        return (self.get_elapsed() / self.get_length()) * 100
 
     def get_host_count_list(self):
         userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
             host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id))).order_by('host_count')
 
         return userHostList
+
+    def get_required_total_number_of_required_events(self):
+        return self.num_required_events + len(self.participant_key_string)
+
+    def get_host_stats(self, filterHost):
+        currentDate = timezone.now().date()
+        required_events = self.get_required_total_number_of_required_events()
+
+        participant_events_booked = filterHost.participants.all().filter(
+            period=self.id, start__gte=currentDate)
+        participant_events_done = filterHost.participants.all().filter(
+            period=self.id, start__lt=currentDate)
+
+        values = {"host_booked": EventInstance.objects.all().filter(period=self.id, host=filterHost.id, start__gte=currentDate).count(
+        ), "participant_booked": participant_events_booked.count(),
+            "host_done": EventInstance.objects.all().filter(period=self.id, host=filterHost.id, start__lt=currentDate).count(
+        ), "participant_done": participant_events_done.count()}
+
+        values["participant_booked_key"] = ""
+        for participant_event in participant_events_booked:
+            values["participant_booked_key"] += participant_event.template.count_key
+
+        values["participant_done_key"] = ""
+        for participant_event in participant_events_done:
+            values["participant_done_key"] += participant_event.template.count_key
+
+        values["total_booked"] = values["host_booked"] + \
+            values["participant_booked"]
+        values["total_done"] = values["host_done"] + \
+            values["participant_done"]
+
+        values["max_commited_required"] = max(
+            values["total_done"] + values["total_booked"], required_events)
+
+        values["participant_commited"] = values["participant_done"] + \
+            values["participant_booked"]
+        values["host_commited"] = values["host_done"] + values["host_booked"]
+
+        values["extra_participant"] = max(
+            0, values["participant_commited"] - self.num_required_participant)
+        values["extra_host"] = max(
+            0, values["host_commited"] - self.num_required_events)
+
+        values["total_extra"] = max(
+            0, values["total_done"] + values["total_booked"] - required_events)
+        values["total_extra_percentage"] = (
+            values["total_extra"] / values["max_commited_required"]) * 100
+
+        values["host_booked_percentage"] = (
+            values["host_booked"] / values["max_commited_required"]) * 100
+        values["participant_booked_percentage"] = (
+            values["participant_booked"] / values["max_commited_required"]) * 100
+        values["total_booked_percentage"] = (
+            values["total_booked"] / values["max_commited_required"]) * 100
+
+        values["host_done_percentage"] = (
+            values["host_done"] / values["max_commited_required"]) * 100
+        values["participant_done_percentage"] = (
+            values["participant_done"] / values["max_commited_required"]) * 100
+        values["total_done_percentage"] = (
+            values["total_done"] / values["max_commited_required"]) * 100
+
+        return values
 
     def get_host_count_key_list(self):
         count_list = self.get_host_count_list()

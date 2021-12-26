@@ -145,7 +145,7 @@ class EventListView(UserIsStaffMixin, generic.ListView):
         return context
 
     def get_queryset(self):
-        period = SchedulingPeriod.get_period_for_date(utils.timezone.now())
+        period = SchedulingPeriod.get_current_period()
         if not 'filter' in self.kwargs:
             self.kwargs['filter'] = "last"
 
@@ -263,8 +263,25 @@ class UnsecuredHostDetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(UnsecuredHostDetailView,
                         self).get_context_data(**kwargs)
-        context['period_list'] = SchedulingPeriod.objects.all().annotate(event_count=Count(
-            'eventinstance', filter=Q(eventinstance__status=1, eventinstance__host=self.get_object())))
+        context['current_period'] = SchedulingPeriod.get_current_period()
+        context['host_stats'] = context['current_period'].get_host_stats(
+            self.get_object())
+        context['period_list'] = SchedulingPeriod.objects.all().order_by("-start").annotate(event_count=Count(
+            'eventinstance', filter=Q(eventinstance__status=1, eventinstance__host=self.get_object())),
+            participant_count=Count('eventinstance', filter=Q(eventinstance__status=1, eventinstance__participants=self.get_object())))
+        for period in context['period_list']:
+            period.extra_host = max(
+                0, period.event_count - period.num_required_events)
+            period.extra_participant = max(
+                0, period.participant_count - period.num_required_participant)
+            period.total_done = period.event_count + period.participant_count
+            period.total_extra = period.extra_host + period.extra_participant
+            period.max_done_required = max(
+                period.total_done, period.get_required_total_number_of_required_events())
+            period.total_done_percentage = (
+                period.total_done / period.max_done_required) * 100
+            period.total_extra_percentage = (
+                period.total_extra / period.max_done_required) * 100
         context['period_host_list'] = SchedulingPeriod.get_all_host_count_key_lists()
         context['hosted_events'] = self.get_object().eventinstance_set.filter(
             status=1).order_by('period', 'start')

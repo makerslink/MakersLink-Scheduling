@@ -7,11 +7,163 @@
 </div>
 {% endif %}
 {% endblock %}
+{% block css%}
+<style>
+.progress {
+  text-align:center;
+  margin:10px auto;
+  height:20px;
+}
+.progress-value {
+  position:absolute;
+  right:0;
+  left:0;
+  line-height: 20px;
+}
+.small-table {
+  font-size:10pt;
+}
+</style>
+{% endblock %}
 {% block content %}
 {% regroup participant_list by period as participant_list_by_period %}
+<div class="row">
+  <div class="col-3">
+    <div class="card mb-4">
+      <div class="card-header">
+        {{ current_period }}
+      </div>
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">Aktuell period</h6>
+        <p class="card-text text-wrap">Här kan du se antalet dagar i perioden och hur många pass du har bokat och genomfört.</p>
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" style="width: {{ current_period.get_progress }}%;" aria-valuenow="{{ current_period.get_elapsed }}" aria-valuemin="0" aria-valuemax="{{ current_period.get_length }}"></div>
+      
+          <span class="progress-value">{{ current_period.get_elapsed }} / {{ current_period.get_length }}</span>
+        </div>
+        <div class="progress position-relative" style="height:20px">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ host_stats.total_done_percentage }}%;" aria-valuenow="{{ host_stats.total_done }}" aria-valuemin="0" aria-valuemax="{{ host_stats.max_commited_required }}">Genomförda</div>
+          <div class="progress-bar" role="progressbar" style="width: {{ host_stats.total_booked_percentage }}%;" aria-valuenow="{{ host_stats.total_booked }}" aria-valuemin="0" aria-valuemax="{{ host_stats.max_commited_required }}">Bokade</div>
+          <div class="progress-bar bg-warning" role="progressbar" style="width: {{ host_stats.total_extra_percentage }}%;" aria-valuenow="{{ host_stats.total_extra }}" aria-valuemin="0" aria-valuemax="{{ host_stats.max_commited_required }}">Extra</div>
+        </div>
+        <table class="small-table" width="100%">
+          <thead>
+            <tr>
+              <td>&nbsp;</td>
+              <th class="bg-success">Genomförda</th>
+              <th class="bg-primary">Bokade</th>
+              <th class="bg-warning">Extra</th>
+              <th class="bg-secondary">Krav</th>
+            </tr>
+          </thead>
+          <tr class="row-uneven"> 
+            <td><emph>Värd</emph></td>
+            <td>{{ host_stats.host_done }}</td>
+            <td>{{ host_stats.host_booked }}</td>
+            <td>{{ host_stats.extra_host }}</td>
+            <td>{{ current_period.num_required_events }}</td>
+          </tr>
+          <tr class="row-even">
+            <td><emph>Deltagare</emph></td>
+            <td>{{ host_stats.participant_done }} {% if host_stats.participant_done_key %}({{ host_stats.participant_done_key }}){% endif %}</td>
+            <td>{{ host_stats.participant_booked }} {% if host_stats.participant_booked_key %}({{ host_stats.participant_booked_key }}){% endif %}</td>
+            <td>{{ host_stats.extra_participant }}</td>
+            <td>{{ current_period.num_required_participant }} {% if current_period.participant_key_string %}({{ current_period.participant_key_string }}){% endif %}</td>
+          </tr>
+          <tr class="row-uneven"> 
+            <td><emph>Totalt</emph></td>
+            <td><emph>{{ host_stats.total_done }}</emph></td>
+            <td><emph>{{ host_stats.total_booked }}</emph></td>
+            <td><emph>{{ host_stats.total_extra}}</emph></td>
+            <td><emph>{{ current_period.get_required_total_number_of_required_events }}</emph></td>
+          </tr>
+        </table>
+        <br>
+        {% if host_stats.host_commited < current_period.num_required_events %}
+          <a href="{% url 'index' %}" class="btn btn-primary">Boka ett pass</a>
+        {% endif %}
+        {% if host_stats.participant_commited < current_period.num_required_participant %}
+          <a href="{% url 'joinEvent' %}" class="btn btn-primary">Anmäl deltagande</a>
+        {% endif %}
 
+      </div>
+    </div>
+  </div>
+  <div class="col-3">
+    <div class="card mb-4">
+      <div class="card-header">
+        Värd information
+      </div>
+      <div class="card-body">
+        <p><strong>E-Post:</strong> {{ view_user.email }}</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <p><strong>E-Post:</strong> {{ view_user.email }}</p>
+<div class="row">
+  {% for period in period_list %}
+  <div class="col-2">
+    <div class="card mb-4">
+      <div class="card-header">
+        {% if user.is_staff %}
+        <ul class="nav nav-pills card-header-pills">
+          <li class="nav-item" data-toggle="tooltip" data-placement="top" title="Gå till period sida">
+            <a class="nav-link" href="{{ period.get_absolute_url }}">{{ period.name }}</a>
+          </li>
+          {% if view_user in period.hosts.all %}
+          <li class="nav-item" data-toggle="tooltip" data-placement="top" title="Lägg till värd till period (ännu ej implementerat)">
+            <a class="nav-link disabled" href="#">+</a>
+          </li>
+          {% else %}
+          <li class="nav-item" data-toggle="tooltip" data-placement="top" title="Ta bort värd från period (ännu ej implementerat)">
+            <a class="nav-link disabled" href="#">-</a>
+          </li>
+          {% endif %}
+        </ul>
+        {% else %}
+        {{ period.name }}
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="progress position-relative" style="height:20px">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ period.total_done_percentage }}%;" aria-valuenow="{{ period.total_done }}" aria-valuemin="0" aria-valuemax="{{ period.max_done_required }}">Genomförda</div>
+          <div class="progress-bar bg-warning" role="progressbar" style="width: {{ period.total_extra_percentage }}%;" aria-valuenow="{{ period.total_extra }}" aria-valuemin="0" aria-valuemax="{{ period.max_done_required }}">Extra</div>
+        </div>
+        <table class="small-table mb-3" width="100%">
+          <thead>
+            <tr>
+              <td> &nbsp; </td>
+              <th class="bg-success">Genom.</th>
+              <th class="bg-warning">Extra</th>
+              <th class="bg-secondary">Krav</th>
+            </tr>
+          </thead>
+          <tr class="row-uneven">
+            <td><emph>V</emph></td>
+            <td>{{ period.event_count }}</td>
+            <td>{{ period.extra_host }}</td>
+            <td>{{ period.num_required_events }}</td>
+          </tr>
+          <tr class="row-even">
+            <td><emph>D</emph></td>
+            <td>{{ period.participant_count }}</td>
+            <td>{{ period.extra_participant }}</td>
+            <td>{{ period.num_required_participant }} {% if period.participant_key_string %}({{ period.participant_key_string }}){% endif %}</td>
+          </tr>
+          <tr class="row-uneven"> 
+            <td><emph>T</emph></td>
+            <td><emph>{{ period.total_done }}</emph></td>
+            <td><emph>{{ period.total_extra }}</emph></td>
+            <td><emph>{{ period.get_required_total_number_of_required_events }}</emph></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
   <table>
   <thead>
     {% if user.is_staff %}
@@ -33,7 +185,7 @@
           {% for host, key_string in period.get_participant_key_list.items %}
             {% if host == view_user.slackId %}
                  {{ key_string }}
-		    {% endif %}
+		        {% endif %}
           {% endfor %}
       </td>
       {% if user.is_staff %}
