@@ -1,11 +1,10 @@
-{% extends "base_form.html" %}
+{% extends "base_card_form.html" %}
 {% load crispy_forms_tags %}
 {% block page_title %}Användarregistrering{% endblock %}
 
-{% block content %}
+{% block card_form %}
 
-{{ form.errors }}
-{{ form.non_field_errors }}
+{{ form|as_crispy_errors }}
 
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}

@@ -1,0 +1,14 @@
+{% extends "base_form.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-3">
+    <div class="card mb-4">
+      <div class="card-body">
+          {%block card_form %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
