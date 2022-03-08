@@ -55,6 +55,9 @@ else:
         },
     }
 
+# Add setting for many fields in POST so we can have all forms when creating possible EventInstances sent to us.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+    
 MENU_EXTRA = [
     {'name': 'Schema', 'link': 'https://www.makerslink.se/pa-gang-i-makerslink/',
         'class': 'bg-primary text-white', 'tooltip': 'Schemat på hemsidan'},
