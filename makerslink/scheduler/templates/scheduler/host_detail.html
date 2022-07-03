@@ -112,12 +112,12 @@
             <a class="nav-link" href="{{ period.get_absolute_url }}">{{ period.name }}</a>
           </li>
           {% if view_user in period.hosts.all %}
-          <li class="nav-item" data-toggle="tooltip" data-placement="top" title="Lägg till värd till period (ännu ej implementerat)">
-            <a class="nav-link disabled" href="#">+</a>
-          </li>
-          {% else %}
           <li class="nav-item" data-toggle="tooltip" data-placement="top" title="Ta bort värd från period (ännu ej implementerat)">
             <a class="nav-link disabled" href="#">-</a>
+          </li>
+          {% else %}
+          <li class="nav-item" data-toggle="tooltip" data-placement="top" title="Lägg till värd till period (ännu ej implementerat)">
+            <a class="nav-link disabled" href="#">+</a>
           </li>
           {% endif %}
         </ul>

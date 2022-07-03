@@ -227,6 +227,23 @@ class PeriodDeleteView(UserIsStaffMixin, DeleteView):
     success_url = reverse_lazy('periods')
 
 
+class PeriodAddUserView(UserIsStaffMixin, UpdateView):
+    model = SchedulingPeriod
+    # Empty field list as we save to the current user when submitted.
+    fields = ()
+
+    def form_valid(self, form):
+        period = form.save(commit=False)
+        if event.participants.filter(id=self.request.user.id).exists():
+            # User was participant remove them.
+            event.participants.remove(self.request.user)
+        else:
+            # User was not participant add them.
+            event.participants.add(self.request.user)
+        event.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
 class EventInstanceListView(LoginRequiredMixin, generic.ListView):
     model = EventInstance
 
