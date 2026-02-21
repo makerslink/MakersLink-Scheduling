@@ -3,3 +3,6 @@ makerslink/components/*
 static/*
 virtenv/*
 .idea
+/archive/*
+/Debugging/*
+/makerslink/makerslink/db/*.back

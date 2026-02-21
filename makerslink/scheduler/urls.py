@@ -1,5 +1,4 @@
 from django.urls import path
-from django.conf.urls import url
 import django.contrib.auth.views
 from . import views
 

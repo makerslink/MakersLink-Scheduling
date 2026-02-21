@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db.models import signals
 from django.utils.text import get_text_list
 from django.db import connection, IntegrityError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.dispatch import receiver
 from django.db.models.signals import pre_save
 from scheduler.models import EventInstance

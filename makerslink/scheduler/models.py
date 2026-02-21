@@ -249,11 +249,11 @@ class Event(models.Model):
         ordering = ["-start"]
         constraints = [
             models.CheckConstraint(
-                check=Q(start__lt=F('end')),
+                condition=Q(start__lt=F('end')),
                 name='check_start_before_end'
             ),
             models.CheckConstraint(
-                check=Q(start__lt=F('repeat_end')),
+                condition=Q(start__lt=F('repeat_end')),
                 name='check_start_before_repeat_end'
             ),
         ]
@@ -517,7 +517,7 @@ class EventInstance(models.Model):
         unique_together = ('event', 'start', 'end')
         constraints = [
             models.CheckConstraint(
-                check=Q(start__lt=F('end')),
+                condition=Q(start__lt=F('end')),
                 name='check_instance_start_before_end'
             ),
         ]
@@ -771,7 +771,7 @@ class SchedulingPeriod(models.Model):
         ordering = ('-start', '-end')
         constraints = [
             models.CheckConstraint(
-                check=Q(start__lt=F('end')),
+                condition=Q(start__lt=F('end')),
                 name='check_period_start_before_end'
             ),
         ]

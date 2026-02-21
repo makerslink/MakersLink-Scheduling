@@ -1,5 +1,4 @@
 from django.urls import path, re_path, reverse_lazy
-from django.conf.urls import url
 from .views import RegistrationView
 import django.contrib.auth.views as authViews
 from . import views
