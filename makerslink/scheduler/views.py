@@ -3,7 +3,7 @@ import accounts.models
 from django import utils
 from accounts.models import User
 from django.db.models.expressions import F
-from django.db.models import Q, Count, Max
+from django.db.models import Q, Count, Max, ProtectedError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -57,6 +57,32 @@ class UserIsStaffMixin(UserPassesTestMixin):
         return self.request.user.is_staff
 
 
+class ProtectedDeleteMixin:
+    """
+    Templates, calendars and events are referenced by rows that cannot be
+    rendered without them, so those relations are PROTECT and the database
+    refuses the delete. Re-render the confirmation page naming what is still
+    using the object instead of letting ProtectedError become a 500.
+    """
+    # Enough to identify the problem without rendering thousands of rows.
+    protected_display_limit = 20
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ProtectedError as error:
+            # Only render a bounded sample: an Event can be protected by every
+            # instance ever scheduled from it, and each str() is a query.
+            protected = list(error.protected_objects)
+            shown = protected[:self.protected_display_limit]
+            return self.render_to_response(self.get_context_data(
+                form=form,
+                protected_objects=sorted(str(obj) for obj in shown),
+                protected_count=len(protected),
+                protected_overflow=len(protected) - len(shown),
+            ))
+
+
 class SchedulingCalendarListView(UserIsStaffMixin, generic.ListView):
     model = SchedulingCalendar
 
@@ -75,7 +101,7 @@ class SchedulingCalendarUpdateView(UserIsStaffMixin, UpdateView):
     fields = '__all__'
 
 
-class SchedulingCalendarDeleteView(UserIsStaffMixin, DeleteView):
+class SchedulingCalendarDeleteView(ProtectedDeleteMixin, UserIsStaffMixin, DeleteView):
     model = SchedulingCalendar
     success_url = reverse_lazy('calendars')
 
@@ -98,7 +124,7 @@ class EventTemplateUpdateView(UserIsStaffMixin, UpdateView):
     fields = '__all__'
 
 
-class EventTemplateDeleteView(UserIsStaffMixin, DeleteView):
+class EventTemplateDeleteView(ProtectedDeleteMixin, UserIsStaffMixin, DeleteView):
     model = EventTemplate
     success_url = reverse_lazy('templates')
 
@@ -199,7 +225,7 @@ class EventUpdateView(UserIsStaffMixin, UpdateView):
     #form_class = EventForm
 
 
-class EventDeleteView(UserIsStaffMixin, DeleteView):
+class EventDeleteView(ProtectedDeleteMixin, UserIsStaffMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
 

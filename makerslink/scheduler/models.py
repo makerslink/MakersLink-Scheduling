@@ -20,6 +20,12 @@ logger = logging.getLogger(__name__)
 # New Filesystem
 client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
 
+# Shown in place of a title for rows that lost their template or event
+# before these relations were changed to PROTECT. New rows can no longer
+# end up in that state, but old databases still hold some, and they must
+# stay viewable so staff can repair or delete them.
+MISSING_RELATION_TITLE = "(borttagen mall)"
+
 # Create your models here.
 
 
@@ -41,7 +47,7 @@ class EventTemplate(models.Model):
         max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
     num_participants = models.IntegerField(
         default=0, help_text="Number of participants, -1 for infinite")
-    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.SET_NULL,
+    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.PROTECT,
                                  null=True, help_text="Select the calendar to sync events to.")
     synchronize = models.BooleanField(
         default=True, help_text="If active, scheduled events will be synced to Google calendar upon creation.")
@@ -51,6 +57,19 @@ class EventTemplate(models.Model):
         ordering = ["name"]
 
     # Methods
+    def clean(self):
+        # Synchronising with nowhere to synchronise to cannot work, and used
+        # to surface as an AttributeError deep inside EventInstance.save().
+        if self.synchronize and self.calendar_id is None:
+            raise ValidationError(
+                {'calendar': ('Select a calendar, or turn off synchronize')})
+
+    def _requireCalendar(self):
+        if self.calendar is None:
+            raise ValueError(
+                "EventTemplate '{}' is set to synchronize but has no calendar".format(self.name))
+        return self.calendar
+
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of EventTemplate.
@@ -63,7 +82,7 @@ class EventTemplate(models.Model):
             # logger.warning("Data:")
             # logger.warning(data)
             # return True
-            return self.calendar.createEvent(data)
+            return self._requireCalendar().createEvent(data)
         else:
             return True
 
@@ -73,12 +92,16 @@ class EventTemplate(models.Model):
             # logger.warning("Data:")
             # logger.warning(data)
             # return True
-            return self.calendar.updateEvent(booking_id, data)
+            return self._requireCalendar().updateEvent(booking_id, data)
         else:
             return True
 
     def _createUpdatedEventData(self, host, start, end, status, unique_title="", unique_description=""):
         #logger.warning("createEventData:start: %s", start)
+        # Check the configuration before building anything: a template set to
+        # synchronize with no calendar cannot produce an event either way, and
+        # the misconfiguration is what the caller needs to be told about.
+        calendar = self._requireCalendar()
         if status == 2:
             if unique_title == "":
                 summary = settings.CANCELLED_TITLE + self.title
@@ -98,18 +121,18 @@ class EventTemplate(models.Model):
             if self.body:
                 description += "\n" + self.body
 
-        calendarTZ = pytz.timezone(self.calendar.timezone)
+        calendarTZ = pytz.timezone(calendar.timezone)
         event_data = {
             'summary': summary,
             'location': 'Makerspace Linköping',
             'description': description,
             'start': {
                 'dateTime': start.astimezone(calendarTZ).strftime('%Y-%m-%dT%H:%M:%S'),
-                'timeZone': self.calendar.timezone,
+                'timeZone': calendar.timezone,
             },
             'end': {
                 'dateTime': end.astimezone(calendarTZ).strftime('%Y-%m-%dT%H:%M:%S'),
-                'timeZone': self.calendar.timezone,
+                'timeZone': calendar.timezone,
             },
             'reminders': {
                 'useDefault': False,
@@ -121,7 +144,7 @@ class EventTemplate(models.Model):
 
     def deleteEventEntry(self, booking_id):
         if self.synchronize:
-            return self.calendar.deleteEvent(booking_id)
+            return self._requireCalendar().deleteEvent(booking_id)
         else:
             return True
 
@@ -233,7 +256,7 @@ class Event(models.Model):
         max_length=50, help_text="Enter a human-friendly name for this type of Event")
     description = models.CharField(
         max_length=300, help_text="Enter a description for this type of Event", null=True, blank=True)
-    template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True,
+    template = models.ForeignKey('EventTemplate', on_delete=models.PROTECT, null=True,
                                  help_text="Select a template for how scheduled Events will look in the calendar.")
     start = models.DateTimeField(
         help_text="Start of event repetition and start time of events", db_index=True)
@@ -261,6 +284,8 @@ class Event(models.Model):
     # Methods
     @property
     def max_num_participants(self):
+        if self.template is None:
+            return 0
         return self.template.num_participants
 
     def clean(self):
@@ -424,8 +449,12 @@ class EventReplacer(object):
     # Create a dict to keep track of actual EventInstances when creating an instance of this class
 
     def __init__(self, event_instances):
-        lookup = [((event_instance.event.id, event_instance.start, event_instance.end),
-                   event_instance) for event_instance in event_instances]
+        # Instances orphaned before Event became PROTECT have no event to key
+        # on, so they cannot match a generated occurrence. Skip them here
+        # rather than raising on every page that builds an event list.
+        lookup = [((event_instance.event_id, event_instance.start, event_instance.end),
+                   event_instance) for event_instance in event_instances
+                  if event_instance.event_id is not None]
         self.lookup = dict(lookup)
 
     # Return an actual EventInstance that matches "event_instance" and remove it since it has been matched
@@ -475,7 +504,7 @@ class EventInstance(models.Model):
         'accounts.User', on_delete=models.SET_NULL, null=True)
     participants = models.ManyToManyField(
         'accounts.User', related_name="participants", related_query_name="participant", blank=True)
-    event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
+    event = models.ForeignKey('Event', on_delete=models.PROTECT, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(
@@ -493,22 +522,34 @@ class EventInstance(models.Model):
 
     @property
     def title(self):
-        return self.event.template.title
+        if self.template is None:
+            return MISSING_RELATION_TITLE
+        return self.template.title
 
     @property
     def header(self):
-        return self.event.template.header
+        if self.template is None:
+            return None
+        return self.template.header
 
     @property
     def body(self):
-        return self.event.template.body
+        if self.template is None:
+            return None
+        return self.template.body
 
     @property
     def max_num_participants(self):
-        return self.event.template.num_participants
+        if self.template is None:
+            return 0
+        return self.template.num_participants
 
     @property
     def template(self):
+        # Both links are PROTECT now, but rows orphaned by the old SET_NULL
+        # behaviour still exist in databases created before that change.
+        if self.event is None:
+            return None
         return self.event.template
 
     # Metadata
@@ -539,15 +580,22 @@ class EventInstance(models.Model):
 
     def save(self, *args, **kwargs):
         logger.warning('EventInstance save called')
-        if self.google_calendar_booking_id is not None:
+        template = self.template
+        if template is None:
+            # Orphaned row: there is no template to tell us how to render a
+            # calendar entry. Let the save through so it can still be
+            # repaired or deleted from the admin pages.
+            logger.warning(
+                "No template for this instance, skipping calendar synchronisation")
+        elif self.google_calendar_booking_id is not None:
             logger.warning("Updating calendar entry with ID: " +
                            str(self.google_calendar_booking_id))
 
-            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+            if not template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         else:
             logger.warning("Creating new calendar entry")
-            calendar_id = self.event.template.createEventEntry(
+            calendar_id = template.createEventEntry(
                 self.host, self.start, self.end, self.status)
             if isinstance(calendar_id, bool):
                 logger.warning(
@@ -560,8 +608,9 @@ class EventInstance(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.google_calendar_booking_id is not None:
-            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+        template = self.template
+        if self.google_calendar_booking_id is not None and template is not None:
+            if not template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         super().delete(*args, **kwargs)
 
@@ -574,22 +623,22 @@ class EventInstance(models.Model):
             return {
                 'google_calendar_booking_id': self.google_calendar_booking_id,
                 'host': str(self.host),
-                'event': self.event.id,
+                'event': self.event_id,
                 'start': self.start,
                 'end': self.end,
                 'status': self.status,
-                'period': self.period.id
+                'period': self.period_id
             }
         else:
             return {
                 'id': str(self.id),
                 'google_calendar_booking_id': self.google_calendar_booking_id,
                 'host': str(self.host),
-                'event': self.event.id,
+                'event': self.event_id,
                 'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
                 'status': self.status,
-                'period': self.period.id
+                'period': self.period_id
             }
 
     def can_take(self, user):
