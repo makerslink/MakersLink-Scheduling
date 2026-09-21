@@ -115,11 +115,16 @@ class EventTemplate(models.Model):
         else:
             summary = self.title
 
-            description = 'Värd: ' + str(host.slackId)
+            # This text goes on the public calendar, so an instance that has
+            # no host yet says nothing about one rather than claiming "None".
+            parts = []
+            if host is not None:
+                parts.append('Värd: ' + host.slackId)
             if self.header:
-                description += "\n" + self.header
+                parts.append(self.header)
             if self.body:
-                description += "\n" + self.body
+                parts.append(self.body)
+            description = "\n".join(parts)
 
         calendarTZ = pytz.timezone(calendar.timezone)
         event_data = {

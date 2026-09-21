@@ -1,4 +1,5 @@
 import datetime
+from unittest import mock
 
 from django.core.exceptions import ValidationError
 from django.db.models import ProtectedError
@@ -240,3 +241,63 @@ class HostlessInstanceTests(TestCase):
         self.client.login(email="su@example.com", password="password")
         response = self.client.get('/admin/scheduler/eventinstance/')
         self.assertEqual(response.status_code, 200)
+
+
+class HostlessCalendarEntryTests(TestCase):
+    """
+    An instance with no host still reaches the calendar sync path whenever it is
+    saved against a synchronizing template, where the description was built from
+    host.slackId without checking that there was a host.
+    """
+
+    def setUp(self):
+        self.calendar = SchedulingCalendar.objects.create(
+            name="cal", google_calendar_id="g", service_account_username="s",
+            timezone="Europe/Stockholm")
+        self.template = EventTemplate.objects.create(
+            name="t", title="Open", calendar=self.calendar, synchronize=True,
+            header="Rubrik", body="Brodtext")
+        self.start = timezone.now() + datetime.timedelta(days=1)
+        self.end = self.start + datetime.timedelta(hours=3)
+
+    def data(self, host, status=0):
+        return self.template._createUpdatedEventData(host, self.start, self.end, status)
+
+    def test_description_omits_the_host_line_when_there_is_none(self):
+        description = self.data(None)['description']
+        self.assertNotIn("Värd", description)
+        self.assertNotIn("None", description)
+        self.assertEqual(description, "Rubrik\nBrodtext")
+
+    def test_description_is_unchanged_when_there_is_a_host(self):
+        host = make_staff("host@example.com", "host")
+        self.assertEqual(self.data(host)['description'],
+                         "Värd: host\nRubrik\nBrodtext")
+
+    def test_description_is_empty_when_nothing_to_say(self):
+        bare = EventTemplate.objects.create(
+            name="bare", title="Open", calendar=self.calendar, synchronize=True)
+        self.assertEqual(
+            bare._createUpdatedEventData(None, self.start, self.end, 0)['description'], "")
+
+    def test_cancelling_an_unhosted_instance_uses_the_cancelled_text(self):
+        from django.conf import settings as django_settings
+        data = self.data(None, status=2)
+        self.assertEqual(data['description'], django_settings.CANCELLED_DESCRIPTION)
+        self.assertEqual(data['summary'], django_settings.CANCELLED_TITLE + "Open")
+
+    def test_saving_an_unhosted_instance_syncs_instead_of_crashing(self):
+        today = timezone.now().date()
+        period = SchedulingPeriod.objects.create(
+            start=today - datetime.timedelta(days=30),
+            end=today + datetime.timedelta(days=120))
+        event = Event.objects.create(name="e", template=self.template,
+                                     start=self.start, end=self.end)
+        with mock.patch.object(SchedulingCalendar, 'createEvent',
+                               return_value="cal-id-1") as created:
+            instance = EventInstance.objects.create(
+                event=event, start=self.start, end=self.end, status=0,
+                host=None, period=period)
+        self.assertEqual(instance.google_calendar_booking_id, "cal-id-1")
+        self.assertNotIn("Värd", created.call_args.args[0]['description'])
+
