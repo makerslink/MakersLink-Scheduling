@@ -615,7 +615,12 @@ class EventInstance(models.Model):
         super().delete(*args, **kwargs)
 
     def display_host(self):
-        return ''.join([self.host.email])
+        # host is null on every unbooked instance, and this feeds the admin
+        # changelist, where one free slot used to break the whole page.
+        # Returning None lets the admin render its own empty-value marker.
+        if self.host is None:
+            return None
+        return self.host.email
     display_host.short_description = "Host"
 
     def as_dict(self):

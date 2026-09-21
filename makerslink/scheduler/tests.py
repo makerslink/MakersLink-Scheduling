@@ -200,3 +200,43 @@ class OrphanedRowTests(TestCase):
         self.client.login(email="su@example.com", password="password")
         response = self.client.get('/admin/scheduler/eventinstance/')
         self.assertEqual(response.status_code, 200)
+
+
+class HostlessInstanceTests(TestCase):
+    """
+    host is nullable and is None for every unbooked instance, so display_host()
+    took out the whole admin changelist as soon as one free slot existed.
+    """
+
+    def setUp(self):
+        calendar = SchedulingCalendar.objects.create(
+            name="cal", google_calendar_id="g", service_account_username="s",
+            timezone="Europe/Stockholm")
+        template = EventTemplate.objects.create(
+            name="t", title="Open", calendar=calendar, synchronize=False)
+        today = timezone.now().date()
+        self.period = SchedulingPeriod.objects.create(
+            start=today - datetime.timedelta(days=30),
+            end=today + datetime.timedelta(days=120))
+        self.event = Event.objects.create(
+            name="e", template=template,
+            start=timezone.now() + datetime.timedelta(days=1),
+            end=timezone.now() + datetime.timedelta(days=1, hours=3))
+        self.free = EventInstance.objects.create(
+            event=self.event, start=self.event.start, end=self.event.end,
+            status=0, host=None, period=self.period)
+
+    def test_display_host_is_blank_without_a_host(self):
+        self.assertIsNone(self.free.display_host())
+
+    def test_display_host_returns_the_email_when_hosted(self):
+        self.free.host = make_staff("host@example.com", "host")
+        self.assertEqual(self.free.display_host(), "host@example.com")
+
+    def test_admin_changelist_loads_with_a_free_instance(self):
+        admin = make_staff("su@example.com", "su")
+        admin.is_superuser = True
+        admin.save()
+        self.client.login(email="su@example.com", password="password")
+        response = self.client.get('/admin/scheduler/eventinstance/')
+        self.assertEqual(response.status_code, 200)
