@@ -915,7 +915,8 @@ class SchedulingPeriod(models.Model):
         return (self.get_elapsed() / self.get_length()) * 100
 
     def get_host_count_list(self):
-        userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
+        # Accounts without a Slack name are pending invites and cannot have hosted.
+        userHostList = accounts.models.User.objects.filter(slackId__isnull=False).order_by('slackId', 'eventinstance__period').annotate(
             host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id))).order_by('host_count')
 
         return userHostList

@@ -120,6 +120,7 @@
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}" data-toggle="tooltip" data-placement="right" title="Boka gå brevid pass och fixarpass">Anmäl deltagande</a></li>
           {% if user.is_staff %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'hosts' %}">Hosts</a></li>
+          <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'invites' %}">Invites</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'calendars' %}">Calendars</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'templates' %}">Templates</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'rules' %}">Rules</a></li>

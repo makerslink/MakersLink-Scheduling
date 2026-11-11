@@ -24,10 +24,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             code='invalid_slackId')
     
     email = models.EmailField(unique=True, verbose_name="E-post")
-    slackId = models.CharField(max_length=100, verbose_name="Slacknamn", unique=True, blank=False, null=False, validators=[slackIdValid])
+    # Empty (NULL) until an invited member chooses it when accepting the invite.
+    slackId = models.CharField(max_length=100, verbose_name="Slacknamn", unique=True, blank=True, null=True, validators=[slackIdValid])
     is_active = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_registration_complete = models.BooleanField(default=False)
+    invited_at = models.DateTimeField(null=True, blank=True, editable=False,
+                                      help_text="When the latest invite was sent.")
 
     def get_full_name(self):
         return self.email

@@ -1,0 +1,43 @@
+{% extends "base_generic.html" %}
+{% load crispy_forms_tags %}
+{% block page_title %}Invites{% endblock %}
+
+{% block content %}
+{% for message in messages %}
+<div class="alert alert-{% if message.tags == 'error' %}danger{% else %}info{% endif %}" role="alert">{{ message }}</div>
+{% endfor %}
+
+<div class="row">
+  <div class="col-12 col-md-8 col-lg-6">
+    <p>Invite someone by email. They get a link to choose their Slack name and a password, and can book as soon as they have.</p>
+    <form method="post">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit" class="btn btn-primary">Send invite</button>
+    </form>
+  </div>
+</div>
+
+<h4 class="mt-4">Waiting to be accepted</h4>
+{% if pending %}
+<div class="table-responsive">
+<table>
+  <thead><tr><th>Email</th><th>Invited</th><th></th></tr></thead>
+  {% for invited in pending %}
+  <tr class="{% cycle 'row-uneven' 'row-even' %}">
+    <td>{{ invited.email }}</td>
+    <td>{{ invited.invited_at|date:"Y-m-d H:i" }}{% if invited.invite_expired %} (link expired){% endif %}</td>
+    <td>
+      <form method="post" action="{% url 'invite_resend' invited.pk %}" class="m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-primary">Resend</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+{% else %}
+<p>No invites are waiting.</p>
+{% endif %}
+{% endblock %}

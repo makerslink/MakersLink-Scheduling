@@ -1,0 +1,11 @@
+{% autoescape off %}Hej!
+
+Du har blivit inbjuden till MakersLinks bokningssystem, där du bokar värdpass och anmäler dig till andra pass.
+
+Klicka på länken för att välja ditt slacknamn och ett lösenord:
+{{ link }}
+
+Länken gäller i {{ valid_days }} dagar och kan bara användas en gång. Har den slutat fungera kan du be en administratör skicka en ny inbjudan.
+
+MakersLink
+{% endautoescape %}

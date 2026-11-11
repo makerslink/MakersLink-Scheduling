@@ -1,9 +1,14 @@
 from django.urls import path, re_path, reverse_lazy
 import django.contrib.auth.views as authViews
+from . import views
 
 # User urls
 
 urlpatterns = [
+    # Staff invite people by email; the link lets them choose Slack name and password.
+    path('invites/', views.InviteView.as_view(), name='invites'),
+    path('invites/<int:pk>/resend/', views.InviteResendView.as_view(), name='invite_resend'),
+    path('invite/<uidb64>/<token>/', views.InviteAcceptView.as_view(), name='invite_accept'),
     path('login/', authViews.LoginView.as_view(template_name="accounts/login.html"),
          name="login"),
     path('logout/', authViews.LogoutView.as_view(template_name="accounts/logged_out.html"),
