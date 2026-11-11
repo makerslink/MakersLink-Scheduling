@@ -115,6 +115,7 @@
     <div class="row">
       <div class="col-auto">
         <ul class="nav flex-column" style="margin-top:4px">
+          {% if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'index' %}" data-toggle="tooltip" data-placement="right" title="Boka värdpass">Boka pass</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}" data-toggle="tooltip" data-placement="right" title="Boka gå brevid pass och fixarpass">Anmäl deltagande</a></li>
           {% if user.is_staff %}
@@ -128,7 +129,16 @@
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'eventinstances-admin' %}">EventInstances</a></li>
           {% endif %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'profile' %}" data-toggle="tooltip" data-placement="right" title="Se en översikt av dina bokade pass">Användarprofil</a></li>
-          <li class="nav-item"><a class="nav-link bg-warning text-dark" href="{% url 'logout' %}">Logga ut</a></li>
+          <li class="nav-item">
+            {# Django 5+ only logs out on POST, so this is a form rather than a link. #}
+            <form method="post" action="{% url 'logout' %}" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="nav-link bg-warning text-dark border-0 rounded-0 w-100 text-left">Logga ut</button>
+            </form>
+          </li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link bg-warning text-dark" href="{% url 'login' %}">Logga in</a></li>
+          {% endif %}
           {% for menu_item in menu_extra%}
             <li class="nav-item"><a class="nav-link {% if menu_item.class %} {{ menu_item.class }}{% endif %}" href="{{ menu_item.link }}" data-toggle="tooltip" data-placement="right" title="{{ menu_item.tooltip }}">{{ menu_item.name }}</a></li>
           {% endfor %}
