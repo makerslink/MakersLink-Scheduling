@@ -18,7 +18,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 # New Filesystem
-client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
+
+
+def client_secret_storage():
+    """
+    Where uploaded service-account keys are stored. A callable, so migrations
+    record a reference to it instead of the absolute path on whichever
+    machine ran makemigrations.
+    """
+    return FileSystemStorage(location=settings.CALENDAR_PK_DIR)
 
 # Shown in place of a title for rows that lost their template or event
 # before these relations were changed to PROTECT. New rows can no longer
@@ -183,7 +191,7 @@ class SchedulingCalendar(models.Model):
     timezone = models.CharField(
         max_length=50, choices=TIMEZONES, help_text='Calendar timezone')
     service_account = models.FileField(
-        storage=client_secret_fs, help_text='Upload client_secret json-file', null=True, blank=True)
+        storage=client_secret_storage, help_text='Upload client_secret json-file', null=True, blank=True)
     scope = models.TextField(default="https://www.googleapis.com/auth/calendar",
                              help_text='Enter scope of api calls, change at your own risk')
 
