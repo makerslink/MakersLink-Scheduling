@@ -32,11 +32,7 @@
 
 {% block content %}
 {% for message in messages %}
-    {% if 'safe' in message.tags %}
-        {{ message|safe }}
-    {% else %}
-        { message }}
-    {% endif %}
+    {{ message }}
 {% endfor %}
 
 {% if eventinstance_list %}

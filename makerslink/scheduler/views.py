@@ -18,6 +18,7 @@ from django.forms import modelformset_factory
 from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm, RuleExclusionForm, EventInstanceAdminForm
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
 from django.shortcuts import render
+from django.utils.html import format_html, format_html_join
 import logging
 logger = logging.getLogger(__name__)
 
@@ -325,6 +326,16 @@ class HostListView(UserIsStaffMixin, generic.ListView):
         # return queryset
 
 
+def _taken_row(form):
+    """Title, start and end of a slot that could not be taken, for the message table."""
+    data = form.cleaned_data
+
+    def when(value):
+        return value.strftime('%Y-%m-%d %H:%M') if value else ""
+
+    return (data.get('title') or "", when(data.get('start')), when(data.get('end')))
+
+
 @login_required
 def EventSignupView(request):
     start = datetime.now(timezone.utc).replace(
@@ -349,7 +360,7 @@ def EventSignupView(request):
         EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
 
     if request.method == 'POST':
-        taken_events = ""
+        taken_events = []
         logger.warning('form is submitted as POST')
         formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(
             Q(host=request.user) | Q(status__lte=0)).exclude(start__lt=date.today()).order_by("period", "start"))
@@ -387,51 +398,24 @@ def EventSignupView(request):
                     else:
                         logger.warning('user can not take')
                         # Add instance as already taken
-                        taken_events += "<tr><td>" + \
-                            form.cleaned_data.get('title') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('start').strftime(
-                                '%Y-%m-%d %H:%M') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('end').strftime(
-                                '%Y-%m-%d %H:%M') + "</td></tr>"
-                        """
-                        taken_event = {
-                            'title': form.cleaned_data.get('title'),
-                            'start': form.cleaned_data.get('start'),
-                            'end': form.cleaned_data.get('end'),
-                        }
-                        taken_events.append(taken_event)
-                        """
+                        taken_events.append(_taken_row(form))
                 else:
                     #logger.warning('Handling form starting at: ' + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M'))
                     logger.warning('form is invalid')
                     if any(form.errors):
                         logger.warning('form has errors')
                         logger.warning(form.errors)
-                        taken_events += "<tr><td>" + \
-                            form.cleaned_data.get('title') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('start').strftime(
-                                '%Y-%m-%d %H:%M') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('end').strftime(
-                                '%Y-%m-%d %H:%M') + "</td></tr>"
-                        """
-                        taken_event = {
-                            'title': form.cleaned_data.get('title'),
-                            'start': form.cleaned_data.get('start'),
-                            'end': form.cleaned_data.get('end'),
-                        }
-                        taken_events.append(taken_event)
-                        """
+                        taken_events.append(_taken_row(form))
             else:
                 logger.warning('form has not changed')
         logger.warning('done with looping')
-        if taken_events != "":
-            taken_events = "<b>The following events were not taken due to already being owned by someone else:</b></<br><table><thead><tr><th>Title</th><th>Start</th><th>End</th></tr></thead>" + taken_events + "</table><br><br>"
+        if taken_events:
             logger.warning('adding message')
-            messages.info(request, taken_events, extra_tags='safe')
+            # format_html escapes every value; only the fixed markup is safe.
+            messages.info(request, format_html(
+                "<b>The following events were not taken due to already being owned by someone else:</b><br>"
+                "<table><thead><tr><th>Title</th><th>Start</th><th>End</th></tr></thead>{}</table><br><br>",
+                format_html_join("", "<tr><td>{}</td><td>{}</td><td>{}</td></tr>", taken_events)))
         logger.warning('redirecting')
         return HttpResponseRedirect('')
     else:
