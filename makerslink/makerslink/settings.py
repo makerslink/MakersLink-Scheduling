@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'bootstrap_datepicker_plus',
     'crispy_forms',
+    'crispy_bootstrap4',
     # 'djangobower',
 ]
 
@@ -194,6 +195,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "./makerslink/static"),
 ]
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 BOOTSTRAP4 = {

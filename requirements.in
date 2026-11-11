@@ -1,8 +1,13 @@
-Django
-django-bootstrap-datepicker-plus
+# Direct dependencies only. requirements.txt is generated from this file:
+#   pip-compile --strip-extras requirements.in
+# Do not edit requirements.txt by hand or regenerate it with pip freeze.
+Django>=6.0.10,<6.1
 django-bootstrap4
+# 3.x breaks on Django 4+ ({% ifnotequal %}); upgraded together with the widgets.
+django-bootstrap-datepicker-plus==3.0.5
+django-crispy-forms>=2
+crispy-bootstrap4
 google-api-python-client
 google-auth
-google-auth-httplib2
-google-auth-oauthlib
 python-dateutil
+pytz
