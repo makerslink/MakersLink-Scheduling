@@ -114,3 +114,128 @@ class TakenMessageTests(SignupTestCase):
 
         self.assertIn("<td>Öppet &amp; fika</td>", message)
         self.assertNotIn("&amp;amp;", message)
+
+
+class HiddenFieldTrustTests(SignupTestCase):
+    """
+    Start, end, status, event and period travel as hidden fields. The server
+    used to save whatever came back, so any member could move, invent or
+    re-point a slot, and the change was pushed to the public calendar.
+    """
+
+    def free_instance(self, data, index):
+        start, end = slot_times(data, index)
+        return EventInstance.objects.create(
+            event=self.event, start=start, end=end, status=0, period=self.period)
+
+    def row_for(self, data, instance):
+        return next(i for i in range(int(data["form-TOTAL_FORMS"]))
+                    if data.get(f"form-{i}-id") == str(instance.pk))
+
+    def test_generated_slot_is_booked_from_server_values(self):
+        data = self.signup_page()
+        index = generated_slots(data)[0]
+        start, end = slot_times(data, index)
+        data[f"form-{index}-perform_action"] = "on"
+        data[f"form-{index}-period"] = ""
+        data[f"form-{index}-status"] = "2"
+
+        self.client.post(reverse("index"), data)
+
+        booked = EventInstance.objects.get(event=self.event, start=start, end=end)
+        self.assertEqual((booked.status, booked.host, booked.period), (1, self.member, self.period))
+
+    def test_existing_slot_cannot_be_moved(self):
+        free = self.free_instance(self.signup_page(), generated_slots(self.signup_page())[0])
+        data = self.signup_page()
+        index = self.row_for(data, free)
+        data[f"form-{index}-perform_action"] = "on"
+        data[f"form-{index}-start"] = "2031-01-01 03:00:00"
+        data[f"form-{index}-end"] = "2031-01-01 04:00:00"
+
+        self.client.post(reverse("index"), data)
+
+        moved = EventInstance.objects.get(pk=free.pk)
+        self.assertEqual((moved.start, moved.end), (free.start, free.end))
+        self.assertEqual((moved.status, moved.host), (1, self.member))
+
+    def test_slot_cannot_be_invented(self):
+        data = self.signup_page()
+        index = generated_slots(data)[0]
+        data[f"form-{index}-perform_action"] = "on"
+        data[f"form-{index}-start"] = "2030-06-06 01:00:00"
+        data[f"form-{index}-end"] = "2030-06-06 23:00:00"
+
+        self.client.post(reverse("index"), data)
+
+        self.assertFalse(EventInstance.objects.exists())
+
+    def test_slot_cannot_be_pointed_at_another_event(self):
+        other_event = Event.objects.create(
+            name="Annat", template=self.event.template,
+            start=timezone.now() + datetime.timedelta(days=400),
+            end=timezone.now() + datetime.timedelta(days=400, hours=2))
+        data = self.signup_page()
+        index = generated_slots(data)[0]
+        data[f"form-{index}-perform_action"] = "on"
+        data[f"form-{index}-event"] = str(other_event.pk)
+
+        self.client.post(reverse("index"), data)
+
+        self.assertFalse(EventInstance.objects.exists())
+
+    def test_own_slot_can_be_released(self):
+        data = self.signup_page()
+        index = generated_slots(data)[0]
+        data[f"form-{index}-perform_action"] = "on"
+        self.client.post(reverse("index"), data)
+        mine = EventInstance.objects.get()
+
+        data = self.signup_page()
+        data.pop(f"form-{self.row_for(data, mine)}-perform_action")
+        self.client.post(reverse("index"), data)
+
+        mine.refresh_from_db()
+        self.assertEqual((mine.status, mine.host), (-1, self.member))
+
+    def test_someone_elses_slot_cannot_be_released_by_swapping_the_id(self):
+        data = self.signup_page()
+        first, second = generated_slots(data)[:2]
+        data[f"form-{first}-perform_action"] = "on"
+        self.client.post(reverse("index"), data)
+        mine = EventInstance.objects.get()
+        theirs = self.book_for_other(data, second)
+
+        data = self.signup_page()
+        index = self.row_for(data, mine)
+        data[f"form-{index}-id"] = str(theirs.pk)
+        data.pop(f"form-{index}-perform_action")
+        self.client.post(reverse("index"), data)
+
+        theirs.refresh_from_db()
+        self.assertEqual((theirs.status, theirs.host), (1, self.other))
+
+    def test_stale_page_does_not_take_over_a_booked_slot(self):
+        data = self.signup_page()
+        index = generated_slots(data)[0]
+        theirs = self.book_for_other(data, index)
+        data[f"form-{index}-perform_action"] = "on"
+
+        page = self.client.post(reverse("index"), data, follow=True).content.decode()
+
+        theirs.refresh_from_db()
+        self.assertEqual((theirs.status, theirs.host), (1, self.other))
+        self.assertIn("were not taken", page)
+
+    def test_stale_page_does_not_take_over_an_existing_free_slot_booked_since(self):
+        data = self.signup_page()
+        free = self.free_instance(data, generated_slots(data)[0])
+        data = self.signup_page()
+        index = self.row_for(data, free)
+        EventInstance.objects.filter(pk=free.pk).update(status=1, host=self.other)
+        data[f"form-{index}-perform_action"] = "on"
+
+        self.client.post(reverse("index"), data)
+
+        free.refresh_from_db()
+        self.assertEqual((free.status, free.host), (1, self.other))
