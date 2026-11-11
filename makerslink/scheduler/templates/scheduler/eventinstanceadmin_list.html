@@ -32,15 +32,11 @@
 
 {% block content %}
 {% for message in messages %}
-    {% if 'safe' in message.tags %}
-        {{ message|safe }}
-    {% else %}
-        { message }}
-    {% endif %}
+    {{ message }}
 {% endfor %}
 
 {% if eventinstance_list %}
-    <table>
+    <div class="table-responsive"><table>
         <thead>
             <tr>
                 <th>Rubrik</th>
@@ -55,7 +51,7 @@
                 <td class="eventstatus{{ eventinstance.status }}"></td>
             </tr>
         {% endfor %}
-    </table>
+    </table></div>
 {% else %}
     <p>No EventInstances found.</p>
 {% endif %}

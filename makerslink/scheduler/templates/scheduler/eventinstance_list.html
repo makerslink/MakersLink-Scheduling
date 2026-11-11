@@ -5,7 +5,7 @@
     Klicka på typen av pass för att öppna eller stänga listan.
 
     {% if eventinstance_list %}
-        <table>
+        <div class="table-responsive"><table>
             <thead>
                 <tr>
                     <th>Rubrik</th>
@@ -41,7 +41,7 @@
                     {% endfor %}
                 </tbody>
             {% endfor %}
-        </table>
+        </table></div>
     {% else %}
       <p>No Events have been created.</p>
     {% endif %}

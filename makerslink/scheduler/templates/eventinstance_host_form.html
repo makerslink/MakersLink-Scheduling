@@ -34,16 +34,12 @@
 {% block content %}
 
 {% for message in messages %}
-    {% if 'safe' in message.tags %}
-        {{ message|safe }}
-    {% else %}
-        { message }}
-    {% endif %}
+    {{ message }}
 {% endfor %}
 
 {% if taken_events %}
 <b>Följande pass bokades inte för att någon annan redan bokat dem:</b></<br>
-<table>
+<div class="table-responsive"><table>
     <thead><tr>
         <th>Rubrik</th>
         <th>Datum & tid</th>
@@ -54,7 +50,7 @@
             <td>{{ event.start|date:"Y-m-d H:i" }}-{{ event.end|date:"H:i" }}</td>
         </tr>
     {% endfor %}
-</table><br><br>
+</table></div><br><br>
 {% endif %}
 {% regroup formset.forms by period_name.value as period_forms %}
 
@@ -65,19 +61,20 @@ Antal tillgängliga pass är: {{ available_events }}
         {{ formset.management_form }}
         {{ formset.non_form_errors.as_ul }}
         <button type="submit" class="btn  btn-primary">Skicka</button>
-        <table id="formset" class="form">
+        <div class="table-responsive"><table id="formset" class="form">
             <thead><tr>
                 <th>Rubrik</th>
                 <th>Datum & tid</th>
                 <th>Status</th>
-                <th>Boka/boka av</th>
+                <th><span class="d-none d-sm-inline">Boka/boka av</span><span class="d-sm-none">Boka</span></th>
             </tr></thead>
             {% for period in period_forms %}
             <tr><td class="emph sub-head" colspan=4>{{ period.grouper }}</th></tr>
 		        {% for form in period.list %}
 		            <tr class="{% cycle 'row-uneven' 'row-even' %}">
 		                <td>{{ form.title.value }}</td>
-		                <td>{{ form.initial.start|date:"Y-m-d H:i" }}-{{ form.initial.end|date:"H:i" }}</td>
+		                {# Date and time wrap onto two lines on narrow screens, never mid-value. #}
+		                <td><span class="text-nowrap">{{ form.initial.start|date:"Y-m-d" }}</span> <span class="text-nowrap">{{ form.initial.start|date:"H:i" }}-{{ form.initial.end|date:"H:i" }}</span></td>
 		                <td class="eventstatus{{ form.initial.status }}"></td>
 		                {% for field in form.visible_fields %}
 		                    <td>
@@ -93,7 +90,7 @@ Antal tillgängliga pass är: {{ available_events }}
 		            </tr>
 		        {% endfor %}
             {% endfor %}
-        </table>
+        </table></div>
         <button type="submit" class="btn  btn-primary">Skicka</button>
     </form>
 {% endblock content %}

@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddConstraint(
             model_name='eventinstance',
-            constraint=models.CheckConstraint(check=models.Q(start__lt=django.db.models.expressions.F('end')), name='check_instance_start_before_end'),
+            constraint=models.CheckConstraint(condition=models.Q(start__lt=django.db.models.expressions.F('end')), name='check_instance_start_before_end'),
         ),
     ]

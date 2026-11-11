@@ -1,0 +1,21 @@
+{% extends "base_card_form.html" %}
+{% load crispy_forms_tags %}
+{% block page_title %}Skapa konto{% endblock %}
+
+{% block card_form %}
+{% if validlink %}
+
+<p class="card-text">Välj ditt slacknamn och ett lösenord. Skriv lösenordet två gånger så vi kan kontrollera att det blivit rätt.</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary">Skapa konto</button>
+</form>
+
+{% else %}
+
+<p class="card-text">Inbjudningslänken fungerar inte längre. Antingen har den redan använts, eller så är den för gammal eller ersatt av en nyare inbjudan. Be en administratör skicka en ny.</p>
+
+{% endif %}
+{% endblock %}

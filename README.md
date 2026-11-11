@@ -29,5 +29,13 @@ scp MakersLink-Scheduling-$VERSION_NUM.tar somebody@somewhere:/a/dir
 Then on the server:
 # Load docker image
 sudo docker load -i MakersLink-Scheduling-$VERSION_NUM.tar
+# The container runs as uid 10001, so the mounted directories must be writable by it (once per server).
+sudo chown -R 10001:10001 /somewhere/db /somewhere/pks
 # Start with this command (on our server this is in the start_scheduling script).
-sudo docker run -dt -e "DJANGO_SECRET=$SUPER_DUPER_SECRET" -e "SCHEDULING_PASS=$DIFFERENT_SECRET" --name scheduling --restart unless-stopped  -v /somewhere/db:/scheduling/makerslink/makerslink/db -v /somewhere/pks:/scheduling/pks -p 8000:8000 makerslink_scheduling
+# No -p: Traefik reaches the container on port 8000 over the Docker network it shares with it,
+# so the app is never reachable directly, bypassing HTTPS.
+sudo docker run -dt -e "DJANGO_SECRET=$SUPER_DUPER_SECRET" -e "SCHEDULING_PASS=$DIFFERENT_SECRET" --name scheduling --restart unless-stopped  -v /somewhere/db:/scheduling/makerslink/makerslink/db -v /somewhere/pks:/scheduling/pks --network $TRAEFIK_NETWORK makerslink_scheduling
+
+Local development:
+# The database is not in git; create a local one with
+python manage.py migrate

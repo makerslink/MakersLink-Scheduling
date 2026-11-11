@@ -18,7 +18,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 # New Filesystem
-client_secret_fs = FileSystemStorage(location=settings.CALENDAR_PK_DIR)
+
+
+def client_secret_storage():
+    """
+    Where uploaded service-account keys are stored. A callable, so migrations
+    record a reference to it instead of the absolute path on whichever
+    machine ran makemigrations.
+    """
+    return FileSystemStorage(location=settings.CALENDAR_PK_DIR)
+
+# Shown in place of a title for rows that lost their template or event
+# before these relations were changed to PROTECT. New rows can no longer
+# end up in that state, but old databases still hold some, and they must
+# stay viewable so staff can repair or delete them.
+MISSING_RELATION_TITLE = "(borttagen mall)"
 
 # Create your models here.
 
@@ -41,7 +55,7 @@ class EventTemplate(models.Model):
         max_length=1000, help_text="Enter a larger body of text to be inserted after the header in the description field in the calendar event", null=True, blank=True)
     num_participants = models.IntegerField(
         default=0, help_text="Number of participants, -1 for infinite")
-    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.SET_NULL,
+    calendar = models.ForeignKey('SchedulingCalendar', on_delete=models.PROTECT,
                                  null=True, help_text="Select the calendar to sync events to.")
     synchronize = models.BooleanField(
         default=True, help_text="If active, scheduled events will be synced to Google calendar upon creation.")
@@ -51,6 +65,19 @@ class EventTemplate(models.Model):
         ordering = ["name"]
 
     # Methods
+    def clean(self):
+        # Synchronising with nowhere to synchronise to cannot work, and used
+        # to surface as an AttributeError deep inside EventInstance.save().
+        if self.synchronize and self.calendar_id is None:
+            raise ValidationError(
+                {'calendar': ('Select a calendar, or turn off synchronize')})
+
+    def _requireCalendar(self):
+        if self.calendar is None:
+            raise ValueError(
+                "EventTemplate '{}' is set to synchronize but has no calendar".format(self.name))
+        return self.calendar
+
     def get_absolute_url(self):
         """
          Returns the url to access a particular instance of EventTemplate.
@@ -63,7 +90,7 @@ class EventTemplate(models.Model):
             # logger.warning("Data:")
             # logger.warning(data)
             # return True
-            return self.calendar.createEvent(data)
+            return self._requireCalendar().createEvent(data)
         else:
             return True
 
@@ -73,12 +100,16 @@ class EventTemplate(models.Model):
             # logger.warning("Data:")
             # logger.warning(data)
             # return True
-            return self.calendar.updateEvent(booking_id, data)
+            return self._requireCalendar().updateEvent(booking_id, data)
         else:
             return True
 
     def _createUpdatedEventData(self, host, start, end, status, unique_title="", unique_description=""):
         #logger.warning("createEventData:start: %s", start)
+        # Check the configuration before building anything: a template set to
+        # synchronize with no calendar cannot produce an event either way, and
+        # the misconfiguration is what the caller needs to be told about.
+        calendar = self._requireCalendar()
         if status == 2:
             if unique_title == "":
                 summary = settings.CANCELLED_TITLE + self.title
@@ -92,24 +123,29 @@ class EventTemplate(models.Model):
         else:
             summary = self.title
 
-            description = 'Värd: ' + str(host.slackId)
+            # This text goes on the public calendar, so an instance that has
+            # no host yet says nothing about one rather than claiming "None".
+            parts = []
+            if host is not None:
+                parts.append('Värd: ' + host.slackId)
             if self.header:
-                description += "\n" + self.header
+                parts.append(self.header)
             if self.body:
-                description += "\n" + self.body
+                parts.append(self.body)
+            description = "\n".join(parts)
 
-        calendarTZ = pytz.timezone(self.calendar.timezone)
+        calendarTZ = pytz.timezone(calendar.timezone)
         event_data = {
             'summary': summary,
             'location': 'Makerspace Linköping',
             'description': description,
             'start': {
                 'dateTime': start.astimezone(calendarTZ).strftime('%Y-%m-%dT%H:%M:%S'),
-                'timeZone': self.calendar.timezone,
+                'timeZone': calendar.timezone,
             },
             'end': {
                 'dateTime': end.astimezone(calendarTZ).strftime('%Y-%m-%dT%H:%M:%S'),
-                'timeZone': self.calendar.timezone,
+                'timeZone': calendar.timezone,
             },
             'reminders': {
                 'useDefault': False,
@@ -121,7 +157,7 @@ class EventTemplate(models.Model):
 
     def deleteEventEntry(self, booking_id):
         if self.synchronize:
-            return self.calendar.deleteEvent(booking_id)
+            return self._requireCalendar().deleteEvent(booking_id)
         else:
             return True
 
@@ -155,7 +191,7 @@ class SchedulingCalendar(models.Model):
     timezone = models.CharField(
         max_length=50, choices=TIMEZONES, help_text='Calendar timezone')
     service_account = models.FileField(
-        storage=client_secret_fs, help_text='Upload client_secret json-file', null=True, blank=True)
+        storage=client_secret_storage, help_text='Upload client_secret json-file', null=True, blank=True)
     scope = models.TextField(default="https://www.googleapis.com/auth/calendar",
                              help_text='Enter scope of api calls, change at your own risk')
 
@@ -233,7 +269,7 @@ class Event(models.Model):
         max_length=50, help_text="Enter a human-friendly name for this type of Event")
     description = models.CharField(
         max_length=300, help_text="Enter a description for this type of Event", null=True, blank=True)
-    template = models.ForeignKey('EventTemplate', on_delete=models.SET_NULL, null=True,
+    template = models.ForeignKey('EventTemplate', on_delete=models.PROTECT, null=True,
                                  help_text="Select a template for how scheduled Events will look in the calendar.")
     start = models.DateTimeField(
         help_text="Start of event repetition and start time of events", db_index=True)
@@ -249,11 +285,11 @@ class Event(models.Model):
         ordering = ["-start"]
         constraints = [
             models.CheckConstraint(
-                check=Q(start__lt=F('end')),
+                condition=Q(start__lt=F('end')),
                 name='check_start_before_end'
             ),
             models.CheckConstraint(
-                check=Q(start__lt=F('repeat_end')),
+                condition=Q(start__lt=F('repeat_end')),
                 name='check_start_before_repeat_end'
             ),
         ]
@@ -261,18 +297,24 @@ class Event(models.Model):
     # Methods
     @property
     def max_num_participants(self):
+        if self.template is None:
+            return 0
         return self.template.num_participants
 
     def clean(self):
+        # A missing date has already failed field validation; nothing to compare.
+        if self.start is None or self.end is None:
+            return
         # Only validate future requirement on create not on edit.
         if self.pk is None and self.start <= timezone.now():
             raise ValidationError(
                 {'start': ('Start date is not in the future')})
-        if self.start > self.end:
-            raise ValidationError({'start': ('Start date is after end date')})
-        if self.repeat_end and self.start > self.repeat_end:
+        # >= rather than >: the database constraints require start < end.
+        if self.start >= self.end:
+            raise ValidationError({'start': ('Start must be before end')})
+        if self.repeat_end and self.start >= self.repeat_end:
             raise ValidationError(
-                {'start': ('Start date is after repeat end date')})
+                {'start': ('Start must be before repeat end')})
 
     def get_absolute_url(self):
         """
@@ -424,8 +466,12 @@ class EventReplacer(object):
     # Create a dict to keep track of actual EventInstances when creating an instance of this class
 
     def __init__(self, event_instances):
-        lookup = [((event_instance.event.id, event_instance.start, event_instance.end),
-                   event_instance) for event_instance in event_instances]
+        # Instances orphaned before Event became PROTECT have no event to key
+        # on, so they cannot match a generated occurrence. Skip them here
+        # rather than raising on every page that builds an event list.
+        lookup = [((event_instance.event_id, event_instance.start, event_instance.end),
+                   event_instance) for event_instance in event_instances
+                  if event_instance.event_id is not None]
         self.lookup = dict(lookup)
 
     # Return an actual EventInstance that matches "event_instance" and remove it since it has been matched
@@ -475,7 +521,7 @@ class EventInstance(models.Model):
         'accounts.User', on_delete=models.SET_NULL, null=True)
     participants = models.ManyToManyField(
         'accounts.User', related_name="participants", related_query_name="participant", blank=True)
-    event = models.ForeignKey('Event', on_delete=models.SET_NULL, null=True)
+    event = models.ForeignKey('Event', on_delete=models.PROTECT, null=True)
     start = models.DateTimeField(help_text="Start of event")
     end = models.DateTimeField(help_text="End of event")
     status = models.IntegerField(
@@ -493,22 +539,34 @@ class EventInstance(models.Model):
 
     @property
     def title(self):
-        return self.event.template.title
+        if self.template is None:
+            return MISSING_RELATION_TITLE
+        return self.template.title
 
     @property
     def header(self):
-        return self.event.template.header
+        if self.template is None:
+            return None
+        return self.template.header
 
     @property
     def body(self):
-        return self.event.template.body
+        if self.template is None:
+            return None
+        return self.template.body
 
     @property
     def max_num_participants(self):
-        return self.event.template.num_participants
+        if self.template is None:
+            return 0
+        return self.template.num_participants
 
     @property
     def template(self):
+        # Both links are PROTECT now, but rows orphaned by the old SET_NULL
+        # behaviour still exist in databases created before that change.
+        if self.event is None:
+            return None
         return self.event.template
 
     # Metadata
@@ -517,19 +575,23 @@ class EventInstance(models.Model):
         unique_together = ('event', 'start', 'end')
         constraints = [
             models.CheckConstraint(
-                check=Q(start__lt=F('end')),
+                condition=Q(start__lt=F('end')),
                 name='check_instance_start_before_end'
             ),
         ]
 
     # Methods
     def clean(self):
+        # A missing date has already failed field validation; nothing to compare.
+        if self.start is None or self.end is None:
+            return
         # Only validate future requirement on create not on edit.
         if self.pk is None and self.start <= timezone.now():
             raise ValidationError(
                 {'start': ('Start date is not in the future')})
-        if self.start > self.end:
-            raise ValidationError({'start': ('Start date is after end date')})
+        # >= rather than >: the database constraint requires start < end.
+        if self.start >= self.end:
+            raise ValidationError({'start': ('Start must be before end')})
 
     def get_absolute_url(self):
         """
@@ -539,15 +601,22 @@ class EventInstance(models.Model):
 
     def save(self, *args, **kwargs):
         logger.warning('EventInstance save called')
-        if self.google_calendar_booking_id is not None:
+        template = self.template
+        if template is None:
+            # Orphaned row: there is no template to tell us how to render a
+            # calendar entry. Let the save through so it can still be
+            # repaired or deleted from the admin pages.
+            logger.warning(
+                "No template for this instance, skipping calendar synchronisation")
+        elif self.google_calendar_booking_id is not None:
             logger.warning("Updating calendar entry with ID: " +
                            str(self.google_calendar_booking_id))
 
-            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+            if not template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         else:
             logger.warning("Creating new calendar entry")
-            calendar_id = self.event.template.createEventEntry(
+            calendar_id = template.createEventEntry(
                 self.host, self.start, self.end, self.status)
             if isinstance(calendar_id, bool):
                 logger.warning(
@@ -560,13 +629,19 @@ class EventInstance(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.google_calendar_booking_id is not None:
-            if not self.event.template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
+        template = self.template
+        if self.google_calendar_booking_id is not None and template is not None:
+            if not template.updateEventEntry(self.google_calendar_booking_id, self.host, self.start, self.end, self.status):
                 raise ValueError('Could not update calendar')
         super().delete(*args, **kwargs)
 
     def display_host(self):
-        return ''.join([self.host.email])
+        # host is null on every unbooked instance, and this feeds the admin
+        # changelist, where one free slot used to break the whole page.
+        # Returning None lets the admin render its own empty-value marker.
+        if self.host is None:
+            return None
+        return self.host.email
     display_host.short_description = "Host"
 
     def as_dict(self):
@@ -574,22 +649,22 @@ class EventInstance(models.Model):
             return {
                 'google_calendar_booking_id': self.google_calendar_booking_id,
                 'host': str(self.host),
-                'event': self.event.id,
+                'event': self.event_id,
                 'start': self.start,
                 'end': self.end,
                 'status': self.status,
-                'period': self.period.id
+                'period': self.period_id
             }
         else:
             return {
                 'id': str(self.id),
                 'google_calendar_booking_id': self.google_calendar_booking_id,
                 'host': str(self.host),
-                'event': self.event.id,
+                'event': self.event_id,
                 'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
                 'status': self.status,
-                'period': self.period.id
+                'period': self.period_id
             }
 
     def can_take(self, user):
@@ -771,7 +846,7 @@ class SchedulingPeriod(models.Model):
         ordering = ('-start', '-end')
         constraints = [
             models.CheckConstraint(
-                check=Q(start__lt=F('end')),
+                condition=Q(start__lt=F('end')),
                 name='check_period_start_before_end'
             ),
         ]
@@ -786,8 +861,12 @@ class SchedulingPeriod(models.Model):
 
     # Functions
     def clean(self):
-        if self.start > self.end:
-            raise ValidationError({'start': ('Start date is after end date')})
+        # A missing date has already failed field validation; nothing to compare.
+        if self.start is None or self.end is None:
+            return
+        # >= rather than >: the database constraint requires start < end.
+        if self.start >= self.end:
+            raise ValidationError({'start': ('Start must be before end')})
 
     def get_absolute_url(self):
         """
@@ -848,7 +927,8 @@ class SchedulingPeriod(models.Model):
         return (self.get_elapsed() / self.get_length()) * 100
 
     def get_host_count_list(self):
-        userHostList = accounts.models.User.objects.all().order_by('slackId', 'eventinstance__period').annotate(
+        # Accounts without a Slack name are pending invites and cannot have hosted.
+        userHostList = accounts.models.User.objects.filter(slackId__isnull=False).order_by('slackId', 'eventinstance__period').annotate(
             host_count=Count('slackId', filter=Q(eventinstance__status=1, eventinstance__period=self.id))).order_by('host_count')
 
         return userHostList

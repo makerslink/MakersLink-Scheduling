@@ -4,6 +4,19 @@
 
 {% block content %}
 
+{% if protected_objects %}
+<div class="alert alert-danger" role="alert">
+  <p class="mb-2"><b>Cannot delete this calendar.</b>
+  {{ protected_count }} object{{ protected_count|pluralize }} still
+  use{{ protected_count|pluralize:"s," }} it:</p>
+  <ul class="mb-2">
+    {% for protected in protected_objects %}<li>{{ protected }}</li>{% endfor %}
+    {% if protected_overflow %}<li>… and {{ protected_overflow }} more</li>{% endif %}
+  </ul>
+  <p class="mb-0">Point those templates at another calendar, or delete them first.</p>
+</div>
+{% endif %}
+
 <p>Are you sure you want to delete the calendar: {{ schedulingcalendar }}?</p>
 
 <form action="" method="POST">

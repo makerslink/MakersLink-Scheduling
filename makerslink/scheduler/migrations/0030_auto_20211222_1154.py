@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='schedulingperiod',
-            constraint=models.CheckConstraint(check=models.Q(start__lt=django.db.models.expressions.F('end')), name='check_period_start_before_end'),
+            constraint=models.CheckConstraint(condition=models.Q(start__lt=django.db.models.expressions.F('end')), name='check_period_start_before_end'),
         ),
     ]

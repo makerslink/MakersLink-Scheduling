@@ -13,7 +13,7 @@
 {% block content %}
 {% if schedulingperiod_list %}
 
-<table>
+<div class="table-responsive"><table>
   <thead><tr>
     <th>Slack name</th>
     {% for period in schedulingperiod_list %}
@@ -33,7 +33,7 @@
 		    <td class="emph">{{ period.event_count }}</td>
 		{% endfor %}
 	</tr></thead>
-</table>
+</table></div>
 {% else %}
   <p>No hosts in list.</p>
 {% endif %}

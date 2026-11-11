@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CALENDAR_PK_DIR = os.path.abspath(os.path.join(BASE_DIR, "../pks/"))
@@ -29,8 +31,16 @@ if os.getenv('DJANGO_ENV') == 'prod':
     USE_X_FORWARDED_HOST = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECRET_KEY = os.environ.get("DJANGO_SECRET")
+    if not SECRET_KEY:
+        raise ImproperlyConfigured("DJANGO_SECRET must be set when DJANGO_ENV=prod.")
     SITE_URL = 'https://scheduling.makerslink.se'
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    # The site is only reached over HTTPS (Traefik terminates TLS), so the
+    # session and CSRF cookies must never travel over plain HTTP. HSTS and the
+    # HTTP-to-HTTPS redirect are left to Traefik, which is why
+    # "manage.py check --deploy" still lists security.W004 and W008.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     # ...
 else:
     DEBUG = True
@@ -55,6 +65,9 @@ else:
         },
     }
 
+# Add setting for many fields in POST so we can have all forms when creating possible EventInstances sent to us.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+    
 MENU_EXTRA = [
     {'name': 'Schema', 'link': 'https://www.makerslink.se/pa-gang-i-makerslink/',
         'class': 'bg-primary text-white', 'tooltip': 'Schemat på hemsidan'},
@@ -85,11 +98,14 @@ INSTALLED_APPS = [
     'bootstrap4',
     'bootstrap_datepicker_plus',
     'crispy_forms',
+    'crispy_bootstrap4',
     # 'djangobower',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Serves the collected static files (the container no longer runs runserver).
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -129,6 +145,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'makerslink/db/db.sqlite3'),
+        'OPTIONS': {
+            # Take the write lock when a transaction starts, so concurrent
+            # bookings of the same slot are serialized instead of the last
+            # write winning. SQLite has no row locks; select_for_update()
+            # is a no-op there.
+            'transaction_mode': 'IMMEDIATE',
+            # Seconds to wait for that lock. A booking holds it while the
+            # Google Calendar entry is written.
+            'timeout': 20,
+        },
     }
 }
 
@@ -181,6 +207,12 @@ EMAIL_USE_TLS = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, "./static/"))
 
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # Compressed copies are written at collectstatic time; WhiteNoise serves them.
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
+
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -191,7 +223,15 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "./makerslink/static"),
 ]
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+BOOTSTRAP_DATEPICKER_PLUS = {
+    # Serve the widget's own JS/CSS from our static files rather than a CDN
+    # URL pinned to a GitHub commit. moment.js and the picker still load from
+    # jsdelivr, like Bootstrap.
+    "app_static_url": STATIC_URL + "bootstrap_datepicker_plus/",
+}
 
 BOOTSTRAP4 = {
     'include_jquery': True,

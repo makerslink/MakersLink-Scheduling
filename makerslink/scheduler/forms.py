@@ -6,7 +6,7 @@ from .widgets import DateMonthPicker, DatePicker
 from django.forms import BaseModelFormSet, BaseFormSet, ModelForm, Textarea
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingPeriod, SchedulingRuleExclusion
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 import datetime #for checking renewal date range.
 
 """

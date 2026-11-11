@@ -3,7 +3,7 @@ import accounts.models
 from django import utils
 from accounts.models import User
 from django.db.models.expressions import F
-from django.db.models import Q, Count, Max
+from django.db.models import Q, Count, Max, ProtectedError
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -18,6 +18,11 @@ from django.forms import modelformset_factory
 from .forms import EventInstanceFormSet, EventInstanceForm, PeriodForm, RuleExclusionForm, EventInstanceAdminForm
 from .models import EventTemplate, SchedulingCalendar, Event, EventInstance, SchedulingRule, SchedulingPeriod, SchedulingRuleExclusion
 from django.shortcuts import render
+from django.utils.html import format_html, format_html_join
+from django.utils.timezone import localtime
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 
@@ -52,6 +57,32 @@ class UserIsStaffMixin(UserPassesTestMixin):
         return self.request.user.is_staff
 
 
+class ProtectedDeleteMixin:
+    """
+    Templates, calendars and events are referenced by rows that cannot be
+    rendered without them, so those relations are PROTECT and the database
+    refuses the delete. Re-render the confirmation page naming what is still
+    using the object instead of letting ProtectedError become a 500.
+    """
+    # Enough to identify the problem without rendering thousands of rows.
+    protected_display_limit = 20
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ProtectedError as error:
+            # Only render a bounded sample: an Event can be protected by every
+            # instance ever scheduled from it, and each str() is a query.
+            protected = list(error.protected_objects)
+            shown = protected[:self.protected_display_limit]
+            return self.render_to_response(self.get_context_data(
+                form=form,
+                protected_objects=sorted(str(obj) for obj in shown),
+                protected_count=len(protected),
+                protected_overflow=len(protected) - len(shown),
+            ))
+
+
 class SchedulingCalendarListView(UserIsStaffMixin, generic.ListView):
     model = SchedulingCalendar
 
@@ -70,7 +101,7 @@ class SchedulingCalendarUpdateView(UserIsStaffMixin, UpdateView):
     fields = '__all__'
 
 
-class SchedulingCalendarDeleteView(UserIsStaffMixin, DeleteView):
+class SchedulingCalendarDeleteView(ProtectedDeleteMixin, UserIsStaffMixin, DeleteView):
     model = SchedulingCalendar
     success_url = reverse_lazy('calendars')
 
@@ -93,7 +124,7 @@ class EventTemplateUpdateView(UserIsStaffMixin, UpdateView):
     fields = '__all__'
 
 
-class EventTemplateDeleteView(UserIsStaffMixin, DeleteView):
+class EventTemplateDeleteView(ProtectedDeleteMixin, UserIsStaffMixin, DeleteView):
     model = EventTemplate
     success_url = reverse_lazy('templates')
 
@@ -194,7 +225,7 @@ class EventUpdateView(UserIsStaffMixin, UpdateView):
     #form_class = EventForm
 
 
-class EventDeleteView(UserIsStaffMixin, DeleteView):
+class EventDeleteView(ProtectedDeleteMixin, UserIsStaffMixin, DeleteView):
     model = Event
     success_url = reverse_lazy('events')
 
@@ -342,6 +373,116 @@ class HostListView(UserIsStaffMixin, generic.ListView):
         # return queryset
 
 
+def _slot_key(event_id, start, end):
+    """Identify a slot the way the signup page posts it back (whole seconds)."""
+    return (event_id, start.replace(microsecond=0), end.replace(microsecond=0))
+
+
+def _posted(form, name):
+    return form.data.get(form.add_prefix(name))
+
+
+def _posted_instance_id(form):
+    """The EventInstance a row claims to change, or None for a generated slot."""
+    try:
+        return uuid.UUID(_posted(form, 'id'))
+    except (TypeError, ValueError):
+        return None
+
+
+def _posted_slot_key(form):
+    """The (event, start, end) a generated-slot row posts back, or None."""
+    try:
+        event = form.fields['event'].clean(_posted(form, 'event'))
+        start = form.fields['start'].clean(_posted(form, 'start'))
+        end = form.fields['end'].clean(_posted(form, 'end'))
+    except ValidationError:
+        return None
+    if event is None or start is None or end is None:
+        return None
+    return _slot_key(event.pk, start, end)
+
+
+def _slot_row(instance):
+    """Title, start and end of a slot, for the "not taken" message."""
+    def when(value):
+        return localtime(value).strftime('%Y-%m-%d %H:%M')
+    return (instance.title, when(instance.start), when(instance.end))
+
+
+def _book_or_release(instance, user, wants_slot):
+    """
+    Apply one checkbox change, judged on the slot's state in the database.
+    Returns False when the user asked for a slot that is no longer available.
+    """
+    if wants_slot:
+        if instance.status in (-1, 0):
+            instance.status = 1
+            instance.host = user
+            instance.save()
+            return True
+        return instance.status == 1 and instance.host_id == user.pk
+    if instance.status == 1 and instance.host_id == user.pk:
+        # A released slot needs a new host rather than going straight back to free.
+        instance.status = -1
+        instance.save()
+    return True
+
+
+def _slot_in_db(slot):
+    """The stored row for a generated slot, locked for the rest of the transaction."""
+    return EventInstance.objects.select_for_update().filter(
+        event=slot.event, start=slot.start, end=slot.end).first()
+
+
+def _handle_signup_row(form, user, generated):
+    """
+    Act on one changed row of the signup page and return the slot to report
+    as "not taken", or None.
+
+    Only the checkbox and the slot's identity are read from the POST. Start,
+    end, status, event and period come from the database or from the slots
+    the server generated itself, so hidden fields cannot move, invent or
+    re-point a slot.
+    """
+    wants_slot = form.fields['perform_action'].clean(_posted(form, 'perform_action'))
+    instance_id = _posted_instance_id(form)
+    slot = None
+    if instance_id is None:
+        slot = generated.get(_posted_slot_key(form))
+        if slot is None:
+            # Not a slot this page offers: stale or tampered data.
+            return None
+
+    # One transaction per row. With SQLite's IMMEDIATE mode it takes the write
+    # lock before the status is read, so two members ticking the same slot are
+    # handled one after the other instead of the last write winning.
+    with transaction.atomic():
+        if slot is None:
+            instance = EventInstance.objects.select_for_update().filter(
+                pk=instance_id).exclude(start__lt=date.today()).first()
+            if instance is None:
+                return None
+        else:
+            instance = _slot_in_db(slot)
+            if instance is None:
+                if not wants_slot:
+                    return None
+                try:
+                    with transaction.atomic():
+                        EventInstance(event=slot.event, start=slot.start, end=slot.end,
+                                      period=slot.period, status=1, host=user).save()
+                except IntegrityError:
+                    # Created by someone else between the read and the write
+                    # (possible on databases that do not lock like IMMEDIATE).
+                    return EventInstance.objects.filter(
+                        event=slot.event, start=slot.start, end=slot.end).first()
+                return None
+        if _book_or_release(instance, user, wants_slot):
+            return None
+        return instance
+
+
 @login_required
 def EventSignupView(request):
     start = datetime.now(timezone.utc).replace(
@@ -365,96 +506,32 @@ def EventSignupView(request):
     eventinstanceFormSet = modelformset_factory(
         EventInstance, form=EventInstanceForm, formset=EventInstanceFormSet, extra=len(initial_values))
 
+    signup_queryset = EventInstance.objects.filter(
+        Q(host=request.user) | Q(status__lte=0)).exclude(start__lt=date.today()).order_by("period", "start")
+
     if request.method == 'POST':
-        taken_events = ""
-        logger.warning('form is submitted as POST')
-        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=EventInstance.objects.filter(
-            Q(host=request.user) | Q(status__lte=0)).exclude(start__lt=date.today()).order_by("period", "start"))
-
-        logger.warning('starting looping of forms')
+        formset = eventinstanceFormSet(request.POST, initial=initial_values, queryset=signup_queryset)
+        # Every slot the rules generate, including ones booked since the page
+        # was rendered (event_list leaves those out), so a stale page is
+        # reported as "not taken" instead of being ignored.
+        generated = {_slot_key(slot.event_id, slot.start, slot.end): slot
+                     for event in event_objects for slot in event.get_event_list(start, end)}
+        taken_events = []
         for form in formset:
-            if form.has_changed() and 'perform_action' in form.changed_data:
-                logger.warning('form has changed')
-                if form.is_valid():
-                    # logger.warning(str(form.cleaned_data.get('perform_action')))
-                    logger.warning(form.changed_data)
-                    #logger.warning('Handling form starting at: ' + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M'))
-                    logger.warning('form is valid')
-                    temp_obj = form.save(commit=False)
-
-                    if temp_obj.can_take(request.user):
-                        logger.warning('user can take')
-                        # Fix status codes
-                        # If someone takes an EventInstance in need of rescheduling
-                        if temp_obj.status == -1:
-                            temp_obj.status = 1
-                        # If someone takes an EventInstance that is unscheduled
-                        elif temp_obj.status == 0:
-                            temp_obj.status = 1
-                        # If someone untakes an EventInstance that is scheduled
-                        elif temp_obj.status == 1:
-                            temp_obj.status = -1
-
-                        # Fix host:
-                        temp_obj.host = request.user
-
-                        # Save
-                        logger.warning('saving')
-                        temp_obj.save()
-                    else:
-                        logger.warning('user can not take')
-                        # Add instance as already taken
-                        taken_events += "<tr><td>" + \
-                            form.cleaned_data.get('title') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('start').strftime(
-                                '%Y-%m-%d %H:%M') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('end').strftime(
-                                '%Y-%m-%d %H:%M') + "</td></tr>"
-                        """
-                        taken_event = {
-                            'title': form.cleaned_data.get('title'),
-                            'start': form.cleaned_data.get('start'),
-                            'end': form.cleaned_data.get('end'),
-                        }
-                        taken_events.append(taken_event)
-                        """
-                else:
-                    #logger.warning('Handling form starting at: ' + form.cleaned_data.get('start').strftime('%Y-%m-%d %H:%M'))
-                    logger.warning('form is invalid')
-                    if any(form.errors):
-                        logger.warning('form has errors')
-                        logger.warning(form.errors)
-                        taken_events += "<tr><td>" + \
-                            form.cleaned_data.get('title') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('start').strftime(
-                                '%Y-%m-%d %H:%M') + "</td>"
-                        taken_events += "<td>" + \
-                            form.cleaned_data.get('end').strftime(
-                                '%Y-%m-%d %H:%M') + "</td></tr>"
-                        """
-                        taken_event = {
-                            'title': form.cleaned_data.get('title'),
-                            'start': form.cleaned_data.get('start'),
-                            'end': form.cleaned_data.get('end'),
-                        }
-                        taken_events.append(taken_event)
-                        """
-            else:
-                logger.warning('form has not changed')
-        logger.warning('done with looping')
-        if taken_events != "":
-            taken_events = "<b>The following events were not taken due to already being owned by someone else:</b></<br><table><thead><tr><th>Title</th><th>Start</th><th>End</th></tr></thead>" + taken_events + "</table><br><br>"
-            logger.warning('adding message')
-            messages.info(request, taken_events, extra_tags='safe')
-        logger.warning('redirecting')
-        return HttpResponseRedirect('')
+            if 'perform_action' in form.fields and 'perform_action' in form.changed_data:
+                not_taken = _handle_signup_row(form, request.user, generated)
+                if not_taken is not None:
+                    taken_events.append(_slot_row(not_taken))
+        if taken_events:
+            # format_html escapes every value; only the fixed markup is safe.
+            messages.info(request, format_html(
+                "<b>The following events were not taken due to already being owned by someone else:</b><br>"
+                "<table><thead><tr><th>Title</th><th>Start</th><th>End</th></tr></thead>{}</table><br><br>",
+                format_html_join("", "<tr><td>{}</td><td>{}</td><td>{}</td></tr>", taken_events)))
+        return redirect(request.path)
     else:
         logger.warning('view is GET')
-        formset = eventinstanceFormSet(initial=initial_values, queryset=EventInstance.objects.filter(
-            Q(host=request.user) | Q(status__lte=0)).exclude(start__lt=date.today()).order_by("period", "start"))
+        formset = eventinstanceFormSet(initial=initial_values, queryset=signup_queryset)
 
     logger.warning('rendering')
 

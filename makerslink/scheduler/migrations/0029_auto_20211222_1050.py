@@ -13,10 +13,10 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddConstraint(
             model_name='event',
-            constraint=models.CheckConstraint(check=models.Q(start__lt=django.db.models.expressions.F('end')), name='check_start_before_end'),
+            constraint=models.CheckConstraint(condition=models.Q(start__lt=django.db.models.expressions.F('end')), name='check_start_before_end'),
         ),
         migrations.AddConstraint(
             model_name='event',
-            constraint=models.CheckConstraint(check=models.Q(start__lt=django.db.models.expressions.F('repeat_end')), name='check_start_before_repeat_end'),
+            constraint=models.CheckConstraint(condition=models.Q(start__lt=django.db.models.expressions.F('repeat_end')), name='check_start_before_repeat_end'),
         ),
     ]

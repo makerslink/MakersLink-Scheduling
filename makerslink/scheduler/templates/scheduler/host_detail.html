@@ -28,7 +28,7 @@
 {% block content %}
 {% regroup participant_list by period as participant_list_by_period %}
 <div class="row">
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-xl-3">
     <div class="card mb-4">
       <div class="card-header">
         {{ current_period }}
@@ -46,7 +46,7 @@
           <div class="progress-bar" role="progressbar" style="width: {{ host_stats.total_booked_percentage }}%;" aria-valuenow="{{ host_stats.total_booked }}" aria-valuemin="0" aria-valuemax="{{ host_stats.max_commited_required }}">Bokade</div>
           <div class="progress-bar bg-warning" role="progressbar" style="width: {{ host_stats.total_extra_percentage }}%;" aria-valuenow="{{ host_stats.total_extra }}" aria-valuemin="0" aria-valuemax="{{ host_stats.max_commited_required }}">Extra</div>
         </div>
-        <table class="small-table" width="100%">
+        <div class="table-responsive"><table class="small-table" width="100%">
           <thead>
             <tr>
               <td>&nbsp;</td>
@@ -77,7 +77,7 @@
             <td><emph>{{ host_stats.total_extra}}</emph></td>
             <td><emph>{{ current_period.get_required_total_number_of_required_events }}</emph></td>
           </tr>
-        </table>
+        </table></div>
         <br>
         {% if host_stats.host_commited < current_period.num_required_events %}
           <a href="{% url 'index' %}" class="btn btn-primary">Boka ett pass</a>
@@ -89,7 +89,7 @@
       </div>
     </div>
   </div>
-  <div class="col-3">
+  <div class="col-12 col-md-6 col-xl-3">
     <div class="card mb-4">
       <div class="card-header">
         Värd information
@@ -103,7 +103,7 @@
 
 <div class="row">
   {% for period in period_list %}
-  <div class="col-2">
+  <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
     <div class="card mb-4">
       <div class="card-header">
         {% if user.is_staff %}
@@ -130,7 +130,7 @@
           <div class="progress-bar bg-success" role="progressbar" style="width: {{ period.total_done_percentage }}%;" aria-valuenow="{{ period.total_done }}" aria-valuemin="0" aria-valuemax="{{ period.max_done_required }}">Genomförda</div>
           <div class="progress-bar bg-warning" role="progressbar" style="width: {{ period.total_extra_percentage }}%;" aria-valuenow="{{ period.total_extra }}" aria-valuemin="0" aria-valuemax="{{ period.max_done_required }}">Extra</div>
         </div>
-        <table class="small-table mb-3" width="100%">
+        <div class="table-responsive"><table class="small-table mb-3" width="100%">
           <thead>
             <tr>
               <td> &nbsp; </td>
@@ -157,14 +157,14 @@
             <td><emph>{{ period.total_extra }}</emph></td>
             <td><emph>{{ period.get_required_total_number_of_required_events }}</emph></td>
           </tr>
-        </table>
+        </table></div>
       </div>
     </div>
   </div>
   {% endfor %}
 </div>
 
-  <table>
+  <div class="table-responsive"><table>
   <thead>
     {% if user.is_staff %}
         <tr><th colspan =4>Antal pass i period</th></tr>
@@ -206,12 +206,12 @@
         <tr><td colspan=3>Ännu inte värd på några pass.</td></tr>
     {% endif %}
   {% endfor %}
-  </table>
+  </table></div>
   
   <div style="margin-top:20px">
     <h4>Värd för följande pass:</h4>
     {% if hosted_events %}
-      <table>
+      <div class="table-responsive"><table>
         <thead>
           <tr>
             <th>Rubrik</th>
@@ -237,7 +237,7 @@
             {% endfor %}
           </tbody>
         {% endfor %}
-      </table>
+      </table></div>
     {% else %}
       Ännu inte värd för några pass.
     {% endif %}
@@ -246,7 +246,7 @@
   <div style="margin-top:20px">
     <h4>Deltagare på följande pass:</h4>
     {% if participant_events %}
-      <table>
+      <div class="table-responsive"><table>
         <thead>
           <tr>
             <th>Rubrik</th>
@@ -272,7 +272,7 @@
             {% endfor %}
           </tbody>
         {% endfor %}
-      </table>
+      </table></div>
     {% else %}
       Ännu inte deltagare på några pass.
     {% endif %}
