@@ -1,10 +1,20 @@
+# Version control and local tooling
+.git
+.gitignore
+.dockerignore
+.idea
 virtenv
+Dockerfile
+workspace.code-workspace
+# Local data and secrets: mounted at runtime, never baked into the image
+makerslink/makerslink/db/*.sqlite3*
+makerslink/makerslink/db/*.back
+pks
+# Build output and scratch
+**/__pycache__
+**/*.pyc
 MakersLink-Scheduling*
 Debugging
 screenshots
 archive
-workspace.code-workspace
-pks
-.idea
-Dockerfile
 docs
