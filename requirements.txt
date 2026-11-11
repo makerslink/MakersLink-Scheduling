@@ -20,6 +20,7 @@ google-api-python-client==2.202.0  # via -r requirements.in
 google-auth==2.62.2       # via -r requirements.in, google-api-core, google-api-python-client, google-auth-httplib2
 google-auth-httplib2==0.4.4  # via google-api-python-client
 googleapis-common-protos==1.76.0  # via google-api-core
+gunicorn==27.0.0          # via -r requirements.in
 httplib2==0.32.1          # via google-api-python-client, google-auth-httplib2
 idna==3.20                # via requests
 opentelemetry-api==1.45.2  # via google-api-core
@@ -38,3 +39,4 @@ typing-extensions==4.16.0  # via beautifulsoup4, opentelemetry-api
 tzdata==2026.6            # via python-dateutil
 uritemplate==4.2.0        # via google-api-python-client
 urllib3==2.8.0            # via requests
+whitenoise==6.12.0        # via -r requirements.in

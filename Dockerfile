@@ -30,6 +30,9 @@ ENV DJANGO_ENV=prod
 # Go into djano dir
 WORKDIR /scheduling/makerslink
 
+# Collect static files for WhiteNoise. collectstatic needs no real secret.
+RUN DJANGO_SECRET=collectstatic-only python manage.py collectstatic --noinput
+
 # Run app.py when the container launches
 #CMD ["/bin/bash"]
 CMD ./start-server.sh

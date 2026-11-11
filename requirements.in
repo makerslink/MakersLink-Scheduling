@@ -11,3 +11,6 @@ google-api-python-client
 google-auth
 python-dateutil
 pytz
+# Production serving (see makerslink/start-server.sh)
+gunicorn
+whitenoise
