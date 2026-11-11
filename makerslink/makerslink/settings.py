@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CALENDAR_PK_DIR = os.path.abspath(os.path.join(BASE_DIR, "../pks/"))
@@ -29,8 +31,16 @@ if os.getenv('DJANGO_ENV') == 'prod':
     USE_X_FORWARDED_HOST = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECRET_KEY = os.environ.get("DJANGO_SECRET")
+    if not SECRET_KEY:
+        raise ImproperlyConfigured("DJANGO_SECRET must be set when DJANGO_ENV=prod.")
     SITE_URL = 'https://scheduling.makerslink.se'
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    # The site is only reached over HTTPS (Traefik terminates TLS), so the
+    # session and CSRF cookies must never travel over plain HTTP. HSTS and the
+    # HTTP-to-HTTPS redirect are left to Traefik, which is why
+    # "manage.py check --deploy" still lists security.W004 and W008.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     # ...
 else:
     DEBUG = True
