@@ -133,6 +133,16 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'makerslink/db/db.sqlite3'),
+        'OPTIONS': {
+            # Take the write lock when a transaction starts, so concurrent
+            # bookings of the same slot are serialized instead of the last
+            # write winning. SQLite has no row locks; select_for_update()
+            # is a no-op there.
+            'transaction_mode': 'IMMEDIATE',
+            # Seconds to wait for that lock. A booking holds it while the
+            # Google Calendar entry is written.
+            'timeout': 20,
+        },
     }
 }
 

@@ -10,7 +10,10 @@ import datetime
 import html
 import re
 
-from django.test import TestCase
+from unittest import mock
+
+from django.db import IntegrityError, connection, transaction
+from django.test import TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -239,3 +242,58 @@ class HiddenFieldTrustTests(SignupTestCase):
 
         free.refresh_from_db()
         self.assertEqual((free.status, free.host), (1, self.other))
+
+
+class SerializedBookingTests(SignupTestCase):
+    """
+    Two members ticking the same slot used to be separated only by the
+    unique constraint, whose handler was a Python 2 pre_save signal that
+    raised NameError.
+    """
+
+    def test_sqlite_takes_the_write_lock_up_front(self):
+        self.assertEqual(connection.settings_dict["OPTIONS"]["transaction_mode"], "IMMEDIATE")
+
+    def test_duplicate_slot_hits_the_database_constraint(self):
+        data = self.signup_page()
+        theirs = self.book_for_other(data, generated_slots(data)[0])
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            EventInstance.objects.create(event=theirs.event, start=theirs.start, end=theirs.end)
+
+    def test_slot_created_between_read_and_write_is_reported_not_a_500(self):
+        data = self.signup_page()
+        index = generated_slots(data)[0]
+        theirs = self.book_for_other(data, index)
+        data[f"form-{index}-perform_action"] = "on"
+
+        # Pretend the locked read ran just before the other booking committed.
+        with mock.patch("scheduler.views._slot_in_db", return_value=None):
+            page = self.client.post(reverse("index"), data, follow=True).content.decode()
+
+        theirs.refresh_from_db()
+        self.assertEqual((theirs.status, theirs.host), (1, self.other))
+        self.assertIn("were not taken", page)
+
+
+class BookingTransactionTests(TransactionTestCase):
+    """Outside TestCase's wrapping transaction, so the view's own atomic block is visible."""
+
+    def test_each_booking_is_saved_inside_a_transaction(self):
+        today = timezone.localdate()
+        SchedulingPeriod.objects.create(start=today - datetime.timedelta(days=30),
+                                        end=today + datetime.timedelta(days=150))
+        member = make_user("member@example.com", "member")
+        self.client.force_login(member)
+        data = formset_data(self.client.get(reverse("index")).content.decode())
+        data[f"form-{generated_slots(data)[0]}-perform_action"] = "on"
+        seen = []
+        original_save = EventInstance.save
+
+        def recording_save(instance, *args, **kwargs):
+            seen.append(connection.in_atomic_block)
+            return original_save(instance, *args, **kwargs)
+
+        with mock.patch.object(EventInstance, "save", recording_save):
+            self.client.post(reverse("index"), data)
+
+        self.assertEqual(seen, [True])

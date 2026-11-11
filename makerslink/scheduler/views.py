@@ -21,6 +21,7 @@ from django.shortcuts import render
 from django.utils.html import format_html, format_html_join
 from django.utils.timezone import localtime
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
 import uuid
 import logging
 logger = logging.getLogger(__name__)
@@ -385,6 +386,12 @@ def _book_or_release(instance, user, wants_slot):
     return True
 
 
+def _slot_in_db(slot):
+    """The stored row for a generated slot, locked for the rest of the transaction."""
+    return EventInstance.objects.select_for_update().filter(
+        event=slot.event, start=slot.start, end=slot.end).first()
+
+
 def _handle_signup_row(form, user, generated):
     """
     Act on one changed row of the signup page and return the slot to report
@@ -397,26 +404,40 @@ def _handle_signup_row(form, user, generated):
     """
     wants_slot = form.fields['perform_action'].clean(_posted(form, 'perform_action'))
     instance_id = _posted_instance_id(form)
-    if instance_id is not None:
-        instance = EventInstance.objects.filter(pk=instance_id).exclude(
-            start__lt=date.today()).first()
-        if instance is None:
-            return None
-    else:
+    slot = None
+    if instance_id is None:
         slot = generated.get(_posted_slot_key(form))
         if slot is None:
             # Not a slot this page offers: stale or tampered data.
             return None
-        instance = EventInstance.objects.filter(
-            event=slot.event, start=slot.start, end=slot.end).first()
-        if instance is None:
-            if wants_slot:
-                EventInstance(event=slot.event, start=slot.start, end=slot.end,
-                              period=slot.period, status=1, host=user).save()
+
+    # One transaction per row. With SQLite's IMMEDIATE mode it takes the write
+    # lock before the status is read, so two members ticking the same slot are
+    # handled one after the other instead of the last write winning.
+    with transaction.atomic():
+        if slot is None:
+            instance = EventInstance.objects.select_for_update().filter(
+                pk=instance_id).exclude(start__lt=date.today()).first()
+            if instance is None:
+                return None
+        else:
+            instance = _slot_in_db(slot)
+            if instance is None:
+                if not wants_slot:
+                    return None
+                try:
+                    with transaction.atomic():
+                        EventInstance(event=slot.event, start=slot.start, end=slot.end,
+                                      period=slot.period, status=1, host=user).save()
+                except IntegrityError:
+                    # Created by someone else between the read and the write
+                    # (possible on databases that do not lock like IMMEDIATE).
+                    return EventInstance.objects.filter(
+                        event=slot.event, start=slot.start, end=slot.end).first()
+                return None
+        if _book_or_release(instance, user, wants_slot):
             return None
-    if _book_or_release(instance, user, wants_slot):
-        return None
-    return instance
+        return instance
 
 
 @login_required
