@@ -6,3 +6,6 @@ virtenv/*
 /archive/*
 /Debugging/*
 /makerslink/makerslink/db/*.back
+# Live data never belongs in git; run "python manage.py migrate" to create a local database.
+/makerslink/makerslink/db/*.sqlite3
+/makerslink/makerslink/db/*.sqlite3-*
