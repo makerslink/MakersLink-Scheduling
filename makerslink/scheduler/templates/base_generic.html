@@ -53,6 +53,15 @@
     {
       font-weight:bold;
     }
+    @media (max-width: 767.98px) {
+      h1 {
+        font-size: 1.6rem;
+        overflow-wrap: anywhere;
+      }
+      .site-logo {
+        width: 90px;
+      }
+    }
   </style>
   <script>
   $(function () {
@@ -67,13 +76,14 @@
 
 <body>
 
-  <div class="container-fluid" style="display: table;">
+  {# No fixed display type here: the wrapper must follow the screen width, not grow to fit wide content. #}
+  <div class="container-fluid">
     <div class="row align-items-center">
       <div class="col-auto">
         <ul class="nav flex-column">
           {% if logo %}
           <li class="nav-item"><a class="nav-link" style="" href="{{ logo.link }}">
-            <img src="{% static logo.path %}" style="margin:5px; display:block; margin-left:auto; margin-right:auto" width="140" class="align-top" alt="Logo">
+            <img src="{% static logo.path %}" style="margin:5px; display:block; margin-left:auto; margin-right:auto" width="140" class="align-top site-logo" alt="Logo">
           </a></li>
           {% endif %}
         </ul>
@@ -83,14 +93,15 @@
       </div>
     </div>
     <div class="row align-items-center">
-      <div class="col-auto">
+      {# The menu title belongs to the side menu, which phones show behind the "Meny" button instead. #}
+      <div class="col-auto d-none d-md-block">
         <ul class="nav flex-column">
           {% if menu_title %}
           <li class="nav-item"><span class="nav-link bg-dark text-white font-weight-bold">{{ menu_title }}</span></li>
           {% endif %}
         </ul>
       </div>
-      <div class="col">
+      <div class="col-12 col-md">
         <div class="btn-toolbar">
           {% if commands %}
           <div class="btn-group btn-group-toggle mr-2">
@@ -113,8 +124,11 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-auto">
-        <ul class="nav flex-column" style="margin-top:4px">
+      {# A side column from 768px up; on phones the menu sits above the content, folded behind a button. #}
+      <div class="col-12 col-md-auto">
+        <button type="button" class="btn btn-dark btn-block d-md-none mt-1" data-toggle="collapse"
+                data-target="#mainmenu" aria-controls="mainmenu" aria-expanded="false">Meny</button>
+        <ul id="mainmenu" class="nav flex-column collapse d-md-flex" style="margin-top:4px">
           {% if user.is_authenticated %}
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'index' %}" data-toggle="tooltip" data-placement="right" title="Boka värdpass">Boka pass</a></li>
           <li class="nav-item"><a class="nav-link bg-primary text-white" href="{% url 'joinEvent' %}" data-toggle="tooltip" data-placement="right" title="Boka gå brevid pass och fixarpass">Anmäl deltagande</a></li>
@@ -145,7 +159,7 @@
           {% endfor %}
         </ul>
       </div>
-      <div class="col">
+      <div class="col-12 col-md">
         <div class="container-fluid pt-3 pl-0 pb-3">
           {% block content %}{% endblock %}
         </div>
