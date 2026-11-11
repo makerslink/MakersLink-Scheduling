@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="row">
-  <div class="col-3">
+  {# Full width on phones, narrowing on larger screens. A fixed col-3 made the login box 46-60px wide on a phone. #}
+  <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
     <div class="card mb-4">
       <div class="card-body">
           {%block card_form %}{% endblock %}
