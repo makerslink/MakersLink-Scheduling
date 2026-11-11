@@ -21,9 +21,9 @@
 
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <table>
+    <div class="table-responsive"><table>
     {{ form.as_table }}
-    </table>
+    </table></div>
     <div class="btn-group btn-group-toggle">
       {% if request.user|is_participant:form.instance %}
     	  <button type="submit" class="btn  btn-primary">Avanmäl</button>
