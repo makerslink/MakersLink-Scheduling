@@ -302,15 +302,19 @@ class Event(models.Model):
         return self.template.num_participants
 
     def clean(self):
+        # A missing date has already failed field validation; nothing to compare.
+        if self.start is None or self.end is None:
+            return
         # Only validate future requirement on create not on edit.
         if self.pk is None and self.start <= timezone.now():
             raise ValidationError(
                 {'start': ('Start date is not in the future')})
-        if self.start > self.end:
-            raise ValidationError({'start': ('Start date is after end date')})
-        if self.repeat_end and self.start > self.repeat_end:
+        # >= rather than >: the database constraints require start < end.
+        if self.start >= self.end:
+            raise ValidationError({'start': ('Start must be before end')})
+        if self.repeat_end and self.start >= self.repeat_end:
             raise ValidationError(
-                {'start': ('Start date is after repeat end date')})
+                {'start': ('Start must be before repeat end')})
 
     def get_absolute_url(self):
         """
@@ -578,12 +582,16 @@ class EventInstance(models.Model):
 
     # Methods
     def clean(self):
+        # A missing date has already failed field validation; nothing to compare.
+        if self.start is None or self.end is None:
+            return
         # Only validate future requirement on create not on edit.
         if self.pk is None and self.start <= timezone.now():
             raise ValidationError(
                 {'start': ('Start date is not in the future')})
-        if self.start > self.end:
-            raise ValidationError({'start': ('Start date is after end date')})
+        # >= rather than >: the database constraint requires start < end.
+        if self.start >= self.end:
+            raise ValidationError({'start': ('Start must be before end')})
 
     def get_absolute_url(self):
         """
@@ -853,8 +861,12 @@ class SchedulingPeriod(models.Model):
 
     # Functions
     def clean(self):
-        if self.start > self.end:
-            raise ValidationError({'start': ('Start date is after end date')})
+        # A missing date has already failed field validation; nothing to compare.
+        if self.start is None or self.end is None:
+            return
+        # >= rather than >: the database constraint requires start < end.
+        if self.start >= self.end:
+            raise ValidationError({'start': ('Start must be before end')})
 
     def get_absolute_url(self):
         """

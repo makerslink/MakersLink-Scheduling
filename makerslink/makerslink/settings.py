@@ -226,6 +226,13 @@ STATICFILES_DIRS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap4'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
+BOOTSTRAP_DATEPICKER_PLUS = {
+    # Serve the widget's own JS/CSS from our static files rather than a CDN
+    # URL pinned to a GitHub commit. moment.js and the picker still load from
+    # jsdelivr, like Bootstrap.
+    "app_static_url": STATIC_URL + "bootstrap_datepicker_plus/",
+}
+
 BOOTSTRAP4 = {
     'include_jquery': True,
 }

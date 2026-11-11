@@ -4,6 +4,7 @@
 #
 #    pip-compile --annotation-style=line --output-file=requirements.txt --strip-extras requirements.in
 #
+annotated-types==0.8.0    # via pydantic
 asgiref==3.13.0           # via django
 beautifulsoup4==4.15.0    # via django-bootstrap4
 certifi==2026.10.23       # via requests
@@ -12,7 +13,7 @@ charset-normalizer==3.5.2  # via requests
 crispy-bootstrap4==2026.2  # via -r requirements.in
 cryptography==50.0.2      # via google-auth
 django==6.0.10            # via -r requirements.in, crispy-bootstrap4, django-bootstrap-datepicker-plus, django-bootstrap4, django-crispy-forms
-django-bootstrap-datepicker-plus==3.0.5  # via -r requirements.in
+django-bootstrap-datepicker-plus==6.0.0  # via -r requirements.in
 django-bootstrap4==26.3   # via -r requirements.in
 django-crispy-forms==2.7  # via -r requirements.in, crispy-bootstrap4
 google-api-core==2.44.0   # via google-api-python-client
@@ -29,13 +30,18 @@ protobuf==7.36.2          # via google-api-core, googleapis-common-protos, proto
 pyasn1==0.6.5             # via pyasn1-modules
 pyasn1-modules==0.4.2     # via google-auth
 pycparser==3.12           # via cffi
+pydantic==2.14.3          # via django-bootstrap-datepicker-plus, pydantic-settings
+pydantic-core==2.50.4     # via pydantic
+pydantic-settings==2.16.2  # via django-bootstrap-datepicker-plus
 pyparsing==3.3.3          # via httplib2
 python-dateutil==4.0.0    # via -r requirements.in
+python-dotenv==1.2.4      # via pydantic-settings
 pytz==2026.6              # via -r requirements.in
 requests==2.34.2          # via google-api-core
 soupsieve==4.1            # via beautifulsoup4
 sqlparse==0.6.1           # via django
-typing-extensions==4.16.0  # via beautifulsoup4, opentelemetry-api
+typing-extensions==4.16.0  # via beautifulsoup4, django-bootstrap-datepicker-plus, opentelemetry-api, pydantic, pydantic-core, pydantic-settings, typing-inspection
+typing-inspection==0.4.5  # via pydantic, pydantic-settings
 tzdata==2026.6            # via python-dateutil
 uritemplate==4.2.0        # via google-api-python-client
 urllib3==2.8.0            # via requests
