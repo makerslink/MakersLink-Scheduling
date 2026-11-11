@@ -46,3 +46,30 @@ class LoggedOutMenuTests(TestCase):
         self.assertNotIn('href="%s"' % reverse("profile"), html)
         self.assertNotIn('href="%s"' % reverse("joinEvent"), html)
         self.assertIn('href="%s"' % reverse("login"), html)
+
+
+class SelfRegistrationRemovedTests(TestCase):
+    """Accounts are no longer created from a public form."""
+
+    def test_register_url_is_gone(self):
+        self.assertEqual(self.client.get("/accounts/register/").status_code, 404)
+        self.assertEqual(self.client.post("/accounts/register/", {
+            "email": "new@example.com", "slackId": "new"}).status_code, 404)
+        self.assertFalse(User.objects.filter(email="new@example.com").exists())
+
+
+class PasswordResetTests(TestCase):
+    """Password reset shares the set-password page the registration flow used."""
+
+    def test_reset_flow_end_to_end(self):
+        from django.core import mail
+        import re
+        user = make_member()
+        self.client.post(reverse("password_reset"), {"email": user.email})
+        link = re.search(r"https?://testserver(/accounts/\S+/)", mail.outbox[0].body).group(1)
+        form_page = self.client.get(link, follow=True)
+        self.assertTemplateUsed(form_page, "accounts/set_password.html")
+        self.client.post(form_page.redirect_chain[-1][0], {
+            "new_password1": "Another-long-pw-2", "new_password2": "Another-long-pw-2"})
+        user.refresh_from_db()
+        self.assertTrue(user.check_password("Another-long-pw-2"))
